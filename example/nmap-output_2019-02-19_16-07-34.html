@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="referrer" content="no-referrer">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css" type="text/css" integrity="sha384-VEpVDzPR2x8NbTDZ8NFW4AWbtT2g/ollEzX/daZdW/YvUBlbgVtsxMftnJ84k0Cn" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha384-fJU6sGmyn07b+uD1nMk7/iSb4yvaowcueiQhfVgQuD98rfva8mcr1eSvjchfpMrH" crossorigin="anonymous"></script><script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js" integrity="sha384-rgWRqC0OFPisxlUvl332tiM/qmaNxnlY46eksSZD84t+s2vZlqGeHrncwIRX7CGp" crossorigin="anonymous"></script><script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js" integrity="sha384-7PXRkl4YJnEpP8uU4ev9652TTZSxrqC8uOpcV1ftVEC7LVyLZqqDUAaq+Y+lGgr9" crossorigin="anonymous"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><style>
+          .target:before {
+            content: "";
+            display: block;
+            height: 50px;
+            margin: -20px 0 0;
+          }
+          @media only screen and (min-width:1900px) {
+            .container {
+              width: 1800px;
+              }
+          }
+          .footer {
+            margin-top:60px;
+            padding-top:60px;
+            width: 100%;
+            height: 180px;
+            background-color: #f5f5f5;
+          }
+        </style>
+<title>Scan Report Nmap 7.70</title>
+</head>
+<body>
+<nav class="navbar navbar-default navbar-fixed-top"><div class="container-fluid">
+<div class="navbar-header">
+<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="#"><span class="glyphicon glyphicon-home"></span></a>
+</div>
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><ul class="nav navbar-nav">
+<li><a href="#scannedhosts">Scanned Hosts</a></li>
+<li><a href="#onlinehosts">Online Hosts</a></li>
+<li><a href="#openservices">Open Services</a></li>
+</ul></div>
+</div></nav><div class="container">
+<div class="jumbotron">
+<h1>Scan Report<br><small>Nmap 7.70</small>
+</h1>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">nmap --max-retries 2 --max-rtt-timeout 500ms -p[port(s)] -Pn -sT -sV -n --script vulners [ip(s)]</pre>
+<p class="lead"> – <br>4 hosts scanned.
+              4 hosts up.
+              0 hosts down.
+            </p>
+<div class="progress">
+<div class="progress-bar progress-bar-success" style="width:100%;">4<span class="sr-only"></span>
+</div>
+<div class="progress-bar progress-bar-danger" style="width:0%;">0<span class="sr-only"></span>
+</div>
+</div>
+</div>
+<h2 id="scannedhosts" class="target">Scanned Hosts</h2>
+<div class="table-responsive"><table id="table-overview" class="table table-striped dataTable" role="grid">
+<thead><tr>
+<th>State</th>
+<th>Address</th>
+<th>Hostname</th>
+<th>TCP (open)</th>
+<th>UDP (open)</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.160</td>
+<td></td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.198</td>
+<td></td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.1</td>
+<td></td>
+<td>6</td>
+<td>0</td>
+</tr>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.2</td>
+<td></td>
+<td>16</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></div>
+<script>
+            $(document).ready(function() {
+              $('#table-overview').DataTable();
+            });
+          </script><h2 id="onlinehosts" class="target">Online Hosts</h2>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.160</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">22</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">ssh</td>
+<td title="Product">OpenSSH</td>
+<td title="Version">7.6p1 Ubuntu 4ubuntu0.1</td>
+<td title="Extra Info">Ubuntu Linux; protocol 2.0</td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:openbsd:openssh:7.6p1">cpe:/a:openbsd:openssh:7.6p1</a><h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:openbsd:openssh:7.6p1: 
+	CVE-2018-15919		5.0		https://vulners.com/cve/CVE-2018-15919
+	CVE-2018-15473		5.0		https://vulners.com/cve/CVE-2018-15473</pre>
+</td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.198</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">135</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">msrpc</td>
+<td title="Product">Microsoft Windows RPC</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:microsoft:windows">cpe:/o:microsoft:windows</a></td></tr>
+<tr class="success">
+<td title="Port">139</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Microsoft Windows netbios-ssn</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:microsoft:windows">cpe:/o:microsoft:windows</a></td></tr>
+<tr class="success">
+<td title="Port">445</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">microsoft-ds</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">902</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">vmware-auth</td>
+<td title="Product">VMware Authentication Daemon</td>
+<td title="Version">1.10</td>
+<td title="Extra Info">Uses VNC, SOAP</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">912</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">vmware-auth</td>
+<td title="Product">VMware Authentication Daemon</td>
+<td title="Version">1.0</td>
+<td title="Extra Info">Uses VNC, SOAP</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">999</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">garcon</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">5800</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">vnc-http</td>
+<td title="Product">TightVNC</td>
+<td title="Version"></td>
+<td title="Extra Info">user: PC-test-01; VNC TCP port: 5900</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:tightvnc:tightvnc">cpe:/a:tightvnc:tightvnc</a></td></tr>
+<tr class="success">
+<td title="Port">5900</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">vnc</td>
+<td title="Product">VNC</td>
+<td title="Version"></td>
+<td title="Extra Info">protocol 3.8</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.1</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">53</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">domain</td>
+<td title="Product">dnsmasq</td>
+<td title="Version">2.55</td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:thekelleys:dnsmasq:2.55">cpe:/a:thekelleys:dnsmasq:2.55</a><h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:thekelleys:dnsmasq:2.55: 
+	CVE-2012-3411		5.0		https://vulners.com/cve/CVE-2012-3411
+	CVE-2013-0198		5.0		https://vulners.com/cve/CVE-2013-0198</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">80</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">lighttpd</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:lighttpd:lighttpd">cpe:/a:lighttpd:lighttpd</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">HTTP Server</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">139</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Samba smbd</td>
+<td title="Version">3.X - 4.X</td>
+<td title="Extra Info">workgroup: WORKGROUP</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:samba:samba">cpe:/a:samba:samba</a></td></tr>
+<tr class="success">
+<td title="Port">443</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">lighttpd</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:lighttpd:lighttpd">cpe:/a:lighttpd:lighttpd</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">HTTP Server</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">445</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Samba smbd</td>
+<td title="Version">3.X - 4.X</td>
+<td title="Extra Info">workgroup: WORKGROUP</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:samba:samba">cpe:/a:samba:samba</a></td></tr>
+<tr class="success">
+<td title="Port">9000</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">upnp</td>
+<td title="Product">TwonkyMedia UPnP</td>
+<td title="Version"></td>
+<td title="Extra Info">Linux 2.X.X; UPnP 1.0; pvConnect SDK 1.0</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:packetvideo:twonky">cpe:/a:packetvideo:twonky</a></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.2</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">22</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">ssh</td>
+<td title="Product">OpenSSH</td>
+<td title="Version">7.6</td>
+<td title="Extra Info">protocol 2.0</td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:openbsd:openssh:7.6">cpe:/a:openbsd:openssh:7.6</a><h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:openbsd:openssh:7.6: 
+	CVE-2018-15919		5.0		https://vulners.com/cve/CVE-2018-15919
+	CVE-2018-15473		5.0		https://vulners.com/cve/CVE-2018-15473</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">80</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">Apache httpd</td>
+<td title="Version"></td>
+<td title="Extra Info">PHP 5.6.38</td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:php:php:5.6.38">cpe:/a:php:php:5.6.38</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">Apache</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">139</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Samba smbd</td>
+<td title="Version">4.6.2</td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:samba:samba:4.6.2">cpe:/a:samba:samba:4.6.2</a><h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:samba:samba:4.6.2: 
+	CVE-2017-7494		10.0		https://vulners.com/cve/CVE-2017-7494
+	CVE-2017-14746		7.5		https://vulners.com/cve/CVE-2017-14746
+	CVE-2018-10858		6.5		https://vulners.com/cve/CVE-2018-10858
+	CVE-2018-1057		6.5		https://vulners.com/cve/CVE-2018-1057
+	CVE-2017-12151		5.8		https://vulners.com/cve/CVE-2017-12151
+	CVE-2017-12150		5.8		https://vulners.com/cve/CVE-2017-12150
+	CVE-2017-15275		5.0		https://vulners.com/cve/CVE-2017-15275
+	CVE-2017-12163		4.8		https://vulners.com/cve/CVE-2017-12163
+	CVE-2018-1139		4.3		https://vulners.com/cve/CVE-2018-1139
+	CVE-2018-14629		4.0		https://vulners.com/cve/CVE-2018-14629
+	CVE-2018-16841		4.0		https://vulners.com/cve/CVE-2018-16841
+	CVE-2018-16851		4.0		https://vulners.com/cve/CVE-2018-16851
+	CVE-2018-10919		4.0		https://vulners.com/cve/CVE-2018-10919
+	CVE-2018-1050		2.9		https://vulners.com/cve/CVE-2018-1050</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">443</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">QNAP NAS http config</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">http server 1.0</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">445</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Samba smbd</td>
+<td title="Version">4.6.2</td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:samba:samba:4.6.2">cpe:/a:samba:samba:4.6.2</a><h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:samba:samba:4.6.2: 
+	CVE-2017-7494		10.0		https://vulners.com/cve/CVE-2017-7494
+	CVE-2017-14746		7.5		https://vulners.com/cve/CVE-2017-14746
+	CVE-2018-10858		6.5		https://vulners.com/cve/CVE-2018-10858
+	CVE-2018-1057		6.5		https://vulners.com/cve/CVE-2018-1057
+	CVE-2017-12151		5.8		https://vulners.com/cve/CVE-2017-12151
+	CVE-2017-12150		5.8		https://vulners.com/cve/CVE-2017-12150
+	CVE-2017-15275		5.0		https://vulners.com/cve/CVE-2017-15275
+	CVE-2017-12163		4.8		https://vulners.com/cve/CVE-2017-12163
+	CVE-2018-1139		4.3		https://vulners.com/cve/CVE-2018-1139
+	CVE-2018-14629		4.0		https://vulners.com/cve/CVE-2018-14629
+	CVE-2018-16841		4.0		https://vulners.com/cve/CVE-2018-16841
+	CVE-2018-16851		4.0		https://vulners.com/cve/CVE-2018-16851
+	CVE-2018-10919		4.0		https://vulners.com/cve/CVE-2018-10919
+	CVE-2018-1050		2.9		https://vulners.com/cve/CVE-2018-1050</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">548</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">afp</td>
+<td title="Product">Netatalk</td>
+<td title="Version">3.1.9</td>
+<td title="Extra Info">name: NAS; protocol 3.4</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:netatalk:netatalk:3.1.9">cpe:/a:netatalk:netatalk:3.1.9</a></td></tr>
+<tr class="success">
+<td title="Port">631</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">ipp</td>
+<td title="Product">CUPS</td>
+<td title="Version">2.1</td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:apple:cups:2.1">cpe:/a:apple:cups:2.1</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">CUPS/2.1 IPP/2.1</pre>
+<h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:apple:cups:2.1: 
+	CVE-2017-18190		5.0		https://vulners.com/cve/CVE-2017-18190
+	CVE-2017-18248		3.5		https://vulners.com/cve/CVE-2017-18248</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">5001</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">Apache httpd</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:apache:http_server">cpe:/a:apache:http_server</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">Apache</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">5900</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">vnc</td>
+<td title="Product">VNC</td>
+<td title="Version"></td>
+<td title="Extra Info">protocol 3.8</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">5901</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">vnc</td>
+<td title="Product">VNC</td>
+<td title="Version"></td>
+<td title="Extra Info">protocol 3.8</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">8080</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">Apache httpd</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:apache:http_server">cpe:/a:apache:http_server</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">Apache</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">8081</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">Apache httpd</td>
+<td title="Version"></td>
+<td title="Extra Info">PHP 5.6.38</td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:php:php:5.6.38">cpe:/a:php:php:5.6.38</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">Apache</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">8088</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">rtsp</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a><h5>fingerprint-strings</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  GetRequest, HTTPOptions: 
+    HTTP/1.0 200 OK
+    Vary: Cookie
+    Content-Type: text/html; charset=utf-8
+    Content-Language: en
+    &lt;!doctype html&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;!-- &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt; --&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;title&gt;Virtualization Station&lt;/title&gt;
+    &lt;link rel="shortcut icon" href="static/favicon.ico"&gt;
+    &lt;link rel="stylesheet" href="static/common.css?v=3.1.834"&gt;
+    &lt;link rel="stylesheet" href="static/login.css?v=3.1.834"&gt;
+    &lt;script type="text/javascript"&gt;
+    hostname = "NAS";
+    httpPort = 8088;
+    httpsPort = 8089;
+    &lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;div id="page-wrapper" &gt;&lt;/div&gt;
+    &lt;script src="jsi18n?v=3.1.834"&gt;&lt;/script&gt;
+    &lt;script src="static/plugins/bowser.min.js"&gt;&lt;/script&gt;
+    &lt;script src="static/plugins/compatible.js?v=3.1.834"&gt;&lt;/script&gt;
+    &lt;script src="sta</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">8089</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">rtsp</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a><h5>fingerprint-strings</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  GetRequest, HTTPOptions: 
+    HTTP/1.0 200 OK
+    Vary: Cookie
+    Content-Type: text/html; charset=utf-8
+    Content-Language: en
+    &lt;!doctype html&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;!-- &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt; --&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;title&gt;Virtualization Station&lt;/title&gt;
+    &lt;link rel="shortcut icon" href="static/favicon.ico"&gt;
+    &lt;link rel="stylesheet" href="static/common.css?v=3.1.834"&gt;
+    &lt;link rel="stylesheet" href="static/login.css?v=3.1.834"&gt;
+    &lt;script type="text/javascript"&gt;
+    hostname = "NAS";
+    httpPort = 8088;
+    httpsPort = 8089;
+    &lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;div id="page-wrapper" &gt;&lt;/div&gt;
+    &lt;script src="jsi18n?v=3.1.834"&gt;&lt;/script&gt;
+    &lt;script src="static/plugins/bowser.min.js"&gt;&lt;/script&gt;
+    &lt;script src="static/plugins/compatible.js?v=3.1.834"&gt;&lt;/script&gt;
+    &lt;script src="sta</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">8200</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">upnp</td>
+<td title="Product">QNAP DLNA</td>
+<td title="Version">1.0</td>
+<td title="Extra Info">DLNADOC 1.50; UPnP 1.0</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:3.4.6">cpe:/o:linux:linux_kernel:3.4.6</a></td></tr>
+<tr class="success">
+<td title="Port">49152</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">upnp</td>
+<td title="Product">Portable SDK for UPnP devices</td>
+<td title="Version">1.6.22</td>
+<td title="Extra Info">Linux 4.2.8; UPnP 1.0</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:4.2.8">cpe:/o:linux:linux_kernel:4.2.8</a></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<h2 id="openservices" class="target">Open Services</h2>
+<div class="table-responsive"><table id="table-services" class="table table-striped dataTable" role="grid">
+<thead><tr>
+<th>Address</th>
+<th>Port</th>
+<th>Protocol</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>CPE</th>
+<th>Extra info</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>192.168.2.160</td>
+<td>22</td>
+<td>tcp</td>
+<td>ssh</td>
+<td>OpenSSH</td>
+<td>7.6p1 Ubuntu 4ubuntu0.1</td>
+<td>cpe:/a:openbsd:openssh:7.6p1</td>
+<td>Ubuntu Linux; protocol 2.0</td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>135</td>
+<td>tcp</td>
+<td>msrpc</td>
+<td>Microsoft Windows RPC</td>
+<td></td>
+<td>cpe:/o:microsoft:windows</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>139</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Microsoft Windows netbios-ssn</td>
+<td></td>
+<td>cpe:/o:microsoft:windows</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>445</td>
+<td>tcp</td>
+<td>microsoft-ds</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>902</td>
+<td>tcp</td>
+<td>vmware-auth</td>
+<td>VMware Authentication Daemon</td>
+<td>1.10</td>
+<td></td>
+<td>Uses VNC, SOAP</td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>912</td>
+<td>tcp</td>
+<td>vmware-auth</td>
+<td>VMware Authentication Daemon</td>
+<td>1.0</td>
+<td></td>
+<td>Uses VNC, SOAP</td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>999</td>
+<td>tcp</td>
+<td>garcon</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>5800</td>
+<td>tcp</td>
+<td>vnc-http</td>
+<td>TightVNC</td>
+<td></td>
+<td>cpe:/a:tightvnc:tightvnc</td>
+<td>user: acer-a715-72g-5; VNC TCP port: 5900</td>
+</tr>
+<tr>
+<td>192.168.2.198</td>
+<td>5900</td>
+<td>tcp</td>
+<td>vnc</td>
+<td>VNC</td>
+<td></td>
+<td></td>
+<td>protocol 3.8</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>53</td>
+<td>tcp</td>
+<td>domain</td>
+<td>dnsmasq</td>
+<td>2.55</td>
+<td>cpe:/a:thekelleys:dnsmasq:2.55</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>80</td>
+<td>tcp</td>
+<td>http</td>
+<td>lighttpd</td>
+<td></td>
+<td>cpe:/a:lighttpd:lighttpd</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>139</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Samba smbd</td>
+<td>3.X - 4.X</td>
+<td>cpe:/a:samba:samba</td>
+<td>workgroup: WORKGROUP</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>443</td>
+<td>tcp</td>
+<td>http</td>
+<td>lighttpd</td>
+<td></td>
+<td>cpe:/a:lighttpd:lighttpd</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>445</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Samba smbd</td>
+<td>3.X - 4.X</td>
+<td>cpe:/a:samba:samba</td>
+<td>workgroup: WORKGROUP</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>9000</td>
+<td>tcp</td>
+<td>upnp</td>
+<td>TwonkyMedia UPnP</td>
+<td></td>
+<td>cpe:/a:packetvideo:twonky</td>
+<td>Linux 2.X.X; UPnP 1.0; pvConnect SDK 1.0</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>22</td>
+<td>tcp</td>
+<td>ssh</td>
+<td>OpenSSH</td>
+<td>7.6</td>
+<td>cpe:/a:openbsd:openssh:7.6</td>
+<td>protocol 2.0</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>80</td>
+<td>tcp</td>
+<td>http</td>
+<td>Apache httpd</td>
+<td></td>
+<td>cpe:/a:php:php:5.6.38</td>
+<td>PHP 5.6.38</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>139</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Samba smbd</td>
+<td>4.6.2</td>
+<td>cpe:/a:samba:samba:4.6.2</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>443</td>
+<td>tcp</td>
+<td>http</td>
+<td>QNAP NAS http config</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>445</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Samba smbd</td>
+<td>4.6.2</td>
+<td>cpe:/a:samba:samba:4.6.2</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>548</td>
+<td>tcp</td>
+<td>afp</td>
+<td>Netatalk</td>
+<td>3.1.9</td>
+<td>cpe:/a:netatalk:netatalk:3.1.9</td>
+<td>name: NAS; protocol 3.4</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>631</td>
+<td>tcp</td>
+<td>ipp</td>
+<td>CUPS</td>
+<td>2.1</td>
+<td>cpe:/a:apple:cups:2.1</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>5001</td>
+<td>tcp</td>
+<td>http</td>
+<td>Apache httpd</td>
+<td></td>
+<td>cpe:/a:apache:http_server</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>5900</td>
+<td>tcp</td>
+<td>vnc</td>
+<td>VNC</td>
+<td></td>
+<td></td>
+<td>protocol 3.8</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>5901</td>
+<td>tcp</td>
+<td>vnc</td>
+<td>VNC</td>
+<td></td>
+<td></td>
+<td>protocol 3.8</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>8080</td>
+<td>tcp</td>
+<td>http</td>
+<td>Apache httpd</td>
+<td></td>
+<td>cpe:/a:apache:http_server</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>8081</td>
+<td>tcp</td>
+<td>http</td>
+<td>Apache httpd</td>
+<td></td>
+<td>cpe:/a:php:php:5.6.38</td>
+<td>PHP 5.6.38</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>8088</td>
+<td>tcp</td>
+<td>rtsp</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>8089</td>
+<td>tcp</td>
+<td>rtsp</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>8200</td>
+<td>tcp</td>
+<td>upnp</td>
+<td>QNAP DLNA</td>
+<td>1.0</td>
+<td>cpe:/o:linux:linux_kernel:3.4.6</td>
+<td>DLNADOC 1.50; UPnP 1.0</td>
+</tr>
+<tr>
+<td>192.168.2.2</td>
+<td>49152</td>
+<td>tcp</td>
+<td>upnp</td>
+<td>Portable SDK for UPnP devices</td>
+<td>1.6.22</td>
+<td>cpe:/o:linux:linux_kernel:4.2.8</td>
+<td>Linux 4.2.8; UPnP 1.0</td>
+</tr>
+</tbody>
+</table></div>
+<script>
+            $(document).ready(function() {
+              $('#table-services').DataTable();
+            });
+          </script>
+</div>
+<footer class="footer"><div class="container"><p class="text-muted">
+              This report was generated with <a href="https://github.com/honze-net/nmap-bootstrap-xsl">Nmap Bootstrap XSL</a>.<br>
+              Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons BY-SA</a>.<br>
+              Designed and built by Andreas Hontzia (<a href="https://www.twitter.com/honze_net">@honze_net</a>).<br></p></div></footer>
+</body>
+</html>
