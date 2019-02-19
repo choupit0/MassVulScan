@@ -1,0 +1,47 @@
+Debian/Ubuntu based installation with root user:
+
+-- xsltproc installation
+
+apt update
+apt install xsltproc
+
+Verification:
+xsltproc -V
+
+-- Masscan installation
+
+cd /tmp
+git clone https://github.com/robertdavidgraham/masscan.git
+cd masscan
+make
+mv bin/masscan /usr/bin/
+updatedb
+
+Verification:
+masscan -V
+
+-- Nmap installation
+
+cd /tmp
+wget https://nmap.org/dist/nmap-7.70.tgz
+tar -xvzf nmap-7.70.tgz
+
+./configure
+make
+make install
+updatedb
+
+Verification:
+nmap -V
+
+-- Vulners.nse Nmap Script installation
+
+cd /tmp
+git clone https://github.com/vulnersCom/nmap-vulners
+cp nmap-vulners/vulners.nse /usr/local/share/nmap/scripts/
+updatedb
+nmap --script-updatedb
+
+Verification:
+nmap -sV --script vulners <target>
+
