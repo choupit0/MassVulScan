@@ -29,7 +29,7 @@ Liste des paramètres/arguments disponibles :
 ```
 Par défaut le script ne scannera que les 1000 premiers ports TCP parmi les ports les plus courants. Vous pouvez retrouver la liste ici : /usr/local/share/nmap/nmap-services. De même, le taux ou le nombre de paquets par seconde est fixé à 5000 par défaut.
 
-Pour le format des fichiers, vous trouveres deux exemples dans le répertoire dédié :
+Pour le format des fichiers, vous trouverez deux exemples dans le répertoire dédié :
 ```
 root@ubuntu:~/audit/MassVulScan# cat example/hosts.txt
 # Private subnet
