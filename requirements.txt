@@ -25,7 +25,7 @@ masscan -V
 cd /tmp
 wget https://nmap.org/dist/nmap-7.70.tgz
 tar -xvzf nmap-7.70.tgz
-
+cd nmap-7.70
 ./configure
 make
 make install
