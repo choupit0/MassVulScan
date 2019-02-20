@@ -219,7 +219,6 @@ fi
 
 if [[ ! -s masscan-output.txt ]]; then
         echo -e ${green_color}"[!] No ip with open ports found, so, exit! ->"${end_color}
-	remove_rule
 	rm -rf masscan-output.txt
 	exit 0
 	else
