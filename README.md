@@ -54,10 +54,10 @@ Le script a seulement été testé sur Debian et Ubuntu mais devrait fonctionner
 # Limites
 Pour l'instant le script ne supporte que le scan des ports TCP.
 # Remarques / Astuces
-Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE de vulners.com. Il vous suffit pour cela de modifier la ligne numéro 255 du script comme ceci :
+Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier la ligne numéro 255 du script comme ceci :
 ```
 255         nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sT -sV -n --script vuln,vulners -oA ${nmap_temp}/${ip}_nmap-output ${ip}
 ```
-A noter que l'avantage d'utiliser le script NSE vulners.nse et qu'il interroge systématiquement la base de données du site de vulners.com, il s'agira donc des dernières données disponibles. De même, ce dernier effectue un classement et un trie des CVE identifiés, les plus sévères en haut de la liste, ce qui est bien pratique.
+A noter que l'avantage d'utiliser le script NSE vulners.nse est qu'il interroge systématiquement la base de données du site de vulners.com, il s'agira donc des dernières données disponibles. De même, ce dernier effectue un classement et un trie des CVE identifiées, les plus sévères en haut de la liste, ce qui est bien pratique.
 
 
