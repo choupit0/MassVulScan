@@ -10,7 +10,7 @@ Script Bash qui combine la puissance du scanner Masscan pour trouver des ports o
 - Nmap (https://nmap.org)
 - Script NSE vulners.nse (https://github.com/vulnersCom/nmap-vulners)
 
-Je vous invite à lire le fichier "requirements.txt" si vous avez des difficultés. Il vous indiquera la marche à suivre pour installer chacun des pré-requis.
+**Je vous invite à lire le fichier "requirements.txt" si vous avez des difficultés. Il vous indiquera la marche à suivre pour installer chacun des pré-requis.**
 # Fonctionnement
 Le script Bash utilisera en premier Masscan pour identifier les ports ouverts, le résultat est stocké dans un fichier. Ce fichier est ensuite parcouru afin de trier et rassembler tous les ports à scanner par host, c'est là le premier avantage de ce script. Par la suite, il y aura autant de sessions Nmap qui seront lancées qu'il y aura de hosts à scanner. Deuxième force du script, toutes ces sessions fonctionneront en parallèle. Une fois les phases de scan terminées, les hosts (potentiellement) vulnérables seront affichés à l'écran et un fichier TXT sera généré avec tous les détails. Pour finir, un magnifique rapport HTML sera créé contenant tous les détails pour chacun des hosts, vulérables ou non. Ce dernier utilise une feuille de style bootstrap (https://github.com/honze-net/nmap-bootstrap-xsl).
 # Comment l'utiliser ?
