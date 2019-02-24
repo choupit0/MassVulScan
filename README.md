@@ -53,7 +53,7 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Compatibilité
 Le script a seulement été testé sur Debian et Ubuntu mais devrait fonctionner sur la majorité des distributions Linux. Il fonctionne avec les protocoles TCP et UDP.
 # Remarques / Astuces
-Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier la ligne numéro 255 du script comme ceci :
+Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier la ligne numéro 255 du script et de remplacer "**--script vulners**" par "**--script vuln,vulners**" comme ceci :
 ```
 255         nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sT -sV -n --script vuln,vulners -oA ${nmap_temp}/${ip}_nmap-output ${ip}
 ```
