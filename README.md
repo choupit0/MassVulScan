@@ -38,6 +38,8 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Gateway
 192.168.2.254
 ```
+# Démo
+![Example Demo](demo/MassVulScan_Demo.gif)
 # Quelques captures d'écran
 ![Example Masscan](screenshots/Masscan.PNG)
 
