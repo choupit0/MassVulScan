@@ -2,20 +2,20 @@
 
 ############################################################################################################################
 # 
-# Script Name	: MassVulScan.sh
-# Description	:
+# Script Name   : MassVulScan.sh
+# Description   :
 #  This script combines the high processing speed to find open ports (MassScan),
 #  the effectiveness to identify open services versions and find potential CVE vulnerabilities (Nmap + vulners.nse script).
 #  A beautiful report (nmap-bootstrap.xsl) is generated containing all hosts found with open ports, and
 #  finally a text file including specifically the potential vulnerables hosts is created.
-# Author	: https://github.com/choupit0
-# Site		: https://hack2know.how/
-# Date		: 20190201
-# Version	: 1.0    
+# Author        : https://github.com/choupit0
+# Site          : https://hack2know.how/
+# Date          : 20190201
+# Version       : 1.1   
 # Usage         : ./MassVulScan.sh [[[-f file] [-e] file [-i] | [-h]]]
-# Requirements	: Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
-#		  Xsltproc package is also necessary.
-#		  Please, read the file "requirements.txt" if you need some help.
+# Requirements  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
+#                 Xsltproc package is also necessary.
+#                 Please, read the file "requirements.txt" if you need some help.
 #
 #############################################################################################################################
 
@@ -80,7 +80,7 @@ usage(){
         echo "                  # You can add a comment in the file"
         echo "                  10.10.4.0/24"
         echo "                  10.3.4.224"
-        echo -e ${bold_color}"          By default: the top 1000 ports are scanned with rate at 5K pkts/sec)."${end_color}
+        echo -e ${bold_color}"          By default: the top 1000 TCP/UDP ports are scanned with rate at 5K pkts/sec)."${end_color}
         echo -e ${yellow_color}"        -e | --exclude-file"${end_color}
         echo -e ${bold_color}"          (optional parameter)"${end_color}
         echo -e ${_color}"              Exclude file including IPv4 addresses (no hostname), compatible with subnet mask."${end_color}
@@ -91,7 +91,7 @@ usage(){
         echo -e ${yellow_color}"        -i | --interactive"${end_color}
         echo -e ${bold_color}"          (must be used in addition of \"-f\" parameter)"${end_color}
         echo "          Interactive menu with extra parameters:"
-        echo "                  - Ports to scan (Ex. -p1-65535."
+        echo "                  - Ports to scan (Ex. -p1-65535 (all TCP ports)."
         echo "                  - Rate level (pkts/sec)."
         echo -e ${yellow_color}"        -h | --help"${end_color}
         echo "          This help menu."
@@ -159,13 +159,15 @@ clear
 if [[ ${interactive} = "on" ]]; then
         echo -e ${yellow_color}"[I] We will use the input file: ${hosts}"${end_color}
         # Ports to scan?
-        echo -e ${blue_color}"Now, which TCP port(s) do you want to scan?"${end_color}
-        echo -e ${blue_color}"[default: --top-ports 1000 (TCP), just typing \"Enter|Return\" key to continue]?"${end_color}
+        echo -e ${blue_color}"Now, which TCP/UDP port(s) do you want to scan?"${end_color}
+        echo -e ${blue_color}"[default: --top-ports 1000 (TCP/UDP), just typing \"Enter|Return\" key to continue]?"${end_color}
         echo "(\"Top ports\" from list: /usr/local/share/nmap/nmap-services)"
         echo -e ${blue_color}"Usage example:"${end_color}
         echo "  -p20-25,80                      to scan TCP ports in the range 20-25 and port 80"
         echo "  -p20-25,80 --exclude-ports 26   same thing as before and remove a port in the range"
-        echo "  -p1-65535                       All TCP ports"
+        echo "  -p1-100,U:1-100                 to scan TCP and UDP range of ports"
+        echo "  -pU:1-100                       to scan only UDP range of ports"
+        echo "  -p1-65535,U:1-65535             all TCP AND UDP ports"
         read -p ">> " -r -t 60 ports_list
                 if [[ -z ${ports_list} ]];then
                         ports="--top-ports 1000"
@@ -205,7 +207,6 @@ fi
 
 if [[ $? != "0" ]]; then
 	echo -e ${error_color}"[X] ERROR! Thanks to verify your parameters or your input/exclude file format. The script is ended."${end_color}
-	remove_rule
 	exit 1
 fi
 
@@ -213,15 +214,16 @@ echo -e ${green_color}"[V] Masscan phase is ended."${end_color}
 
 if [[ -z masscan-output.txt ]]; then
 	echo -e ${error_color}"[X] ERROR! File \"masscan-output.txt\" disapeared! The script is ended."${end_color}
-	remove_rule
 	exit 1
 fi
 
 if [[ ! -s masscan-output.txt ]]; then
-        echo -e ${green_color}"[!] No ip with open ports found, so, exit! ->"${end_color}
+        echo -e ${green_color}"[!] No ip with open TCP/UDP ports found, so, exit! ->"${end_color}
 	rm -rf masscan-output.txt
 	exit 0
 	else
+		udp_ports="$(grep -c "^open udp" masscan-output.txt)"
+		tcp_ports="$(grep -c "^open tcp" masscan-output.txt)"
 		echo -e ${red_color}"Hosts with open port(s):"${end_color}
 		grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print "\t" i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
 fi
@@ -235,31 +237,48 @@ nb_hosts_nmap="$(grep ^open masscan-output.txt | cut -d" " -f4 | sort | uniq -c 
 echo -e ${yellow_color}"[I] ${nb_hosts_nmap} host(s) to scan concerning ${nb_ports} open ports"${end_color}
 echo -e ${blue_color}"[-] Launching Nmap scanner(s)...please, be patient!"${end_color}
 
+nmap_file(){
 # Preparing the input file for Nmap
+proto="$1"
+
 # Source of inspiration: http://www.whxy.org/book/mastering-kali-linux-advanced-pen-testing-2nd/text/part0103.html
-grep ^open masscan-output.txt | awk '/.+/ { \
+grep "^open ${proto}" masscan-output.txt | awk '/.+/ { \
 				if (!($4 in ips_list)) { \
 				value[++i] = $4 } ips_list[$4] = ips_list[$4] $3 "," } END { \
 				for (j = 1; j <= i; j++) { \
-				printf("%s:%s\n%s",  value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' > nmap-input.txt
+				printf("%s:%s\n%s",  value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' > nmap-input_${proto}.txt
+}
+
+if [[ ${udp_ports} > "0" ]]; then
+	nmap_file udp
+fi
+
+if [[ ${tcp_ports} > "0" ]]; then
+	nmap_file tcp
+fi
 
 # Directrory for temporary Nmap file(s)
 nmap_temp="$(mktemp -d /tmp/nmap_temp-XXXXXXXX)"
 
 # Function for parallel Nmap scans
 parallels_scans(){
-	ip="$(echo ${1} | cut -d":" -f1)"
-	port="$(echo ${1} | cut -d":" -f2)"
-	
-	nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sT -sV -n --script vulners -oA ${nmap_temp}/${ip}_nmap-output ${ip}
+ip="$(echo ${1} | cut -d":" -f1)"
+port="$(echo ${1} | cut -d":" -f2)"
+
+if [[ $2 == "nmap-input_tcp.txt" ]]; then
+	nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sT -sV -n --script vulners -oA ${nmap_temp}/${ip}_tcp_nmap-output ${ip}
+	else
+		nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sU -sV -n --script vulners -oA ${nmap_temp}/${ip}_udp_nmap-output ${ip}
+fi
 }
 
-# We are launching all the Nmap scanners in the same time
-while IFS= read -r nmap_scan; do
-	parallels_scans "${nmap_scan}" &
-done < nmap-input.txt
-
-wait
+for file in nmap-input_*.txt; do
+	# We are launching all the Nmap scanners in the same time
+	while IFS= read -r ip_to_scan; do
+		parallels_scans ${ip_to_scan} $file &
+	done < $file
+	wait
+done
 
 reset
 
@@ -321,6 +340,6 @@ xsltproc -o nmap-output_${date}.html ${nmap_bootstrap} nmap-output.xml 2>/dev/nu
 # End of script
 echo -e ${yellow_color}"[I] Global HTML report generated: nmap-output_${date}.html, bye!"${end_color}
 
-rm -rf nmap-input.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml ${nmap_temp}
+rm -rf nmap-input_udp.txt nmap-input_tcp.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml ${nmap_temp} 2>/dev/null
 
 exit 0
