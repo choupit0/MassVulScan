@@ -53,8 +53,16 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Compatibilité
 Le script a seulement été testé sur Debian et Ubuntu mais devrait fonctionner sur la majorité des distributions Linux. Il fonctionne avec les protocoles TCP et UDP.
 # Remarques / Astuces
-Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier la ligne numéro 255 du script et de remplacer "**--script vulners**" par "**--script vuln,vulners**" comme ceci :
+Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier les lignes portant les numéros 269 et 271 du script et de remplacer "**--script vulners**" par "**--script vuln,vulners**" comme ceci :
 ```
-255         nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sT -sV -n --script vuln,vulners -oA ${nmap_temp}/${ip}_nmap-output ${ip}
+264 parallels_scans(){
+265 ip="$(echo ${1} | cut -d":" -f1)"
+266 port="$(echo ${1} | cut -d":" -f2)"
+267
+268 if [[ $2 == "nmap-input_tcp.txt" ]]; then
+269         nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sT -sV -n --script vuln,vulners -oA ${nmap_temp}/${ip}_tcp_nmap-output ${ip}
+270         else
+271                 nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sU -sV -n --script vuln,vulners -oA ${nmap_temp}/${ip}_udp_nmap-output ${ip}
+272 fi
 ```
 A noter que l'avantage d'utiliser le script NSE vulners.nse est qu'il interroge systématiquement la base de données du site de vulners.com, il s'agira donc des dernières données disponibles. De même, ce dernier effectue un classement et un trie des CVE identifiées, les plus sévères en haut de la liste, ce qui est bien pratique.
