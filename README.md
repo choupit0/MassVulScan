@@ -27,7 +27,7 @@ Liste des paramètres/arguments disponibles :
 -e [exclude file] = paramètre optionnel afin d'exclure une liste de réseaux/hosts à scanner
 -i (interactive mode) = paramètre optionnel pour choisir les ports à scanner et la vitesse (pkts/sec Masscan)
 ```
-Par défaut le script ne scannera que les 1000 premiers ports TCP parmi les ports les plus courants. Vous pouvez retrouver la liste ici : /usr/local/share/nmap/nmap-services. De même, le taux ou le nombre de paquets par seconde est fixé à 5000 par défaut.
+Par défaut le script ne scannera que les 1000 premiers ports TCP/UDP parmi les ports les plus courants. Vous pouvez retrouver la liste ici : /usr/local/share/nmap/nmap-services. De même, le taux ou le nombre de paquets par seconde est fixé à 5000 par défaut.
 
 Pour le format des fichiers, vous trouverez deux exemples dans le répertoire dédié :
 ```
@@ -48,16 +48,11 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 ![Example Vulnerable-hosts](screenshots/Ex-vulnerable-host-found.PNG)
 
 ![Example HTML](screenshots/HTML.PNG)
-
-# OS compatibles
-Le script a seulement été testé sur Debian et Ubuntu mais devrait fonctionner sur la majorité des distributions Linux.
-# Limites
-Pour l'instant le script ne supporte que le scan des ports TCP.
+# Compatibilité
+Le script a seulement été testé sur Debian et Ubuntu mais devrait fonctionner sur la majorité des distributions Linux. Il fonctionne avec les protocoles TCP et UDP.
 # Remarques / Astuces
 Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier la ligne numéro 255 du script comme ceci :
 ```
 255         nmap --max-retries 2 --max-rtt-timeout 500ms -p${port} -Pn -sT -sV -n --script vuln,vulners -oA ${nmap_temp}/${ip}_nmap-output ${ip}
 ```
 A noter que l'avantage d'utiliser le script NSE vulners.nse est qu'il interroge systématiquement la base de données du site de vulners.com, il s'agira donc des dernières données disponibles. De même, ce dernier effectue un classement et un trie des CVE identifiées, les plus sévères en haut de la liste, ce qui est bien pratique.
-
-
