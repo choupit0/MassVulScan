@@ -280,7 +280,7 @@ for file in nmap-input_*.txt; do
 	wait
 done
 
-clear
+reset
 
 echo -e ${green_color}"[V] Nmap phase is ended."${end_color}
 
