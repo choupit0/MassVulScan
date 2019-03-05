@@ -66,3 +66,4 @@ Le script est également compatible avec l'option "vuln" de Nmap permettant de r
 272 fi
 ```
 A noter que l'avantage d'utiliser le script NSE vulners.nse est qu'il interroge systématiquement la base de données du site de vulners.com, il s'agira donc des dernières données disponibles. De même, ce dernier effectue un classement et un trie des CVE identifiées, les plus sévères en haut de la liste, ce qui est bien pratique.
+Dernière chose, tapez sur la touche "D" (= debug) durant les phases de scans nmap si vous voulez voir ce qui se passe.
