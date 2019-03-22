@@ -11,7 +11,7 @@
 # Author        : https://github.com/choupit0
 # Site          : https://hack2know.how/
 # Date          : 20190201
-# Version       : 1.1   
+# Version       : 1.2   
 # Usage         : ./MassVulScan.sh [[[-f file] [-e] file [-i] | [-h]]]
 # Requirements  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                 Xsltproc package is also necessary.
@@ -200,9 +200,9 @@ echo -e "${yellow_color}""[I] ${nb_hosts_masscan} ip(s) or subnet(s) to check.""
 echo -e "${blue_color}""[-] Verifying Masscan parameters and running the tool...please, be patient!""${end_color}"	
 
 if [[ ${exclude_file} = "" ]]; then
-	sudo masscan --open "${ports}" --source-port 40000 -iL "${hosts}" --max-rate "${rate}" -oL masscan-output.txt
+	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" --max-rate "${rate}" -oL masscan-output.txt
 	else
-		sudo masscan --open "${ports}" --source-port 40000 -iL "${hosts}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
+		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
 fi
 
 if [[ $? != "0" ]]; then
@@ -293,7 +293,7 @@ date="$(date +%F_%H-%M-%S)"
 
 # Verifying vulnerable hosts
 vuln_hosts_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep "Nmap" | sort -u | grep -c "Nmap")"
-vuln_ports_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep -Eoc '(/udp open|/tcp open)')"
+vuln_ports_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep -Eoc '(/udp.*open|/tcp.*open)')"
 
 if [[ ${vuln_hosts_count} != "0" ]]; then
 	vuln_hosts="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done)"
