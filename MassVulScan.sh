@@ -10,8 +10,8 @@
 #  finally a text file including specifically the potential vulnerables hosts is created.
 # Author        : https://github.com/choupit0
 # Site          : https://hack2know.how/
-# Date          : 20190201
-# Version       : 1.2   
+# Date          : 20190605
+# Version       : 1.3   
 # Usage         : ./MassVulScan.sh [[[-f file] [-e] file [-i] | [-h]]]
 # Requirements  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                 Xsltproc package is also necessary.
@@ -19,6 +19,7 @@
 #
 #############################################################################################################################
 
+version="1.3"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -93,6 +94,8 @@ usage(){
         echo "          Interactive menu with extra parameters:"
         echo "                  - Ports to scan (Ex. -p1-65535 (all TCP ports)."
         echo "                  - Rate level (pkts/sec)."
+        echo -e "${yellow_color}""        -v | --version""${end_color}"
+        echo "          Script version."
         echo -e "${yellow_color}""        -h | --help""${end_color}"
         echo "          This help menu."
         echo ""
@@ -123,7 +126,11 @@ while [[ "$1" != "" ]]; do
                         usage
                         exit 0
                         ;;
-                * )
+                -v | --version )
+                        echo -e "${green_color}""[i] Script version is: "${bold_color}"${version}""${end_color}"
+                        exit 0
+                        ;;
+               * )
                         usage
                         exit 1
         esac
@@ -191,12 +198,29 @@ if [[ ${interactive} = "on" ]]; then
                 rate="5000"
 fi
 
-################
-# Masscan part #
-################
+##################################################
+# 1) First analysis with Nmap to find live hosts #
+##################################################
 
-nb_hosts_masscan="$(grep -cv ^"#" "${hosts}")"
-echo -e "${yellow_color}""[I] ${nb_hosts_masscan} ip(s) or subnet(s) to check.""${end_color}"
+echo -e "${blue_color}""[-] Verifying how many hosts are online...please, be patient!""${end_color}"	
+nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${hosts}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > temp-nmap-output
+
+if [[ $? != "0" ]]; then
+	echo -e "${error_color}""[X] ERROR! Thanks to verify your parameters or your input/exclude file format. The script is ended.""${end_color}"
+	rm -rf temp-nmap-output
+	exit 1
+fi
+
+echo -e "${green_color}""[V] Phase 1/4 is ended.""${end_color}"
+
+hosts="temp-nmap-output"
+
+#######################################
+# 2) Using Masscan to find open ports #
+#######################################
+
+nb_hosts_masscan="$(< "${hosts}" wc -l)"
+echo -e "${yellow_color}""[I] ${nb_hosts_masscan} ip(s) to check.""${end_color}"
 echo -e "${blue_color}""[-] Verifying Masscan parameters and running the tool...please, be patient!""${end_color}"	
 
 if [[ ${exclude_file} = "" ]]; then
@@ -207,10 +231,11 @@ fi
 
 if [[ $? != "0" ]]; then
 	echo -e "${error_color}""[X] ERROR! Thanks to verify your parameters or your input/exclude file format. The script is ended.""${end_color}"
+	rm -rf masscan-output.txt
 	exit 1
 fi
 
-echo -e "${green_color}""[V] Masscan phase is ended.""${end_color}"
+echo -e "${green_color}""[V] Phase 2/4 is ended.""${end_color}"
 
 if [[ -z masscan-output.txt ]]; then
 	echo -e "${error_color}""[X] ERROR! File \"masscan-output.txt\" disapeared! The script is ended.""${end_color}"
@@ -228,9 +253,9 @@ if [[ ! -s masscan-output.txt ]]; then
 		grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print "\t" i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
 fi
 
-#############
-# Nmap part #
-#############
+##########################################################################################
+# 3) Identifying open services with Nmap and if they are vulnerable with vulners script #
+##########################################################################################
 
 nb_ports="$(grep -c ^open masscan-output.txt)"
 nb_hosts_nmap="$(grep ^open masscan-output.txt | cut -d" " -f4 | sort | uniq -c | wc -l)"
@@ -282,11 +307,11 @@ done
 
 reset
 
-echo -e "${green_color}""[V] Nmap phase is ended.""${end_color}"
+echo -e "${green_color}""[V] Phase 3/4 is ended.""${end_color}"
 
-###############
-# Report part #
-###############
+#########################
+# 4) Generating reports #
+#########################
 
 nmap_bootstrap="./nmap-bootstrap.xsl"
 date="$(date +%F_%H-%M-%S)"
@@ -318,7 +343,7 @@ if [[ ${vuln_hosts_count} != "0" ]]; then
 	echo -e "${yellow_color}""[I] All details on the vulnerabilities in TXT file: vulnerable_hosts_details_${date}.txt""${end_color}"
 	
 	else
-		echo -e "${green_color}""[V] No vulnerable host found... at first sight!""${end_color}"
+		echo -e "${green_color}""[V] No vulnerable host found... at first sight! Script ended.""${end_color}"
 fi
 
 # Merging all the Nmap XML files to one big XML file
@@ -340,8 +365,9 @@ echo "<runstats><finished elapsed=\"\" exit=\"success\" summary=\"Nmap XML merge
 xsltproc -o nmap-output_"${date}".html "${nmap_bootstrap}" nmap-output.xml 2>/dev/null
 
 # End of script
-echo -e "${yellow_color}""[I] Global HTML report generated: nmap-output_${date}.html, bye!""${end_color}"
+echo -e "${yellow_color}""[I] Global HTML report generated: nmap-output_${date}.html""${end_color}"
+echo -e "${green_color}""[V] Last phase 4/4 is ended, bye!""${end_color}"
 
-rm -rf nmap-input_udp.txt nmap-input_tcp.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
+rm -rf temp-nmap-output nmap-input_udp.txt nmap-input_tcp.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
 
 exit 0
