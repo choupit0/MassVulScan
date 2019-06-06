@@ -16,7 +16,7 @@ Déroulement du script :
 1) Identification express des hosts qui sont en ligne (nmap)
 2) Pour chacun de ces hosts, identification extrêment rapide des ports TCP/UDP ouverts (masscan)
 3) Le résultat (fichier) est trié afin de rassembler tous les ports à scanner par host
-4) Identificaton des services et vulnérabilités, multiples sessions (nmap) en parallèle, une session par host
+4) Identificaton des services et vulnérabilités, multiples sessions (nmap + vulners.nse) en parallèle, une session par host
 5) Affichage des hosts (potentiellement) vulnérables à l'écran en fin de script
 6) Génération de deux rappports : un rapport HTML global sera créé contenant tous les détails pour chacun des hosts, vulérables ou non et un fichier TXT permettant de se concentrer sur les hosts (potentiellement) vulnérables avec les détails
 
