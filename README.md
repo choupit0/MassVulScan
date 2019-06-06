@@ -12,7 +12,15 @@ Script Bash qui combine la puissance du scanner Masscan pour trouver des ports o
 
 **Je vous invite à lire le fichier "requirements.txt" si vous avez des difficultés. Il vous indiquera la marche à suivre pour installer chacun des pré-requis.**
 # Fonctionnement
-Le script Bash utilisera en premier Nmap pour identifier rapidement les hosts qui sont en ligne. Ensuite Masscan identifiera les ports ouverts, le résultat sera stocké dans un fichier. Ce fichier est ensuite parcouru afin de trier et rassembler tous les ports à scanner par host, c'est là le premier avantage de ce script. Par la suite, il y aura autant de sessions Nmap qui seront lancées qu'il y aura de hosts à scanner. Deuxième force du script, toutes ces sessions fonctionneront en parallèle. Une fois les phases de scan terminées, les hosts (potentiellement) vulnérables seront affichés à l'écran et un fichier TXT sera généré avec tous les détails. Pour finir, un magnifique rapport HTML sera créé contenant tous les détails pour chacun des hosts, vulérables ou non. Ce dernier utilise une feuille de style bootstrap (https://github.com/honze-net/nmap-bootstrap-xsl).
+Déroulement du script :
+1) Identification express des hosts qui sont en ligne (nmap)
+2) Pour chacun de ces hosts, identification extrêment rapide des ports TCP/UDP ouverts (masscan)
+3) Le résultat (fichier) est trié afin de rassembler tous les ports à scanner par host
+4) Identificaton des services et vulnérabilités, multiples sessions (nmap) en parallèle, une session par host
+5) Affichage des hosts (potentiellement) vulnérables à l'écran en fin de script
+6) Génération de deux rappports : un rapport HTML global sera créé contenant tous les détails pour chacun des hosts, vulérables ou non et un fichier TXT permettant de se concentrer sur les hosts (potentiellement) vulnérables avec les détails
+
+Le rapport HTML utilise une feuille de style bootstrap (https://github.com/honze-net/nmap-bootstrap-xsl) pour plus de confort.
 # Comment l'utiliser ?
 Il suffit d'indiquer en paramètre (-f|--include-file) le fichier contenant une liste de réseaux/hosts à scanner :
 ```
