@@ -33,7 +33,8 @@ Liste des paramètres/arguments disponibles :
 ```
 -f [input file] = paramètre obligatoire qui contiendra la liste des réseaux/hosts à scanner
 -e [exclude file] = paramètre optionnel afin d'exclure une liste de réseaux/hosts à scanner
--i (interactive mode) = paramètre optionnel pour choisir les ports à scanner et la vitesse (pkts/sec Masscan)
+-i (interactive mode) = paramètre optionnel pour choisir les ports à scanner et la vitesse (pkts/sec)
+-c (check) = paramètre optionnel pour trouver les hosts en ligne (pré-scan) et ne scanner que ceux-là
 ```
 Par défaut le script ne scannera que les 1000 premiers ports TCP/UDP parmi les ports les plus courants. Vous pouvez retrouver la liste ici : /usr/local/share/nmap/nmap-services. De même, le taux ou le nombre de paquets par seconde est fixé à 5000 par défaut.
 
