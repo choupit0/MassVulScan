@@ -56,6 +56,7 @@ fi
 hosts="$1"
 exclude_file=""
 interactive="off"
+check="off"
 
 # Logo
 logo(){
@@ -73,7 +74,7 @@ fi
 # Usage of script
 usage(){
         logo
-        echo -e "${blue_color}""${bold_color}""[-] Usage: Root user or sudo${end_color} ./$(basename "$0") [[[-f file] [-e file] [-i] | [-h]]]""${end_color}"
+        echo -e "${blue_color}""${bold_color}""[-] Usage: Root user or sudo${end_color} ./$(basename "$0") [[[-f file] [-e file] [-i] [-c] | [-v] [-h]]]""${end_color}"
         echo -e "${yellow_color}""        -f | --include-file""${end_color}"
         echo -e "${bold_color}""          (mandatory parameter)""${end_color}"
         echo "          Input file including IPv4 addresses (no hostname) to scan, compatible with subnet mask."
@@ -81,7 +82,7 @@ usage(){
         echo "                  # You can add a comment in the file"
         echo "                  10.10.4.0/24"
         echo "                  10.3.4.224"
-        echo -e "${bold_color}""          By default: the top 1000 TCP/UDP ports are scanned with rate at 5K pkts/sec).""${end_color}"
+        echo -e "${bold_color}""          By default: the top 1000 TCP/UDP ports are scanned with rate at 5K pkts/sec.""${end_color}"
         echo -e "${yellow_color}""        -e | --exclude-file""${end_color}"
         echo -e "${bold_color}""          (optional parameter)""${end_color}"
         echo "          Exclude file including IPv4 addresses (no hostname) do not scan, compatible with subnet mask."
@@ -94,6 +95,10 @@ usage(){
         echo "          Interactive menu with extra parameters:"
         echo "                  - Ports to scan (Ex. -p1-65535 (all TCP ports)."
         echo "                  - Rate level (pkts/sec)."
+        echo -e "${yellow_color}""        -c | --check""${end_color}"
+        echo -e "${bold_color}""          (optional parameter)""${end_color}"
+        echo "          Perform a pre-scanning to identify online hosts and scan only them."
+        echo "          By default, all the IPs addresses will be tested, even if the host is unreachable."
         echo -e "${yellow_color}""        -v | --version""${end_color}"
         echo "          Script version."
         echo -e "${yellow_color}""        -h | --help""${end_color}"
@@ -121,6 +126,9 @@ while [[ "$1" != "" ]]; do
                         ;;
                 -i | --interactive )
                         interactive="on"
+                        ;;
+                -c | --check )
+                        check="on"
                         ;;
                 -h | --help )
                         usage
@@ -202,25 +210,28 @@ fi
 # 1) First analysis with Nmap to find live hosts #
 ##################################################
 
-echo -e "${blue_color}""[-] Verifying how many hosts are online...please, be patient!""${end_color}"	
-nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${hosts}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > temp-nmap-output
+if [[ ${check} = "on" ]]; then
 
-if [[ $? != "0" ]]; then
-	echo -e "${error_color}""[X] ERROR! Thanks to verify your parameters or your input/exclude file format. The script is ended.""${end_color}"
-	rm -rf temp-nmap-output
-	exit 1
-fi
+	echo -e "${blue_color}""[-] Verifying how many hosts are online...please, be patient!""${end_color}"	
+	nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${hosts}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > temp-nmap-output
+		if [[ $? != "0" ]]; then
+			echo -e "${error_color}""[X] ERROR! Thanks to verify your parameters or your input/exclude file format.""${end_color}"
+			echo -e "${error_color}""[X] ERROR! Or maybe there is no host detected online. The script is ended.""${end_color}"
+			rm -rf temp-nmap-output
+			exit 1
+		fi
 
-echo -e "${green_color}""[V] Phase 1/4 is ended.""${end_color}"
-
+echo -e "${green_color}""[V] Pre-scanning phase is ended.""${end_color}"
 hosts="temp-nmap-output"
+nb_hosts_nmap="$(< "${hosts}" wc -l)"
+echo -e "${yellow_color}""[I] ${nb_hosts_nmap} ip(s) to check.""${end_color}"
+
+fi
 
 #######################################
 # 2) Using Masscan to find open ports #
 #######################################
 
-nb_hosts_masscan="$(< "${hosts}" wc -l)"
-echo -e "${yellow_color}""[I] ${nb_hosts_masscan} ip(s) to check.""${end_color}"
 echo -e "${blue_color}""[-] Verifying Masscan parameters and running the tool...please, be patient!""${end_color}"	
 
 if [[ ${exclude_file} = "" ]]; then
@@ -235,7 +246,7 @@ if [[ $? != "0" ]]; then
 	exit 1
 fi
 
-echo -e "${green_color}""[V] Phase 2/4 is ended.""${end_color}"
+echo -e "${green_color}""[V] Masscan phase is ended.""${end_color}"
 
 if [[ -z masscan-output.txt ]]; then
 	echo -e "${error_color}""[X] ERROR! File \"masscan-output.txt\" disapeared! The script is ended.""${end_color}"
@@ -307,7 +318,7 @@ done
 
 reset
 
-echo -e "${green_color}""[V] Phase 3/4 is ended.""${end_color}"
+echo -e "${green_color}""[V] Nmap phase is ended.""${end_color}"
 
 #########################
 # 4) Generating reports #
@@ -366,7 +377,7 @@ xsltproc -o nmap-output_"${date}".html "${nmap_bootstrap}" nmap-output.xml 2>/de
 
 # End of script
 echo -e "${yellow_color}""[I] Global HTML report generated: nmap-output_${date}.html""${end_color}"
-echo -e "${green_color}""[V] Last phase 4/4 is ended, bye!""${end_color}"
+echo -e "${green_color}""[V] Report phase is ended, bye!""${end_color}"
 
 rm -rf temp-nmap-output nmap-input_udp.txt nmap-input_tcp.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
 
