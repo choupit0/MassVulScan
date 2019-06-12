@@ -10,8 +10,8 @@
 #  finally a text file including specifically the potential vulnerables hosts is created.
 # Author        : https://github.com/choupit0
 # Site          : https://hack2know.how/
-# Date          : 20190605
-# Version       : 1.3   
+# Date          : 20190612
+# Version       : 1.4   
 # Usage         : ./MassVulScan.sh [[[-f file] [-e] file [-i] | [-h]]]
 # Requirements  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                 Xsltproc package is also necessary.
@@ -19,7 +19,7 @@
 #
 #############################################################################################################################
 
-version="1.3"
+version="1.4"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
