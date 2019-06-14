@@ -10,8 +10,8 @@
 #  finally a text file including specifically the potential vulnerables hosts is created.
 # Author        : https://github.com/choupit0
 # Site          : https://hack2know.how/
-# Date          : 20190612
-# Version       : 1.4   
+# Date          : 20190614
+# Version       : 1.5
 # Usage         : ./MassVulScan.sh [[[-f file] [-e] file [-i] | [-h]]]
 # Requirements  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                 Xsltproc package is also necessary.
@@ -19,7 +19,7 @@
 #
 #############################################################################################################################
 
-version="1.4"
+version="1.5"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -206,6 +206,30 @@ if [[ ${interactive} = "on" ]]; then
                 rate="5000"
 fi
 
+################################################
+# Checking if there are more than 2 interfaces #
+################################################
+
+interface="$(ip route | grep default | cut -d" " -f5)"
+nb_interfaces="$(ifconfig | grep "[[:space:]]Link" | grep -co "^[[:alnum:]]*")"
+
+if [[ ${nb_interfaces} > "2" ]]; then
+	interfaces_list="$(ifconfig | grep "[[:space:]]Link" | grep -o "^[[:alnum:]]*")"
+	interfaces_tab=(${interfaces_list})
+	echo -e "${blue_color}"""${bold_color}"Warning: multiple network interfaces have been detected:""${end_color}"
+	interfaces_loop="$(for index in ${!interfaces_tab[@]}; do echo "${index}) ${interfaces_tab[${index}]}"; done)"
+	echo -e "${blue_color}""${interfaces_loop}""${end_color}"
+	echo -e "${blue_color}""Which one do you want to use? [choose the corresponding number to the interface name]""${end_color}"
+	echo -e "${blue_color}""(or typing \"Enter|Return\" key to use the one corresponding to the default route]""${end_color}"
+        read -p ">> " -r -t 60 interface_number
+                if [[ -z ${interface_number} ]];then
+        		echo -e "${yellow_color}""No interface chosen...the script will use the one with the default route.""${end_color}"
+                        else
+                                interface="${interfaces_tab[${interface_number}]}"
+                fi
+        echo -e "${yellow_color}""[I] Network interface chosen: ${interface}""${end_color}"
+fi
+
 ##################################################
 # 1) First analysis with Nmap to find live hosts #
 ##################################################
@@ -213,7 +237,7 @@ fi
 if [[ ${check} = "on" ]]; then
 
 	echo -e "${blue_color}""[-] Verifying how many hosts are online...please, be patient!""${end_color}"	
-	nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${hosts}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > temp-nmap-output
+	nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${hosts}" -e "${interface}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > temp-nmap-output
 		if [[ $? != "0" ]]; then
 			echo -e "${error_color}""[X] ERROR! Thanks to verify your parameters or your input/exclude file format.""${end_color}"
 			echo -e "${error_color}""[X] ERROR! Or maybe there is no host detected online. The script is ended.""${end_color}"
@@ -235,9 +259,9 @@ fi
 echo -e "${blue_color}""[-] Verifying Masscan parameters and running the tool...please, be patient!""${end_color}"	
 
 if [[ ${exclude_file} = "" ]]; then
-	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" --max-rate "${rate}" -oL masscan-output.txt
+	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
 	else
-		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
+		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
 fi
 
 if [[ $? != "0" ]]; then
@@ -302,9 +326,9 @@ ip="$(echo "$1" | cut -d":" -f1)"
 port="$(echo "$1" | cut -d":" -f2)"
 
 if [[ $2 == "nmap-input_tcp.txt" ]]; then
-	nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_tcp_nmap-output "${ip}"
+	nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_tcp_nmap-output "${ip}" -e "${interface}"
 	else
-		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_udp_nmap-output "${ip}"
+		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_udp_nmap-output "${ip}" -e "${interface}"
 fi
 }
 
