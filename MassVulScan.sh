@@ -237,7 +237,7 @@ fi
 if [[ ${check} = "on" ]]; then
 
 	echo -e "${blue_color}""[-] Verifying how many hosts are online...please, be patient!""${end_color}"	
-	nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${hosts}" -e "${interface}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > temp-nmap-output
+	nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${hosts}" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > temp-nmap-output
 		if [[ $? != "0" ]]; then
 			echo -e "${error_color}""[X] ERROR! Thanks to verify your parameters or your input/exclude file format.""${end_color}"
 			echo -e "${error_color}""[X] ERROR! Or maybe there is no host detected online. The script is ended.""${end_color}"
@@ -326,9 +326,9 @@ ip="$(echo "$1" | cut -d":" -f1)"
 port="$(echo "$1" | cut -d":" -f2)"
 
 if [[ $2 == "nmap-input_tcp.txt" ]]; then
-	nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_tcp_nmap-output "${ip}" -e "${interface}"
+	nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_tcp_nmap-output "${ip}"
 	else
-		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_udp_nmap-output "${ip}" -e "${interface}"
+		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_udp_nmap-output "${ip}"
 fi
 }
 
