@@ -10,8 +10,8 @@
 #  finally a text file including specifically the potential vulnerables hosts is created.
 # Author        : https://github.com/choupit0
 # Site          : https://hack2know.how/
-# Date          : 20190614
-# Version       : 1.5
+# Date          : 20190626
+# Version       : 1.6
 # Usage         : ./MassVulScan.sh [[[-f file] [-e] file [-i] | [-h]]]
 # Requirements  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                 Xsltproc package is also necessary.
@@ -19,7 +19,7 @@
 #
 #############################################################################################################################
 
-version="1.5"
+version="1.6"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -211,10 +211,10 @@ fi
 ################################################
 
 interface="$(ip route | grep default | cut -d" " -f5)"
-nb_interfaces="$(ifconfig | grep "[[:space:]]Link" | grep -co "^[[:alnum:]]*")"
+nb_interfaces="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -co "^[[:alnum:]]*")"
 
 if [[ ${nb_interfaces} > "2" ]]; then
-	interfaces_list="$(ifconfig | grep "[[:space:]]Link" | grep -o "^[[:alnum:]]*")"
+	interfaces_list="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -o "^[[:alnum:]]*")"
 	interfaces_tab=(${interfaces_list})
 	echo -e "${blue_color}"""${bold_color}"Warning: multiple network interfaces have been detected:""${end_color}"
 	interfaces_loop="$(for index in ${!interfaces_tab[@]}; do echo "${index}) ${interfaces_tab[${index}]}"; done)"
