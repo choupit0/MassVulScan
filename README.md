@@ -11,6 +11,13 @@ Bash script which combines the power of the Masscan scanner to find open ports, 
 - NSE script vulners.nse (https://github.com/vulnersCom/nmap-vulners)
 
 **I invite you to read the file "requirements.txt" if you have difficulties. It will tell you how to install each of the prerequisites.**
+
+A new feature in version v1.7 of the script will install for you all the prerequisites necessary for the script. Only Debian OS family is currently compatible.
+This feature has been validated on the following 64bit OS (2 core CPU and 2GB RAM ~12 minutes):
+- Debian 10.0
+- Elementary 5.0
+- LinuxMint 19.1
+- Ubuntu 19.04
 # How the script works?
 The main steps of the script:
 1) Express identification of hosts that are online (nmap)
@@ -47,6 +54,7 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Gateway
 192.168.2.254
 ```
+**Note that the script will detect along the way if you are using multiple network interfaces. This is important for Masscan, which will always default to the interface that has the default route. You will be asked to choose one (no problem with Nmap).**
 # GIF Demo
 ![Example Demo](demo/MassVulScan_Demo.gif)
 # Some screenshots
@@ -60,7 +68,7 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 
 ![Example HTML](screenshots/HTML.PNG)
 # Compatibility
-The script has only been tested on Debian and Ubuntu but should work on most Linux distributions. It works with TCP and UDP protocols.
+The script has only been tested on Debian family OS but should work on most Linux distributions (except for prerequisites installation). It can detect open ports on TCP and UDP protocols.
 # Notes / Tips
 The script is also compatible with Nmap's "Vuln" option to search for more vulnerabilities (the better known as ms17-010, EternalBlue) in addition to the CVEs identified from vulners.com. All you have to do is modify the lines of the script containing "**--script vulners**" and replace with "**--script vuln,vulners**".
 With the VI editor it's very simple:
