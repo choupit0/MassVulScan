@@ -2,24 +2,25 @@
 
 ############################################################################################################################
 # 
-# Script Name   : MassVulScan.sh
-# Description   :
-#  This script combines the high processing speed to find open ports (MassScan),
-#  the effectiveness to identify open services versions and find potential CVE vulnerabilities (Nmap + vulners.nse script).
-#  A beautiful report (nmap-bootstrap.xsl) is generated containing all hosts found with open ports, and
-#  finally a text file including specifically the potential vulnerables hosts is created.
-# Author        : https://github.com/choupit0
-# Site          : https://hack2know.how/
-# Date          : 20190626
-# Version       : 1.6
-# Usage         : ./MassVulScan.sh [[[-f file] [-e] file [-i] | [-h]]]
-# Requirements  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
-#                 Xsltproc package is also necessary.
-#                 Please, read the file "requirements.txt" if you need some help.
+# Script Name    : MassVulScan.sh
+# Description    : This script combines the high processing speed to find open ports (MassScan), the effectiveness
+#                  to identify open services versions and find potential CVE vulnerabilities (Nmap + vulners.nse script).
+#                  A beautiful report (nmap-bootstrap.xsl) is generated containing all hosts found with open ports,
+#                  and finally a text file including specifically the potential vulnerables hosts is created.
+# Author         : https://github.com/choupit0
+# Site           : https://hack2know.how/
+# Date           : 20190709
+# Version        : 1.7
+# Usage          : ./MassVulScan.sh [[[-f file] [-e] file [-i] [-c] | [-v] [-h]]]
+# Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
+#                  Xsltproc package is also necessary.
+#                  Please, read the file "requirements.txt" if you need some help.
+#                  With a popular OS from Debian OS family (e.g. Debian, Ubuntu, Linux Mint and Elementary),
+#                  the installation of these prerequisites is automatic.
 #
 #############################################################################################################################
 
-version="1.6"
+version="1.7"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -28,12 +29,151 @@ blue_color="\033[0;36m"
 bold_color="\033[1m"
 end_color="\033[0m"
 
-# Checking requirements
-if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.nse) ]] || [[ ! $(which xsltproc) ]]; then
-	echo -e "${red_color}""[X] There are some requirements to launch this script.""${end_color}"
-	echo -e "${yellow_color}""[I] Please, read the help file \"requirements.txt\" for installation instructions (Debian/Ubuntu):""${end_color}"
-	echo "$(grep ^-- requirements.txt)"
+# Root user?
+root_user(){
+if [[ $(id -u) != "0" ]]; then
+	echo -e "${red_color}""[X] You are not the root.""${end_color}"
+	echo "Assuming your are in the sudoers list, please launch the script with \"sudo\"."
 	exit 1
+fi
+}
+
+# Error status
+proc_status(){
+if [[ $? == "0" ]]; then
+	echo -e "${yellow_color}""Done.""${end_color}"
+	else
+		echo -e "${red_color}""Failed attempt.""${end_color}"
+fi
+} 
+
+# Installation of the prerequisites
+prerequisites_install(){
+# Disable CTRL+C
+trap '' SIGINT
+
+echo -e "${red_color}"""${bold_color}"Warning: do not try to cancel the installation at this point!!!""${end_color}"
+echo -e "${blue_color}"""${bold_color}"Installation in progress...Please, be patient!""${end_color}"
+echo -e "${blue_color}""[Check the most recent log file in the folder \"log\" to see progression]""${end_color}"
+echo -n -e "${blue_color}""\r[-] Verifying space disk available...""${end_color}"
+sleep 1
+
+# Checking available space disk
+for folder in "/tmp" "/bin" "/usr"; do
+	space_m="$(df --output=avail -BM ${folder} | tail -n 1 | grep -o "[0-9]*M")"
+	space="$(df --output=avail -BM ${folder} | tail -n 1 | grep -o "[0-9]*")"
+	if [[ ${space} -lt "250" ]]; then
+		echo -e "${red_color}""\nThere is no enough space available in the ${folder} folder: ${space_m}""${end_color}"
+		exit 1
+	fi
+done
+
+echo -n -e "${blue_color}""\r[-] Checking your Internet connexion...""${end_color}"
+
+# Checking the Internet connection
+check_github_status="$(nc -z -v -w 1 github.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
+check_nmap_status="$(nc -z -v -w 1 nmap.org 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
+
+if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]]; then
+	temp_folder="$(mktemp -d /tmp/temp_folder-XXXXXXXX)"
+	if [[ ! -d "./log" ]]; then
+		mkdir $(pwd)/log
+	fi
+	log_file="$(pwd)/log/log_$(date +%F_%H-%M-%S).txt"
+	# Prerequisites packages
+	echo -n -e "\r                                       "
+	echo -n -e "${blue_color}""\r[-] Updating your package lists...""${end_color}" && echo "---- APT UPDATE ---" &> ${log_file}
+	apt update &>> ${log_file}
+	echo -n -e "${blue_color}""\r[-] Installing the prerequisites packages...""${end_color}" && echo "---- APT INSTALL ---" &>> ${log_file}
+	apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc &>> ${log_file} 
+	proc_status
+	# Packages Masscan, Nmap and NSE script Vulners.nse
+	echo -n -e "${blue_color}""\r[-] Getting the source packages \"Masscan\", \"Nmap\" and \"Vulners.nse\"...""${end_color}" && echo "---- DOWNLOAD SOURCES ---" &>> ${log_file}
+	cd "${temp_folder}"
+	git clone https://github.com/robertdavidgraham/masscan.git &>> ${log_file}
+	git clone https://github.com/vulnersCom/nmap-vulners &>> ${log_file}
+	wget https://nmap.org/dist/nmap-7.70.tgz &>> ${log_file}
+	cd "${temp_folder}"/"masscan"
+	echo -n -e "\r                                                                            "
+	echo -n -e "${blue_color}""\r[-] Compiling \"Masscan\" ...""${end_color}" && echo "---- COMPILING MASSCAN ---" &>> ${log_file}
+	make -j$(nproc) &>> ${log_file}
+	proc_status
+	echo -n -e "${blue_color}""\r[-] Installing/upgrading \"Masscan\"...""${end_color}" && echo "---- MASSCAN INSTALLATION ---" &>> ${log_file}
+	mv "bin/masscan" "/usr/bin/" &>> ${log_file}
+	proc_status
+	cd "${temp_folder}"
+	tar -xzf nmap-7.70.tgz &>> ${log_file}
+	cd "nmap-7.70"
+	echo -n -e "${blue_color}""\r[-] Resolving dependencies for \"Nmap\"...""${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> ${log_file}
+	./configure &>> ${log_file}
+	proc_status
+	echo -n -e "${blue_color}""\r[-] Compiling \"Nmap\" (this may take time)...""${end_color}" && echo "---- COMPILING NMAP ---" &>> ${log_file}
+	make -j$(nproc) &>> ${log_file}
+	proc_status
+	echo -n -e "${blue_color}""\r[-] Installing/upgrading \"Nmap\"...""${end_color}" && echo "---- NMAP INSTALLATION ---" &>> ${log_file}
+	make install &>> ${log_file}
+	proc_status
+	echo -n -e "\r                                                            "
+	echo -n -e "${blue_color}""\r[-] Installing/upgrading \"Vulners.nse\"...""${end_color}" && echo "---- VULNERS.NSE INSTALLATION ---" &>> ${log_file}
+	mv "${temp_folder}"/"nmap-vulners/vulners.nse" "/usr/local/share/nmap/scripts/"
+	proc_status
+	echo -n -e "\r                                              "
+	echo -n -e "${blue_color}""\r[-] Updating the databases...""${end_color}" && echo "---- DATABASES UPDATE ---" &>> ${log_file}
+	updatedb &>> ${log_file}
+	nmap --script-updatedb &>> ${log_file}
+	proc_status
+	echo -n -e "${blue_color}""\r[-] Removing temporary files and folders...""${end_color}" && echo "---- REMOVE TEMP FOLDERS ---" &>> ${log_file}
+	rm -rf "${temp_folder}" &>> ${log_file}
+	proc_status
+	echo -n -e "\r                                           "
+	echo -n -e "${green_color}""\r[V] Installation finished.\n""${end_color}"
+	echo -n -e "${yellow_color}""\r[I] Log file: ${log_file}\n""${end_color}"
+	echo -e "${blue_color}"""${bold_color}"Please, now launch again the script to see options.\n""${end_color}"
+	else
+		echo -e "${red_color}""\nI can't reach Internet sites (\"github.com\" and \"nmap.org\") for downloading the packages...""${end_color}"
+		echo -e "${blue_color}"""${bold_color}"Please, check your firewall rules, dns configuration and your Internet link.""${end_color}"
+		exit 1
+fi
+}
+
+# Automatic installation answer
+auto_install_menu(){
+read -p ">> " -r -t 60 auto_install_answer
+	if [[ -z ${auto_install_answer} ]] || [[ ${auto_install_answer} != "yes" ]];then
+		echo -e "${yellow_color}""Okay, exit.""${end_color}"
+		exit 1
+		else
+			root_user
+			echo -e "${blue_color}"""${bold_color}"[-] Great, we starting the installation...please, be patient!""${end_color}"
+			# Clearing the screen
+			clear
+			prerequisites_install
+			exit 1
+	fi
+}
+
+# Checking prerequisites
+if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.nse) ]] || [[ ! $(which xsltproc) ]]; then
+	echo -e "${red_color}""[X] There are some prerequisites to install before to launch this script.""${end_color}"
+	echo -e "${yellow_color}""[I] Please, read the help file \"requirements.txt\" for installation instructions (Debian/Ubuntu):""${end_color}"
+	echo "$(grep ^-- "requirements.txt")"
+	# Automatic installation for Debian OS family
+	if [[ $(which lsb_release) ]]; then
+		OS_version="$(lsb_release -is)" 
+		OS_list="^Debian$|^debian$|^Ubuntu$|^ubuntu$|^Elementary$|^elementary$|^LinuxMint$"
+		if [[ ${OS_version} =~ ${OS_list} ]];then
+			echo -e "${blue_color}""Your system is: "${bold_color}"${OS_version}""${end_color}"
+			echo -e "${blue_color}"""${bold_color}"If you like, I can install the prerequisites for you (~5-10 minutes). Do you agree?""${end_color}"
+			echo -e "${blue_color}"""${bold_color}"[default: no, just typing \"Enter|Return\" key to exit or write \"yes\" to continue]""${end_color}"
+			auto_install_menu
+			else
+				echo -e "${yellow_color}""[I] An automatic installation option exist but it's only available for Debian OS family.""${end_color}"
+				echo -e "${blue_color}""Your system is: "${bold_color}"${OS_version}""${end_color}"
+				echo -e "${blue_color}"""${bold_color}"If you think/know your system is a Debian OS family, write \"yes\" to continue:""${end_color}"
+				echo -e "${blue_color}"""${bold_color}"[default: no, just typing \"Enter|Return\" key to exit]""${end_color}"
+				auto_install_menu
+		fi
+	fi
 	else
 		masscan_version="$(masscan -V | grep "Masscan version" | cut -d" " -f3)"
 		nmap_version="$(nmap -V | grep "Nmap version" | cut -d" " -f3)"
@@ -145,12 +285,7 @@ while [[ "$1" != "" ]]; do
         shift
 done
 
-# Root user?
-if [[ $(id -u) != "0" ]]; then
-	echo -e "${red_color}""[X] You are not the root.""${end_color}"
-	echo "Assuming your are in the sudoers list, please launch the script with \"sudo\"."
-	exit 1
-fi
+root_user
 
 # Valid input file?
 if [[ -z ${hosts} ]] || [[ ! -s ${hosts} ]]; then
@@ -183,7 +318,7 @@ if [[ ${interactive} = "on" ]]; then
         echo "  -p1-100,U:1-100                 to scan TCP and UDP range of ports"
         echo "  -pU:1-100                       to scan only UDP range of ports"
         echo "  -p1-65535,U:1-65535             all TCP AND UDP ports"
-        read -p ">> " -r -t 60 ports_list
+        read -p "Port(s) to scan? >> " -r -t 60 ports_list
                 if [[ -z ${ports_list} ]];then
                         ports="--top-ports 1000"
                         else
@@ -194,7 +329,7 @@ if [[ ${interactive} = "on" ]]; then
         echo -e "${blue_color}""Which rate (pkts/sec)?""${end_color}"
         echo -e "${blue_color}""[default: --max-rate 5000, just typing \"Enter|Return\" key to continue]""${end_color}"
         echo -e "${red_color}""Be carreful, beyond \"10000\" it coud be dangerous for your network!!!""${end_color}"
-        read -p ">> " -r -t 60 max_rate
+        read -p "Rate ? >> " -r -t 60 max_rate
                 if [[ -z ${max_rate} ]];then
                         rate="5000"
                         else
@@ -213,7 +348,7 @@ fi
 interface="$(ip route | grep default | cut -d" " -f5)"
 nb_interfaces="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -co "^[[:alnum:]]*")"
 
-if [[ ${nb_interfaces} > "2" ]]; then
+if [[ ${nb_interfaces} -gt "2" ]]; then
 	interfaces_list="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -o "^[[:alnum:]]*")"
 	interfaces_tab=(${interfaces_list})
 	echo -e "${blue_color}"""${bold_color}"Warning: multiple network interfaces have been detected:""${end_color}"
@@ -221,7 +356,7 @@ if [[ ${nb_interfaces} > "2" ]]; then
 	echo -e "${blue_color}""${interfaces_loop}""${end_color}"
 	echo -e "${blue_color}""Which one do you want to use? [choose the corresponding number to the interface name]""${end_color}"
 	echo -e "${blue_color}""(or typing \"Enter|Return\" key to use the one corresponding to the default route]""${end_color}"
-        read -p ">> " -r -t 60 interface_number
+        read -p "Interface? >> " -r -t 60 interface_number
                 if [[ -z ${interface_number} ]];then
         		echo -e "${yellow_color}""No interface chosen...the script will use the one with the default route.""${end_color}"
                         else
@@ -231,8 +366,14 @@ if [[ ${nb_interfaces} > "2" ]]; then
 fi
 
 ##################################################
-# 1) First analysis with Nmap to find live hosts #
 ##################################################
+## Okay, serious matters start there! Let's go! ##
+##################################################
+##################################################
+
+###################################################
+# 1/4 First analysis with Nmap to find live hosts #
+###################################################
 
 if [[ ${check} = "on" ]]; then
 
@@ -252,14 +393,18 @@ echo -e "${yellow_color}""[I] ${nb_hosts_nmap} ip(s) to check.""${end_color}"
 
 fi
 
-#######################################
-# 2) Using Masscan to find open ports #
-#######################################
+########################################
+# 2/4 Using Masscan to find open ports #
+########################################
 
 echo -e "${blue_color}""[-] Verifying Masscan parameters and running the tool...please, be patient!""${end_color}"	
 
-if [[ ${exclude_file} = "" ]]; then
-	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
+if [[ ${exclude_file} = "" ]] && [[ $(id -u) = "0" ]]; then
+	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
+	elif [[ ${exclude_file} = "" ]] && [[ $(id -u) != "0" ]]; then
+		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
+	elif [[ ${exclude_file} != "" ]] && [[ $(id -u) = "0" ]]; then
+		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
 	else
 		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
 fi
@@ -284,24 +429,35 @@ if [[ ! -s masscan-output.txt ]]; then
 	else
 		udp_ports="$(grep -c "^open udp" masscan-output.txt)"
 		tcp_ports="$(grep -c "^open tcp" masscan-output.txt)"
-		echo -e "${red_color}""Hosts with open port(s):""${end_color}"
+		echo -e "${red_color}""Host(s) with open port(s):""${end_color}"
 		grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print "\t" i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
 fi
 
-##########################################################################################
-# 3) Identifying open services with Nmap and if they are vulnerable with vulners script #
-##########################################################################################
+###########################################################################################
+# 3/4 Identifying open services with Nmap and if they are vulnerable with vulners script  #
+###########################################################################################
 
 nb_ports="$(grep -c ^open masscan-output.txt)"
 nb_hosts_nmap="$(grep ^open masscan-output.txt | cut -d" " -f4 | sort | uniq -c | wc -l)"
+
 echo -e "${yellow_color}""[I] ${nb_hosts_nmap} host(s) to scan concerning ${nb_ports} open ports""${end_color}"
+
+check_vulners_api_status="$(nc -z -v -w 1 vulners.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
+
+if [[ ${check_vulners_api_status} == "open" ]]; then
+	echo -e "${yellow_color}""[I] Vulners.com site is reachable on port 443.""${end_color}"
+	else
+		echo -e "${blue_color}"""${bold_color}"Warning: Vulners.com site is NOT reachable on port 443. Please, check your firewall rules, dns configuration and your Internet link.""${end_color}"
+		echo -e "${blue_color}"""${bold_color}"So, vulnerability check will be not possible, only opened ports will be present in the HTML report.""${end_color}"
+fi 
+
 echo -e "${blue_color}""[-] Launching Nmap scanner(s)...please, be patient!""${end_color}"
 
 nmap_file(){
 # Preparing the input file for Nmap
 proto="$1"
 
-# Source of inspiration: http://www.whxy.org/book/mastering-kali-linux-advanced-pen-testing-2nd/text/part0103.html
+# Source: http://www.whxy.org/book/mastering-kali-linux-advanced-pen-testing-2nd/text/part0103.html
 grep "^open ${proto}" masscan-output.txt | awk '/.+/ { \
 				if (!($4 in ips_list)) { \
 				value[++i] = $4 } ips_list[$4] = ips_list[$4] $3 "," } END { \
@@ -317,7 +473,7 @@ if [[ ${tcp_ports} -gt "0" ]]; then
 	nmap_file tcp
 fi
 
-# Directrory for temporary Nmap file(s)
+# Folder for temporary Nmap file(s)
 nmap_temp="$(mktemp -d /tmp/nmap_temp-XXXXXXXX)"
 
 # Function for parallel Nmap scans
@@ -344,12 +500,24 @@ reset
 
 echo -e "${green_color}""[V] Nmap phase is ended.""${end_color}"
 
-#########################
-# 4) Generating reports #
-#########################
+##########################
+# 4/4 Generating reports #
+##########################
 
-nmap_bootstrap="./nmap-bootstrap.xsl"
+nmap_bootstrap="./stylesheet/nmap-bootstrap.xsl"
 date="$(date +%F_%H-%M-%S)"
+report_folder="$(pwd)/reports/"
+
+echo -e "${blue_color}"""${bold_color}"Do you want giving a specific name to your report(s)?""${end_color}"
+echo -e "${blue_color}"""${bold_color}"[if not, just pressing \"Enter|Return\" key]""${end_color}"
+read -p "Report(s) name? >> " -r -t 60 what_report_name
+	if [[ -z ${what_report_name} ]];then
+		global_report_name="global-report_"
+		vulnerable_report_name="vulnerable_hosts_details_"
+		else
+			global_report_name="${what_report_name}_"
+			vulnerable_report_name="${what_report_name}_vulnerable_hosts_"
+	fi
 
 # Verifying vulnerable hosts
 vuln_hosts_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep "Nmap" | sort -u | grep -c "Nmap")"
@@ -367,18 +535,20 @@ if [[ ${vuln_hosts_count} != "0" ]]; then
 
 	vuln_hosts_format="$(awk '{print $1 "\t" $NF}' vulnerable_hosts.txt |  sed 's/3(NXDOMAIN)/\No reverse DNS entry found/' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 | sort -u)"
 	echo -e -n "${vuln_hosts_format}\n"
-	echo -e -n "\t----------------------------\n" > vulnerable_hosts_details_"${date}".txt
-	echo -e -n "Report date: $(date)\n" >> vulnerable_hosts_details_"${date}".txt
-	echo -e -n "Host(s) found: ${vuln_hosts_count}\n" >> vulnerable_hosts_details_"${date}".txt
-	echo -e -n "Port(s) found: ${vuln_ports_count}\n" >> vulnerable_hosts_details_"${date}".txt
-	echo -e -n "${vuln_hosts_format}\n" >> vulnerable_hosts_details_"${date}".txt
-	echo -e -n "All the details below." >> vulnerable_hosts_details_"${date}".txt
-	echo -e -n "\n\t----------------------------\n" >> vulnerable_hosts_details_"${date}".txt
-	echo -e -n "${vuln_hosts}\n" >> vulnerable_hosts_details_"${date}".txt
-	echo -e "${yellow_color}""[I] All details on the vulnerabilities in TXT file: vulnerable_hosts_details_${date}.txt""${end_color}"
+	echo -e -n "\t----------------------------\n" > "${report_folder}""${vulnerable_report_name}""${date}".txt
+	echo -e -n "Report date: $(date)\n" >> "${report_folder}""${vulnerable_report_name}""${date}".txt
+	echo -e -n "Host(s) found: ${vuln_hosts_count}\n" >> "${report_folder}""${vulnerable_report_name}""${date}".txt
+	echo -e -n "Port(s) found: ${vuln_ports_count}\n" >> "${report_folder}""${vulnerable_report_name}""${date}".txt
+	echo -e -n "${vuln_hosts_format}\n" >> "${report_folder}""${vulnerable_report_name}""${date}".txt
+	echo -e -n "All the details below." >> "${report_folder}""${vulnerable_report_name}""${date}".txt
+	echo -e -n "\n\t----------------------------\n" >> "${report_folder}""${vulnerable_report_name}""${date}".txt
+	echo -e -n "${vuln_hosts}\n" >> "${report_folder}""${vulnerable_report_name}""${date}".txt
+
+
+	echo -e "${yellow_color}""[I] All details on the vulnerabilities in this TXT file: "${report_folder}""${vulnerable_report_name}"${date}.txt""${end_color}"
 	
 	else
-		echo -e "${green_color}""[V] No vulnerable host found... at first sight! Script ended.""${end_color}"
+		echo -e "${blue_color}"""${bold_color}" No vulnerable host found... at first sight!.""${end_color}"
 fi
 
 # Merging all the Nmap XML files to one big XML file
@@ -397,10 +567,10 @@ echo "<runstats><finished elapsed=\"\" exit=\"success\" summary=\"Nmap XML merge
       time=\"\" timestr=\"\" /><hosts down=\"0\" total=\"${nb_hosts_nmap}\" up=\"${nb_hosts_nmap}\" /></runstats></nmaprun>" >> nmap-output.xml
 
 # Using bootstrap to generate a beautiful HTML file (report)
-xsltproc -o nmap-output_"${date}".html "${nmap_bootstrap}" nmap-output.xml 2>/dev/null
+xsltproc -o "${report_folder}""${global_report_name}""${date}".html "${nmap_bootstrap}" nmap-output.xml 2>/dev/null
 
 # End of script
-echo -e "${yellow_color}""[I] Global HTML report generated: nmap-output_${date}.html""${end_color}"
+echo -e "${yellow_color}""[I] Global HTML report generated: "${report_folder}""${global_report_name}""${date}".html""${end_color}"
 echo -e "${green_color}""[V] Report phase is ended, bye!""${end_color}"
 
 rm -rf temp-nmap-output nmap-input_udp.txt nmap-input_tcp.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null

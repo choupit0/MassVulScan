@@ -13,7 +13,7 @@ xsltproc -V
 cd /tmp
 git clone https://github.com/robertdavidgraham/masscan.git
 cd masscan
-make
+make -j$(nproc)
 mv bin/masscan /usr/bin/
 updatedb
 
@@ -27,7 +27,7 @@ wget https://nmap.org/dist/nmap-7.70.tgz
 tar -xvzf nmap-7.70.tgz
 cd nmap-7.70
 ./configure
-make
+make -j$(nproc)
 make install
 updatedb
 
