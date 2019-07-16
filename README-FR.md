@@ -11,6 +11,13 @@ Script Bash qui combine la puissance du scanner Masscan pour trouver des ports o
 - Script NSE vulners.nse (https://github.com/vulnersCom/nmap-vulners)
 
 **Je vous invite à lire le fichier "requirements.txt" si vous avez des difficultés. Il vous indiquera la marche à suivre pour installer chacun des pré-requis.**
+
+Une nouvelle fonctionnalité dans la version v1.7 du script installera pour vous tous les pré-requis nécessaires au fonctionnement du script. Seuls les OS de la famille Debian sont concernés pour le moment.
+Cette fonctionnalité a été validée sur les OS 64bits suivants (2 core CPU et 2GB RAM ~12 minutes) :
+- Debian 10.0
+- Elementary 5.0
+- LinuxMint 19.1
+- Ubuntu 19.04
 # Fonctionnement
 Déroulement du script :
 1) Identification express des hosts qui sont en ligne (nmap)
@@ -47,6 +54,7 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Gateway
 192.168.2.254
 ```
+**A noter que le script détectera en cours de route si vous utilisez plusieurs interfaces réseaux. Ce qui est important pour Masscan qui prendra toujours par défaut l'interface qui possède la route par défaut. Il vous sera demandé d'en choisir une (pas de problème avec Nmap).**
 # Démo
 ![Example Demo](demo/MassVulScan_Demo.gif)
 # Quelques captures d'écran
@@ -60,7 +68,7 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 
 ![Example HTML](screenshots/HTML.PNG)
 # Compatibilité
-Le script a seulement été testé sur Debian et Ubuntu mais devrait fonctionner sur la majorité des distributions Linux. Il fonctionne avec les protocoles TCP et UDP.
+Le script a uniquement été testé sur des OS de la famille Debian mais devrait fonctionner sur la majorité des distributions Linux (hormis pour l'installation des pré-requis). Il peut détecter les ports ouverts sur les protocoles TCP et UDP.
 # Remarques / Astuces
 Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier les lignes contenant "**--script vulners**" et de remplacer par "**--script vuln,vulners**".
 C'est très simple avec l'éditeur VI :
