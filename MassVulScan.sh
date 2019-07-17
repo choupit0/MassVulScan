@@ -142,20 +142,32 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 fi
 }
 
-# Automatic installation answer
+# Automatic installation
 auto_install_menu(){
-read -p "Automatic installation? >> " -r -t 60 auto_install_answer
+if [[ $(which apt) ]] || [[ $(which apt-get) ]]; then
+	echo -e "${blue_color}${bold_color}If you like, I can install the prerequisites for you (~5-10 minutes). Do you agree?${end_color}"
+	echo -e "${blue_color}${bold_color}All these packages will be installed or updated:${end_color}"
+	echo -e "${blue_color}\t--> From apt: build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc${end_color}"
+	echo -e "${blue_color}\t--> From git: masscan vulners.nse${end_color}"
+	echo -e "${blue_color}\t--> From source: nmap${end_color}"
+	echo -e "${blue_color}${bold_color}[default: no, just typing \"Enter|Return\" key to exit or write \"yes\" to continue]${end_color}"
+	read -p "Automatic installation? >> " -r -t 60 auto_install_answer
 	if [[ -z ${auto_install_answer} ]] || [[ ${auto_install_answer} != "yes" ]];then
 		echo -e "${yellow_color}""Okay, exit.""${end_color}"
-		exit 1
-		else
-			root_user
-			echo -e "${blue_color}${bold_color}[-] Great, we starting the installation...please, be patient!${end_color}"
-			# Clearing the screen
-			clear
-			prerequisites_install
-			exit 1
+	exit 1
+	else
+		root_user
+		echo -e "${blue_color}${bold_color}[-] Great, we starting the installation...please, be patient!${end_color}"
+		# Clearing the screen
+		clear
+		prerequisites_install
+		exit 0
 	fi
+else
+	echo -e "${blue_color}${bold_color}No APT package manager found on your system.${end_color}"
+	echo -e "${yellow_color}[I] The automatic installation feature is only available for Debian OS family.${end_color}"
+	exit 1
+fi
 }
 
 # Checking prerequisites
@@ -164,31 +176,23 @@ if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.ns
 	echo -e "${yellow_color}[I] Please, read the help file \"requirements.txt\" for installation instructions (Debian/Ubuntu):${end_color}"
 	echo "$(grep ^-- "requirements.txt")"
 	# Automatic installation for Debian OS family
-	if [[ $(which apt) ]] || [[ $(which apt-get) ]]; then
-		echo -e "${blue_color}${bold_color}If you like, I can install the prerequisites for you (~5-10 minutes). Do you agree?${end_color}"
-		echo -e "${blue_color}${bold_color}[default: no, just typing \"Enter|Return\" key to exit or write \"yes\" to continue]${end_color}"
-		auto_install_menu
-		else
-			echo -e "${blue_color}${bold_color}No APT package manager found on your system.${end_color}"
-			echo -e "${yellow_color}[I] The automatic installation option is only available for Debian OS family.${end_color}"
-			exit 1
-	fi
+	auto_install_menu
 	else
 		masscan_version="$(masscan -V | grep "Masscan version" | cut -d" " -f3)"
 		nmap_version="$(nmap -V | grep "Nmap version" | cut -d" " -f3)"
 		if [[ ${masscan_version} < "1.0.5" ]]; then
 			echo -e "${red_color}[X] Masscan is not up to date.${end_color}"
 			echo "Please. Be sure to have the last Masscan version >= 1.0.5."
-			echo "Your current version: ${masscan_version}"
-			echo "https://github.com/robertdavidgraham/masscan"
-			exit 1
+			echo "Your current version is: ${masscan_version}"
+			# Automatic installation for Debian OS family
+			auto_install_menu
 		fi
 		if [[ ${nmap_version} < "7.60" ]]; then
 			echo -e "${red_color}[X] Nmap is not up to date.${end_color}"
 			echo "Please. Be sure to have Nmap version >= 7.60."
-			echo "Your current version: ${nmap_version}"
-			echo "https://nmap.org/download.html"
-			exit 1
+			echo "Your current version is: ${nmap_version}"
+			# Automatic installation for Debian OS family
+			auto_install_menu
 		fi
 fi
 

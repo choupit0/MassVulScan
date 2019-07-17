@@ -1,9 +1,9 @@
-Debian/Ubuntu based installation with root user:
+Debian/Ubuntu OS based installation with root user:
 
 -- xsltproc installation
 
 apt update
-apt install xsltproc
+apt install -y xsltproc
 
 Verification:
 xsltproc -V
@@ -44,4 +44,3 @@ nmap --script-updatedb
 
 Verification:
 nmap -sV --script vulners <target>
-
