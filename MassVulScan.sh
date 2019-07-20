@@ -9,9 +9,9 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20190709
-# Version        : 1.7
-# Usage          : ./MassVulScan.sh [[-f file] [-e file] [-i] [-c] | [-v] [-h]]
+# Date           : 20190720
+# Version        : 1.7.5
+# Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
 #                  Please, read the file "requirements.txt" if you need some help.
@@ -43,7 +43,7 @@ proc_status(){
 if [[ $? == "0" ]]; then
 	echo -e "${yellow_color}Done.${end_color}"
 	else
-		echo -e "${red_color}Failed attempt.${end_color}"
+		echo -e "${red_color}Failed attempt -> check the log file: ${log_file}${end_color}"
 fi
 } 
 
@@ -54,7 +54,7 @@ trap '' SIGINT
 
 echo -e "${red_color}${bold_color}Warning: do not try to cancel the installation at this point!!!${end_color}"
 echo -e "${blue_color}${bold_color}Installation in progress...Please, be patient!${end_color}"
-echo -e "${blue_color}[Check the most recent log file in the folder \"log\" to see progression]${end_color}"
+echo -e "${blue_color}[Check the most recent log file in the folder \"log\" to see progression (tail -f [log file])]${end_color}"
 echo -n -e "${blue_color}\r[-] Verifying space disk available...${end_color}"
 sleep 1
 
@@ -99,7 +99,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	git clone https://github.com/robertdavidgraham/masscan.git &>> "${log_file}"
 	git clone https://github.com/vulnersCom/nmap-vulners &>> "${log_file}"
 	wget https://nmap.org/dist/nmap-7.70.tgz &>> "${log_file}"
-	cd "${temp_folder}"/"masscan"
+	cd "${temp_folder}/masscan"
 	echo -n -e "\r                                                                            "
 	echo -n -e "${blue_color}\r[-] Compiling \"Masscan\" ...${end_color}" && echo "---- COMPILING MASSCAN ---" &>> "${log_file}"
 	make -j"$(nproc)" &>> "${log_file}"
@@ -217,7 +217,7 @@ fi
 # Usage of script
 usage(){
         logo
-        echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo${end_color} ./$(basename "$0") [[-f file] [-e file] [-i] [-c] | [-v] [-h]]"
+        echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo${end_color} ./$(basename "$0") [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]"
         echo -e "${yellow_color}        -f | --include-file${end_color}"
         echo -e "${bold_color}          (mandatory parameter)${end_color}"
         echo "          Input file including IPv4 addresses (no hostname) to scan, compatible with subnet mask."
@@ -225,21 +225,24 @@ usage(){
         echo "                  # You can add a comment in the file"
         echo "                  10.10.4.0/24"
         echo "                  10.3.4.224"
-        echo -e "${bold_color}          By default: the top 1000 TCP/UDP ports are scanned with rate at 5K pkts/sec.${end_color}"
+        echo -e "${bold_color}          By default: the top 1000 TCP/UDP ports are scanned and the maximum rate is fix to 5K pkts/sec.${end_color}"
         echo -e "${yellow_color}        -e | --exclude-file${end_color}"
-        echo -e "${bold_color}          (optional parameter)${end_color}"
+        echo -e "${bold_color}          (optional parameter, must be used in addition of \"-f\" parameter)${end_color}"
         echo "          Exclude file including IPv4 addresses (no hostname) do not scan, compatible with subnet mask."
         echo "          Example:"
         echo "                  # You can add a comment in the file"
         echo "                  10.10.4.128/25"
         echo "                  10.3.4.225"
         echo -e "${yellow_color}        -i | --interactive${end_color}"
-        echo -e "${bold_color}          (must be used in addition of \"-f\" parameter)${end_color}"
+        echo -e "${bold_color}          (optional parameter, must be used in addition of \"-f\" parameter)${end_color}"
         echo "          Interactive menu with extra parameters:"
-        echo "                  - Ports to scan (Ex. -p1-65535 (all TCP ports)."
+        echo "                  - Ports to scan (e.g. -p1-65535 (all TCP ports)."
         echo "                  - Rate level (pkts/sec)."
+        echo -e "${yellow_color}        -a | --all-ports${end_color}"
+        echo -e "${bold_color}          (optional parameter, must be used in addition of \"-f\" parameter)${end_color}"
+        echo "          Scan all 65535 ports, TCP and UDP. The maximum rate is fix to 5K pkts/sec."
         echo -e "${yellow_color}        -c | --check${end_color}"
-        echo -e "${bold_color}          (optional parameter)${end_color}"
+        echo -e "${bold_color}          (optional parameter, must be used in addition of \"-f\" parameter)${end_color}"
         echo "          Perform a pre-scanning to identify online hosts and scan only them."
         echo "          By default, all the IPs addresses will be tested, even if the host is unreachable."
         echo -e "${yellow_color}        -v | --version${end_color}"
@@ -269,7 +272,10 @@ while [[ "$1" != "" ]]; do
                         ;;
                 -i | --interactive )
                         interactive="on"
-                        ;;
+                       ;;
+                -a | --all-ports )
+                        all_ports="on"
+                       ;;
                 -c | --check )
                         check="on"
                         ;;
@@ -309,7 +315,14 @@ fi
 clear
 
 # Interactive mode "on" or "off"?
-if [[ ${interactive} = "on" ]]; then
+if [[ ${interactive} = "on" ]] && [[ ${all_ports} = "on" ]]; then
+        echo -e "${red_color}Sorry, but you can't chose interactive (-i) mode with all ports scanning mode (-a).${end_color}"
+	exit 1
+elif [[ ${all_ports} = "on" ]]; then
+        echo -e "${yellow_color}[I] Okay, 65535 ports to be scan both on TCP and UDP.${ports}${end_color}"
+	ports="-p1-65535,U:1-65535"
+	rate="5000"
+elif [[ ${interactive} = "on" ]]; then
         echo -e "${yellow_color}[I] We will use the input file: ${hosts}${end_color}"
         # Ports to scan?
         echo -e "${blue_color}Now, which TCP/UDP port(s) do you want to scan?${end_color}"
@@ -403,13 +416,13 @@ fi
 echo -e "${blue_color}[-] Verifying Masscan parameters and running the tool...please, be patient!${end_color}"
 
 if [[ ${exclude_file} = "" ]] && [[ $(id -u) = "0" ]]; then
-	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
+	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
 	elif [[ ${exclude_file} = "" ]] && [[ $(id -u) != "0" ]]; then
-		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
+		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
 	elif [[ ${exclude_file} != "" ]] && [[ $(id -u) = "0" ]]; then
-		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
+		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
 	else
-		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
+		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
 fi
 
 if [[ $? != "0" ]]; then
@@ -456,8 +469,8 @@ fi
 
 echo -e "${blue_color}[-] Launching Nmap scanner(s)...please, be patient!${end_color}"
 
-nmap_file(){
 # Preparing the input file for Nmap
+nmap_file(){
 proto="$1"
 
 # Source: http://www.whxy.org/book/mastering-kali-linux-advanced-pen-testing-2nd/text/part0103.html
@@ -485,9 +498,9 @@ ip="$(echo "$1" | cut -d":" -f1)"
 port="$(echo "$1" | cut -d":" -f2)"
 
 if [[ $2 == "nmap-input_tcp.txt" ]]; then
-	nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_tcp_nmap-output "${ip}"
+	nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}/${ip}"_tcp_nmap-output "${ip}" # > /dev/null 2>&1
 	else
-		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}"/"${ip}"_udp_nmap-output "${ip}"
+		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}/${ip}"_udp_nmap-output "${ip}" # > /dev/null 2>&1
 fi
 }
 
@@ -530,7 +543,7 @@ if [[ ${vuln_hosts_count} != "0" ]]; then
 	vuln_hosts="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done)"
 	vuln_hosts_ip="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep ^"Nmap scan report for" | cut -d" " -f5 | sort -u)"
 
-	echo -e "${red_color}[X] ${vuln_hosts_count} vulnerable (or potentially vulnerable) host(s) found concerning ${vuln_ports_count} port(s):${end_color}"
+	echo -e "${red_color}\n[X] ${vuln_hosts_count} vulnerable (or potentially vulnerable) host(s) found concerning ${vuln_ports_count} port(s):${end_color}"
 	echo -e -n "${vuln_hosts_ip}\n" | while read line; do
 		host="$(host "${line}")"
 		echo "${line}" "${host}" >> vulnerable_hosts.txt
