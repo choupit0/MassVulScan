@@ -13,7 +13,7 @@ Script Bash qui combine la puissance du scanner Masscan pour trouver des ports o
 **Je vous invite à lire le fichier "requirements.txt" si vous avez des difficultés. Il vous indiquera la marche à suivre pour installer chacun des pré-requis.**
 
 Une nouvelle fonctionnalité dans la version v1.7 du script installera pour vous tous les pré-requis nécessaires au fonctionnement du script. Seuls les OS de la famille Debian sont concernés pour le moment.
-Cette fonctionnalité a été validée sur les OS 64bits suivants (2 core CPU et 2GB RAM ~12 minutes) :
+Cette fonctionnalité a été validée sur les OS 64bits suivants (2 core CPU et 2GB RAM ~10 minutes) :
 - Debian 10.0
 - Elementary 5.0
 - LinuxMint 19.1
@@ -41,6 +41,7 @@ Liste des paramètres/arguments disponibles :
 -f [input file] = paramètre obligatoire qui contiendra la liste des réseaux/hosts à scanner
 -e [exclude file] = paramètre optionnel afin d'exclure une liste de réseaux/hosts à scanner
 -i (interactive mode) = paramètre optionnel pour choisir les ports à scanner et la vitesse (pkts/sec)
+-a (all ports) = paramètre optionnel pour scanner les 65535 ports (TCP et UDP), à la vitesse de 5K pkts/sec
 -c (check) = paramètre optionnel pour trouver les hosts en ligne (pré-scan) et ne scanner que ceux-là
 ```
 Par défaut le script ne scannera que les 1000 premiers ports TCP/UDP parmi les ports les plus courants. Vous pouvez retrouver la liste ici : /usr/local/share/nmap/nmap-services. De même, le taux ou le nombre de paquets par seconde est fixé à 5000 par défaut.
