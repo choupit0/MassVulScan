@@ -13,7 +13,7 @@ Bash script which combines the power of the Masscan scanner to find open ports, 
 **I invite you to read the file "requirements.txt" if you have difficulties. It will tell you how to install each of the prerequisites.**
 
 A new feature in version v1.7 of the script will install for you all the prerequisites necessary for the script. Only Debian OS family is currently compatible.
-This feature has been validated on the following 64bit OS (2 core CPU and 2GB RAM ~12 minutes):
+This feature has been validated on the following 64bit OS (2 core CPU and 2GB RAM ~10 minutes):
 - Debian 10.0
 - Elementary 5.0
 - LinuxMint 19.1
@@ -38,9 +38,10 @@ chmod +x MassVulScan.sh
 ```
 List of available parameters/arguments:
 ```
--f [input file] = mandatory parameter that will contain the list of networks/hosts to scan
--e [exclude file] = optional parameter to exclude a list of networks/hosts to scan
+-f (input file) = mandatory parameter that will contain the list of networks/hosts to scan
+-e (exclude file) = optional parameter to exclude a list of networks/hosts to scan
 -i (interactive mode) = optional parameter to choose ports to scan and speed (pkts/sec for Masscan)
+-a (all ports) = optional parameter to scan all 65535 ports (TCP and UDP), at rate to 5K pkts/sec
 -c (check) = optional parameter which perform a pre-scanning to identify online hosts and scan only them
 ```
 By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 5000 by default.
