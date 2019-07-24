@@ -9,8 +9,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20190720
-# Version        : 1.7.5
+# Date           : 20190724
+# Version        : 1.8.0
 # Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
@@ -20,7 +20,7 @@
 #
 #############################################################################################################################
 
-version="1.7.5"
+version="1.8.0"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -28,6 +28,7 @@ error_color="\033[1;41m"
 blue_color="\033[0;36m"
 bold_color="\033[1m"
 end_color="\033[0m"
+source_installation="./sources/installation.sh"
 
 # Root user?
 root_user(){
@@ -38,134 +39,12 @@ if [[ $(id -u) != "0" ]]; then
 fi
 }
 
-# Error status
-proc_status(){
-if [[ $? == "0" ]]; then
-	echo -e "${yellow_color}Done.${end_color}"
-	else
-		echo -e "${red_color}Failed attempt -> check the log file: ${log_file}${end_color}"
-fi
-} 
-
-# Installation of the prerequisites
-prerequisites_install(){
-# Disable CTRL+C
-trap '' SIGINT
-
-echo -e "${red_color}${bold_color}Warning: do not try to cancel the installation at this point!!!${end_color}"
-echo -e "${blue_color}${bold_color}Installation in progress...Please, be patient!${end_color}"
-echo -e "${blue_color}[Check the most recent log file in the folder \"log\" to see progression (tail -f [log file])]${end_color}"
-echo -n -e "${blue_color}\r[-] Verifying space disk available...${end_color}"
-sleep 1
-
-# Checking available space disk
-for folder in "/tmp" "/bin" "/usr"; do
-	space_m="$(df --output=avail -BM ${folder} | tail -n 1 | grep -o "[0-9]*M")"
-	space="$(df --output=avail -BM ${folder} | tail -n 1 | grep -o "[0-9]*")"
-	if [[ ${space} -lt "250" ]]; then
-		echo -e "${red_color}\nThere is no enough space available in the ${folder} folder: ${space_m}${end_color}"
-		exit 1
-	fi
-done
-
-echo -n -e "${blue_color}\r[-] Checking your Internet connexion...${end_color}"
-
-# Checking the Internet connection
-check_github_status="$(nc -z -v -w 1 github.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
-check_nmap_status="$(nc -z -v -w 1 nmap.org 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
-
-if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]]; then
-	temp_folder="$(mktemp -d /tmp/temp_folder-XXXXXXXX)"
-	if [[ ! -d "./log" ]]; then
-		mkdir "$(pwd)"/log
-	fi
-	log_file="$(pwd)/log/log_$(date +%F_%H-%M-%S).txt"
-	# Prerequisites packages
-	echo -n -e "\r                                       "
-	echo -n -e "${blue_color}\r[-] Updating your package lists...${end_color}" && echo "---- APT UPDATE ---" &> "${log_file}"
-	if [[ $(which apt) ]]; then
-		apt update &>> "${log_file}"
-		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
-		apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc &>> "${log_file}"
-	elif [[ $(which apt-get) ]]; then
-		apt-get update &>> "${log_file}"
-		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
-		apt-get install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc &>> "${log_file}"
-	fi
-	proc_status
-	# Packages Masscan, Nmap and NSE script Vulners.nse
-	echo -n -e "${blue_color}\r[-] Getting the source packages \"Masscan\", \"Nmap\" and \"Vulners.nse\"...${end_color}" && echo "---- DOWNLOAD SOURCES ---" &>> "${log_file}"
-	cd "${temp_folder}"
-	git clone https://github.com/robertdavidgraham/masscan.git &>> "${log_file}"
-	git clone https://github.com/vulnersCom/nmap-vulners &>> "${log_file}"
-	wget https://nmap.org/dist/nmap-7.70.tgz &>> "${log_file}"
-	cd "${temp_folder}/masscan"
-	echo -n -e "\r                                                                            "
-	echo -n -e "${blue_color}\r[-] Compiling \"Masscan\" ...${end_color}" && echo "---- COMPILING MASSCAN ---" &>> "${log_file}"
-	make -j"$(nproc)" &>> "${log_file}"
-	proc_status
-	echo -n -e "${blue_color}\r[-] Installing/upgrading \"Masscan\"...${end_color}" && echo "---- MASSCAN INSTALLATION ---" &>> "${log_file}"
-	mv "bin/masscan" "/usr/bin/" &>> "${log_file}"
-	proc_status
-	cd "${temp_folder}"
-	tar -xzf nmap-7.70.tgz &>> "${log_file}"
-	cd "nmap-7.70"
-	echo -n -e "${blue_color}\r[-] Resolving dependencies for \"Nmap\"...${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> "${log_file}"
-	./configure &>> "${log_file}"
-	proc_status
-	echo -n -e "${blue_color}\r[-] Compiling \"Nmap\" (this may take time)...${end_color}" && echo "---- COMPILING NMAP ---" &>> "${log_file}"
-	make -j"$(nproc)" &>> "${log_file}"
-	proc_status
-	echo -n -e "${blue_color}\r[-] Installing/upgrading \"Nmap\"...${end_color}" && echo "---- NMAP INSTALLATION ---" &>> "${log_file}"
-	make install &>> "${log_file}"
-	proc_status
-	echo -n -e "\r                                                            "
-	echo -n -e "${blue_color}\r[-] Installing/upgrading \"Vulners.nse\"...${end_color}" && echo "---- VULNERS.NSE INSTALLATION ---" &>> "${log_file}"
-	mv "${temp_folder}/nmap-vulners/vulners.nse" "/usr/local/share/nmap/scripts/"
-	proc_status
-	echo -n -e "\r                                              "
-	echo -n -e "${blue_color}\r[-] Updating the databases...${end_color}" && echo "---- DATABASES UPDATE ---" &>> "${log_file}"
-	updatedb &>> "${log_file}"
-	nmap --script-updatedb &>> "${log_file}"
-	proc_status
-	echo -n -e "${blue_color}\r[-] Removing temporary files and folders...${end_color}" && echo "---- REMOVE TEMP FOLDERS ---" &>> "${log_file}"
-	rm -rf "${temp_folder}" &>> "${log_file}"
-	proc_status
-	echo -n -e "\r                                           "
-	echo -n -e "${green_color}\r[V] Installation finished.\n${end_color}"
-	echo -n -e "${yellow_color}\r[I] Log file: ${log_file}\n${end_color}"
-	echo -e "${blue_color}${bold_color}Please, now launch again the script to see options.\n${end_color}"
-	else
-		echo -e "${red_color}\nI can't reach Internet sites (\"github.com\" and \"nmap.org\") for downloading the packages...${end_color}"
-		echo -e "${blue_color}${bold_color}Please, check your firewall rules, dns configuration and your Internet link.${end_color}"
-		exit 1
-fi
-}
-
-# Automatic installation
-auto_install_menu(){
-if [[ $(which apt) ]] || [[ $(which apt-get) ]]; then
-	echo -e "${blue_color}${bold_color}If you like, I can install the prerequisites for you (~5-10 minutes). Do you agree?${end_color}"
-	echo -e "${blue_color}${bold_color}All these packages will be installed or updated:${end_color}"
-	echo -e "${blue_color}\t--> From apt: build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc${end_color}"
-	echo -e "${blue_color}\t--> From git: masscan vulners.nse${end_color}"
-	echo -e "${blue_color}\t--> From source: nmap${end_color}"
-	echo -e "${blue_color}${bold_color}[default: no, just typing \"Enter|Return\" key to exit or write \"yes\" to continue]${end_color}"
-	read -p "Automatic installation? >> " -r -t 60 auto_install_answer
-	if [[ -z ${auto_install_answer} ]] || [[ ${auto_install_answer} != "yes" ]];then
-		echo -e "${yellow_color}""Okay, exit.""${end_color}"
-	exit 1
-	else
-		root_user
-		echo -e "${blue_color}${bold_color}[-] Great, we starting the installation...please, be patient!${end_color}"
-		# Clearing the screen
-		clear
-		prerequisites_install
-		exit 0
-	fi
-else
-	echo -e "${blue_color}${bold_color}No APT package manager found on your system.${end_color}"
-	echo -e "${yellow_color}[I] The automatic installation feature is only available for Debian OS family.${end_color}"
+# Verifying if source file exist
+source_file(){
+if [[ -z ${source_installation} ]] || [[ ! -s ${source_installation} ]]; then
+	echo -e "${red_color}[X] Source file \"${source_installation}\" does not exist or is empty.${end_color}"
+	echo -e "${yellow_color}[I] This file can install the prerequisites for you.${end_color}"
+	echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
 	exit 1
 fi
 }
@@ -176,7 +55,8 @@ if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.ns
 	echo -e "${yellow_color}[I] Please, read the help file \"requirements.txt\" for installation instructions (Debian/Ubuntu):${end_color}"
 	echo "$(grep ^-- "requirements.txt")"
 	# Automatic installation for Debian OS family
-	auto_install_menu
+	source_file
+	source "${source_installation}"
 	else
 		masscan_version="$(masscan -V | grep "Masscan version" | cut -d" " -f3)"
 		nmap_version="$(nmap -V | grep "Nmap version" | cut -d" " -f3)"
@@ -185,14 +65,16 @@ if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.ns
 			echo "Please. Be sure to have the last Masscan version >= 1.0.5."
 			echo "Your current version is: ${masscan_version}"
 			# Automatic installation for Debian OS family
-			auto_install_menu
+			source_file
+			source "${source_installation}"
 		fi
 		if [[ ${nmap_version} < "7.60" ]]; then
 			echo -e "${red_color}[X] Nmap is not up to date.${end_color}"
 			echo "Please. Be sure to have Nmap version >= 7.60."
 			echo "Your current version is: ${nmap_version}"
 			# Automatic installation for Debian OS family
-			auto_install_menu
+			source_file
+			source "${source_installation}"
 		fi
 fi
 
@@ -204,13 +86,15 @@ check="off"
 # Logo
 logo(){
 if [[ $(which figlet) ]]; then
-        my_logo="$(figlet -f mini -k MassVulScan)"
-        echo -e "${green_color}${my_logo}${end_color}"
-        else
-                echo -e "${green_color}                          __"
-                echo -e "${green_color}|\/|  _.  _  _ \  /    | (_   _  _. ._"
-                echo -e "${green_color}|  | (_| _> _>  \/ |_| | __) (_ (_| | |"
-                echo -e "${end_color}"
+	my_logo="$(figlet -f mini -k MassVulScan)"
+	echo -e "${green_color}${my_logo}${end_color}"
+	echo -e "${yellow_color}[I] Version ${version}"
+else
+	echo -e "${green_color}                          __"
+	echo -e "${green_color}|\/|  _.  _  _ \  /    | (_   _  _. ._"
+	echo -e "${green_color}|  | (_| _> _>  \/ |_| | __) (_ (_| | |"
+	echo -e "${end_color}"
+	echo -e "${yellow_color}[I] Version ${version}"
 fi
 }
 
@@ -298,7 +182,7 @@ root_user
 
 # Valid input file?
 if [[ -z ${hosts} ]] || [[ ! -s ${hosts} ]]; then
-	echo -e "${red_color}[X] Input file does not exist or is empty.${end_color}"
+	echo -e "${red_color}[X] Input file \"${hosts}\" does not exist or is empty.${end_color}"
 	echo "Please, try again."
 	exit 1
 fi
@@ -306,7 +190,7 @@ fi
 # Valid exclude file?
 if [[ ${file_to_exclude} = "yes" ]]; then
         if [[ -z ${exclude_file} ]] || [[ ! -s ${exclude_file} ]]; then
-                echo -e "${red_color}[X] Exclude file does not exist or is empty.${end_color}"
+                echo -e "${red_color}[X] Exclude file \"${exclude_file}\" does not exist or is empty.${end_color}"
                 echo "Please, try again."
                 exit 1
         fi
