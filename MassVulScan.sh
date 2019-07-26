@@ -9,8 +9,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20190724
-# Version        : 1.8.0
+# Date           : 20190726
+# Version        : 1.8.1
 # Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
@@ -20,7 +20,7 @@
 #
 #############################################################################################################################
 
-version="1.8.0"
+version="1.8.1"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -109,7 +109,7 @@ usage(){
         echo "                  # You can add a comment in the file"
         echo "                  10.10.4.0/24"
         echo "                  10.3.4.224"
-        echo -e "${bold_color}          By default: the top 1000 TCP/UDP ports are scanned and the maximum rate is fix to 5K pkts/sec.${end_color}"
+        echo -e "${bold_color}          By default: the top 1000 TCP/UDP ports are scanned and the maximum rate is fix to 2.5K pkts/sec.${end_color}"
         echo -e "${yellow_color}        -e | --exclude-file${end_color}"
         echo -e "${bold_color}          (optional parameter, must be used in addition of \"-f\" parameter)${end_color}"
         echo "          Exclude file including IPv4 addresses (no hostname) do not scan, compatible with subnet mask."
@@ -227,18 +227,19 @@ elif [[ ${interactive} = "on" ]]; then
         echo -e "${yellow_color}[I] Port(s) to scan: ${ports}${end_color}"
         # Which rate?
         echo -e "${blue_color}Which rate (pkts/sec)?${end_color}"
-        echo -e "${blue_color}[default: --max-rate 5000, just typing \"Enter|Return\" key to continue]${end_color}"
+        echo -e "${blue_color}[default: --max-rate 2500, just typing \"Enter|Return\" key to continue]${end_color}"
         echo -e "${red_color}Be carreful, beyond \"10000\" it coud be dangerous for your network!!!${end_color}"
         read -p "Rate ? >> " -r -t 60 max_rate
                 if [[ -z ${max_rate} ]];then
-                        rate="5000"
+                        rate="2500"
                         else
                                 rate=${max_rate}
                 fi
         echo -e "${yellow_color}[I] Rate chosen: ${rate}${end_color}"
         else
+		echo -e "${yellow_color}[I] Default parameters: --top-ports 1000 (TCP/UDP) and --max-rate 2500.${end_color}"
                 ports="--top-ports 1000"
-                rate="5000"
+                rate="2500"
 fi
 
 ################################################
@@ -256,7 +257,7 @@ if [[ ${nb_interfaces} -gt "2" ]]; then
 	echo -e "${blue_color}${interfaces_loop}${end_color}"
 	echo -e "${blue_color}Which one do you want to use? [choose the corresponding number to the interface name]${end_color}"
 	echo -e "${blue_color}(or typing \"Enter|Return\" key to use the one corresponding to the default route]${end_color}"
-        read -p "Interface? >> " -r -t 60 interface_number
+        read -p "Interface number? >> " -r -t 60 interface_number
                 if [[ -z ${interface_number} ]];then
         		echo -e "${yellow_color}No interface chosen...the script will use the one with the default route.${end_color}"
                         else
@@ -300,13 +301,13 @@ fi
 echo -e "${blue_color}[-] Verifying Masscan parameters and running the tool...please, be patient!${end_color}"
 
 if [[ ${exclude_file} = "" ]] && [[ $(id -u) = "0" ]]; then
-	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
+	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
 	elif [[ ${exclude_file} = "" ]] && [[ $(id -u) != "0" ]]; then
-		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
+		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
 	elif [[ ${exclude_file} != "" ]] && [[ $(id -u) = "0" ]]; then
-		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
+		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
 	else
-		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt # > /dev/null 2>&1
+		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
 fi
 
 if [[ $? != "0" ]]; then
@@ -327,8 +328,8 @@ if [[ ! -s masscan-output.txt ]]; then
 	rm -rf masscan-output.txt
 	exit 0
 	else
-		udp_ports="$(grep -c "^open udp" masscan-output.txt)"
 		tcp_ports="$(grep -c "^open tcp" masscan-output.txt)"
+		udp_ports="$(grep -c "^open udp" masscan-output.txt)"
 		echo -e "${red_color}Host(s) with open port(s):${end_color}"
 		grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print "\t" i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
 fi
@@ -351,8 +352,6 @@ if [[ ${check_vulners_api_status} == "open" ]]; then
 		echo -e "${blue_color}${bold_color}So, vulnerability check will be not possible, only opened ports will be present in the HTML report.${end_color}"
 fi 
 
-echo -e "${blue_color}[-] Launching Nmap scanner(s)...please, be patient!${end_color}"
-
 # Preparing the input file for Nmap
 nmap_file(){
 proto="$1"
@@ -362,39 +361,52 @@ grep "^open ${proto}" masscan-output.txt | awk '/.+/ { \
 				if (!($4 in ips_list)) { \
 				value[++i] = $4 } ips_list[$4] = ips_list[$4] $3 "," } END { \
 				for (j = 1; j <= i; j++) { \
-				printf("%s:%s\n%s", value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' > nmap-input_"${proto}".txt
+				printf("%s:%s:%s\n%s", $2, value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' >> nmap-input.temp.txt
 }
 
-if [[ ${udp_ports} -gt "0" ]]; then
-	nmap_file udp
-fi
+rm -rf nmap-input.temp.txt
 
 if [[ ${tcp_ports} -gt "0" ]]; then
 	nmap_file tcp
 fi
 
+if [[ ${udp_ports} -gt "0" ]]; then
+	nmap_file udp
+fi
+
+sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 nmap-input.temp.txt > nmap-input.txt
+nb_nmap_process="$(sort -n nmap-input.txt | wc -l)"
+
 # Folder for temporary Nmap file(s)
 nmap_temp="$(mktemp -d /tmp/nmap_temp-XXXXXXXX)"
 
+echo -e "${blue_color}${bold_color}[-] Launching ${nb_nmap_process} Nmap scanner(s)...please, be patient!${end_color}"
+
+
 # Function for parallel Nmap scans
 parallels_scans(){
-ip="$(echo "$1" | cut -d":" -f1)"
-port="$(echo "$1" | cut -d":" -f2)"
+proto="$(echo "$1" | cut -d":" -f1)"
+ip="$(echo "$1" | cut -d":" -f2)"
+port="$(echo "$1" | cut -d":" -f3)"
 
-if [[ $2 == "nmap-input_tcp.txt" ]]; then
-	nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}/${ip}"_tcp_nmap-output "${ip}" # > /dev/null 2>&1
-	else
-		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}/${ip}"_udp_nmap-output "${ip}" # > /dev/null 2>&1
-fi
+        if [[ $proto == "tcp" ]]; then
+                echo -e "${blue_color}[-] ($count/$nb_nmap_process) Scanning host \"${ip}\" on ${proto} ports: \"${port}\"...${end_color}"
+                nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}/${ip}"_tcp_nmap-output "${ip}" > /dev/null 2>&1
+                echo -e "${yellow_color}[I] ($count/$nb_nmap_process) The ${proto} scan is done for host \"${ip}\".${end_color}"
+                else
+                        echo -e "${blue_color}[-] ($count/$nb_nmap_process) Scanning host \"${ip}\" on ${proto} ports: \"${port}\"...${end_color}"
+                        nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}/${ip}"_udp_nmap-output "${ip}" > /dev/null 2>&1
+                        echo -e "${yellow_color}[I] ($count/$nb_nmap_process) The ${proto} scan is done for host \"${ip}\".${end_color}"
+        fi
 }
 
-for file in nmap-input_*.txt; do
-	# We are launching all the Nmap scanners in the same time
-	while IFS= read -r ip_to_scan; do
-		parallels_scans "${ip_to_scan}" "${file}" &
-	done < "${file}"
-	wait
-done
+# We are launching all the Nmap scanners in the same time
+count=1
+while IFS=, read -r ip_to_scan; do
+        parallels_scans "${ip_to_scan}" &
+        count="$(expr $count + 1)"
+done < nmap-input.txt
+wait
 
 reset
 
@@ -473,6 +485,6 @@ xsltproc -o "${report_folder}${global_report_name}${date}.html" "${nmap_bootstra
 echo -e "${yellow_color}[I] Global HTML report generated: ${report_folder}${global_report_name}${date}.html${end_color}"
 echo -e "${green_color}[V] Report phase is ended, bye!${end_color}"
 
-rm -rf temp-nmap-output nmap-input_udp.txt nmap-input_tcp.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
+rm -rf temp-nmap-output nmap-input.temp.txt nmap-input.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
 
 exit 0
