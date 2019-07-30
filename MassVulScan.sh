@@ -404,26 +404,26 @@ port="$(echo "$1" | cut -d":" -f3)"
 
 if [[ $proto == "tcp" ]]; then
         nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}/${ip}"_tcp_nmap-output "${ip}" > /dev/null 2>&1
-        echo "${ip}: Done" >> process_nmap_done.txt
+        #echo "${ip} (${proto}): Done" >> process_nmap_done.txt
+        echo -n -e "${blue_color}${ip} (${proto}): Done${end_color}" $'\r'
         else
                 nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}/${ip}"_udp_nmap-output "${ip}" > /dev/null 2>&1
-                echo "${ip}: Done" >> process_nmap_done.txt
+		#echo "${ip} (${proto}): Done" >> process_nmap_done.txt
+		echo -n -e "${blue_color}${ip} (${proto}): Done${end_color}" $'\r'
 fi
 
-nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
+#nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
 
-progression "${nmap_proc_ended}"
+#progression "${nmap_proc_ended}"
 }
 
 # Controlling the number of Nmap scanner to launch
-if [[ ${nb_nmap_process} -ge "80" ]]; then
-        max_job="80"
+if [[ ${nb_nmap_process} -ge "3" ]]; then
+        max_job="2"
         echo -e "${blue_color}${bold_color}Warning: A lot of Nmap process to launch: ${nb_nmap_process}${end_color}"
         echo -e "${blue_color}[-] So, to no disturb your system, I will only launch ${max_job} Nmap process at time.${end_color}"
-	echo -n -e "[                ] ${blue_color}${bold_color}0%${end_color}" $'\r'
         else
                 echo -e "${blue_color}${bold_color}[-] Launching ${nb_nmap_process} Nmap scanner(s) in the same time...${end_color}"
-		echo -n "[                ] 0%" $'\r'
                 max_job="${nb_nmap_process}"
 fi
 
