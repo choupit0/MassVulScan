@@ -418,8 +418,8 @@ fi
 }
 
 # Controlling the number of Nmap scanner to launch
-if [[ ${nb_nmap_process} -ge "3" ]]; then
-        max_job="2"
+if [[ ${nb_nmap_process} -ge "80" ]]; then
+        max_job="80"
         echo -e "${blue_color}${bold_color}Warning: A lot of Nmap process to launch: ${nb_nmap_process}${end_color}"
         echo -e "${blue_color}[-] So, to no disturb your system, I will only launch ${max_job} Nmap process at time.${end_color}"
         else
