@@ -9,8 +9,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20190726
-# Version        : 1.8.1
+# Date           : 20190730
+# Version        : 1.8.5
 # Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
@@ -20,7 +20,7 @@
 #
 #############################################################################################################################
 
-version="1.8.1"
+version="1.8.5"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -380,8 +380,21 @@ nb_nmap_process="$(sort -n nmap-input.txt | wc -l)"
 # Folder for temporary Nmap file(s)
 nmap_temp="$(mktemp -d /tmp/nmap_temp-XXXXXXXX)"
 
-echo -e "${blue_color}${bold_color}[-] Launching ${nb_nmap_process} Nmap scanner(s)...please, be patient!${end_color}"
+percent="$(expr 100 / ${nb_nmap_process})"
 
+# Progress bar
+progression(){
+scan_nb="${1}"
+
+if [[ ${scan_nb} != ${nb_nmap_process} ]]; then
+	echo -n "[ "
+	for ((i = 0 ; i <= $scan_nb; i++)); do echo -n "##"; done
+	for ((j = $scan_nb ; j <= $nb_nmap_process ; j++)); do echo -n "  "; done
+	value="$(expr ${scan_nb} \* ${percent})"
+	echo -n " ] "
+	echo -n -e "${blue_color}${bold_color}${value}%${end_color}" $'\r'
+fi
+}
 
 # Function for parallel Nmap scans
 parallels_scans(){
@@ -389,27 +402,55 @@ proto="$(echo "$1" | cut -d":" -f1)"
 ip="$(echo "$1" | cut -d":" -f2)"
 port="$(echo "$1" | cut -d":" -f3)"
 
-        if [[ $proto == "tcp" ]]; then
-                echo -e "${blue_color}[-] ($count/$nb_nmap_process) Scanning host \"${ip}\" on ${proto} ports: \"${port}\"...${end_color}"
-                nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}/${ip}"_tcp_nmap-output "${ip}" > /dev/null 2>&1
-                echo -e "${yellow_color}[I] ($count/$nb_nmap_process) The ${proto} scan is done for host \"${ip}\".${end_color}"
-                else
-                        echo -e "${blue_color}[-] ($count/$nb_nmap_process) Scanning host \"${ip}\" on ${proto} ports: \"${port}\"...${end_color}"
-                        nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}/${ip}"_udp_nmap-output "${ip}" > /dev/null 2>&1
-                        echo -e "${yellow_color}[I] ($count/$nb_nmap_process) The ${proto} scan is done for host \"${ip}\".${end_color}"
-        fi
+if [[ $proto == "tcp" ]]; then
+        nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}/${ip}"_tcp_nmap-output "${ip}" > /dev/null 2>&1
+        echo "${ip}: Done" >> process_nmap_done.txt
+        else
+                nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}/${ip}"_udp_nmap-output "${ip}" > /dev/null 2>&1
+                echo "${ip}: Done" >> process_nmap_done.txt
+fi
+
+nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
+
+progression "${nmap_proc_ended}"
+}
+
+# Controlling the number of Nmap scanner to launch
+if [[ ${nb_nmap_process} -ge "80" ]]; then
+        max_job="80"
+        echo -e "${blue_color}${bold_color}Warning: A lot of Nmap process to launch: ${nb_nmap_process}${end_color}"
+        echo -e "${blue_color}[-] So, to no disturb your system, I will only launch ${max_job} Nmap process at time.${end_color}"
+	echo -n -e "[                ] ${blue_color}${bold_color}0%${end_color}" $'\r'
+        else
+                echo -e "${blue_color}${bold_color}[-] Launching ${nb_nmap_process} Nmap scanner(s) in the same time...${end_color}"
+		echo -n "[                ] 0%" $'\r'
+                max_job="${nb_nmap_process}"
+fi
+
+# Queue files
+new_job() {
+job_act="$(jobs | wc -l)"
+while ((job_act >= ${max_job})); do
+        job_act="$(jobs | wc -l)"
+done
+parallels_scans "${ip_to_scan}" &
 }
 
 # We are launching all the Nmap scanners in the same time
-count=1
+count="1"
+
+rm -rf process_nmap_done.txt
+
 while IFS=, read -r ip_to_scan; do
-        parallels_scans "${ip_to_scan}" &
+        new_job $i
         count="$(expr $count + 1)"
 done < nmap-input.txt
+
 wait
 
 reset
 
+echo -e "${yellow_color}[I] 100% of Nmap process termined.${end_color}"
 echo -e "${green_color}[V] Nmap phase is ended.${end_color}"
 
 ##########################
@@ -485,6 +526,6 @@ xsltproc -o "${report_folder}${global_report_name}${date}.html" "${nmap_bootstra
 echo -e "${yellow_color}[I] Global HTML report generated: ${report_folder}${global_report_name}${date}.html${end_color}"
 echo -e "${green_color}[V] Report phase is ended, bye!${end_color}"
 
-rm -rf temp-nmap-output nmap-input.temp.txt nmap-input.txt masscan-output.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
+rm -rf temp-nmap-output nmap-input.temp.txt nmap-input.txt masscan-output.txt process_nmap_done.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
 
 exit 0
