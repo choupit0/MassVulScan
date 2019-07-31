@@ -380,22 +380,6 @@ nb_nmap_process="$(sort -n nmap-input.txt | wc -l)"
 # Folder for temporary Nmap file(s)
 nmap_temp="$(mktemp -d /tmp/nmap_temp-XXXXXXXX)"
 
-percent="$(expr 100 / ${nb_nmap_process})"
-
-# Progress bar
-progression(){
-scan_nb="${1}"
-
-if [[ ${scan_nb} != ${nb_nmap_process} ]]; then
-#	echo -n "[ "
-#	for ((i = 0 ; i <= $scan_nb; i++)); do echo -n "##"; done
-#	for ((j = $scan_nb ; j <= $nb_nmap_process ; j++)); do echo -n "  "; done
-	value="$(expr ${scan_nb} \* ${percent})"
-#	echo -n " ] "
-	echo -n -e "${blue_color}${bold_color}\r${value}%${end_color}" #$'\r'
-fi
-}
-
 # Function for parallel Nmap scans
 parallels_scans(){
 proto="$(echo "$1" | cut -d":" -f1)"
@@ -411,13 +395,13 @@ if [[ $proto == "tcp" ]]; then
 fi
 
 nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
+echo -n -e " ${yellow_color}${bold_color}[I] Scan is done for ${ip} (${proto}) -> ${nmap_proc_ended}/${nb_nmap_process} Nmap process launched...${end_color}" $'\r' 
 
-progression "${nmap_proc_ended}"
 }
 
 # Controlling the number of Nmap scanner to launch
-if [[ ${nb_nmap_process} -ge "80" ]]; then
-        max_job="80"
+if [[ ${nb_nmap_process} -ge "50" ]]; then
+        max_job="50"
         echo -e "${blue_color}${bold_color}Warning: A lot of Nmap process to launch: ${nb_nmap_process}${end_color}"
         echo -e "${blue_color}[-] So, to no disturb your system, I will only launch ${max_job} Nmap process at time.${end_color}"
         else
