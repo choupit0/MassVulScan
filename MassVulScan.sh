@@ -387,12 +387,12 @@ progression(){
 scan_nb="${1}"
 
 if [[ ${scan_nb} != ${nb_nmap_process} ]]; then
-	echo -n "[ "
-	for ((i = 0 ; i <= $scan_nb; i++)); do echo -n "##"; done
-	for ((j = $scan_nb ; j <= $nb_nmap_process ; j++)); do echo -n "  "; done
+#	echo -n "[ "
+#	for ((i = 0 ; i <= $scan_nb; i++)); do echo -n "##"; done
+#	for ((j = $scan_nb ; j <= $nb_nmap_process ; j++)); do echo -n "  "; done
 	value="$(expr ${scan_nb} \* ${percent})"
-	echo -n " ] "
-	echo -n -e "${blue_color}${bold_color}${value}%${end_color}" $'\r'
+#	echo -n " ] "
+	echo -n -e "${blue_color}${bold_color}\r${value}%${end_color}" #$'\r'
 fi
 }
 
@@ -404,17 +404,15 @@ port="$(echo "$1" | cut -d":" -f3)"
 
 if [[ $proto == "tcp" ]]; then
         nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script vulners -oA "${nmap_temp}/${ip}"_tcp_nmap-output "${ip}" > /dev/null 2>&1
-        #echo "${ip} (${proto}): Done" >> process_nmap_done.txt
-        echo -n -e "${blue_color}${ip} (${proto}): Done${end_color}" $'\r'
+        echo "${ip} (${proto}): Done" >> process_nmap_done.txt
         else
                 nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sU -sV -n --script vulners -oA "${nmap_temp}/${ip}"_udp_nmap-output "${ip}" > /dev/null 2>&1
-		#echo "${ip} (${proto}): Done" >> process_nmap_done.txt
-		echo -n -e "${blue_color}${ip} (${proto}): Done${end_color}" $'\r'
+		echo "${ip} (${proto}): Done" >> process_nmap_done.txt
 fi
 
-#nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
+nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
 
-#progression "${nmap_proc_ended}"
+progression "${nmap_proc_ended}"
 }
 
 # Controlling the number of Nmap scanner to launch
