@@ -395,7 +395,8 @@ if [[ $proto == "tcp" ]]; then
 fi
 
 nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
-echo -n -e " ${yellow_color}${bold_color}[I] Scan is done for ${ip} (${proto}) -> ${nmap_proc_ended}/${nb_nmap_process} Nmap process launched...${end_color}" $'\r' 
+echo -n -e "\r                                                                                                         "
+echo -n -e "${yellow_color}${bold_color}\r[I] Scan is done for ${ip} (${proto}) -> ${nmap_proc_ended}/${nb_nmap_process} Nmap process launched...${end_color}" #$'\r'
 
 }
 
