@@ -10,7 +10,7 @@
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
 # Date           : 20190730
-# Version        : 1.8.5
+# Version        : 1.8.6
 # Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
@@ -20,7 +20,7 @@
 #
 #############################################################################################################################
 
-version="1.8.5"
+version="1.8.6"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
