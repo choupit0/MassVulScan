@@ -330,18 +330,16 @@ if [[ ! -s masscan-output.txt ]]; then
 	else
 		tcp_ports="$(grep -c "^open tcp" masscan-output.txt)"
 		udp_ports="$(grep -c "^open udp" masscan-output.txt)"
-		echo -e "${red_color}Host(s) with open port(s):${end_color}"
-		grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print "\t" i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
+		nb_ports="$(grep -c ^open masscan-output.txt)"
+		nb_hosts_nmap="$(grep ^open masscan-output.txt | cut -d" " -f4 | sort | uniq -c | wc -l)"
+		echo -e "${yellow_color}[I] ${nb_hosts_nmap} host(s) to scan concerning ${nb_ports} open ports.${end_color}"
+		# Uncomment the line below to see hosts with open ports
+		#grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print "\t" i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
 fi
 
 ###########################################################################################
 # 3/4 Identifying open services with Nmap and if they are vulnerable with vulners script  #
 ###########################################################################################
-
-nb_ports="$(grep -c ^open masscan-output.txt)"
-nb_hosts_nmap="$(grep ^open masscan-output.txt | cut -d" " -f4 | sort | uniq -c | wc -l)"
-
-echo -e "${yellow_color}[I] ${nb_hosts_nmap} host(s) to scan concerning ${nb_ports} open ports${end_color}"
 
 check_vulners_api_status="$(nc -z -v -w 1 vulners.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
 
@@ -395,8 +393,9 @@ if [[ $proto == "tcp" ]]; then
 fi
 
 nmap_proc_ended="$(grep "$Done" -co process_nmap_done.txt)"
+pourcentage="$(awk "BEGIN {printf \"%.2f\n\", "${nmap_proc_ended}/${nb_nmap_process}*100"}")"
 echo -n -e "\r                                                                                                         "
-echo -n -e "${yellow_color}${bold_color}\r[I] Scan is done for ${ip} (${proto}) -> ${nmap_proc_ended}/${nb_nmap_process} Nmap process launched...${end_color}"
+echo -n -e "${yellow_color}${bold_color}\r[I] Scan is done for ${ip} (${proto}) -> ${nmap_proc_ended}/${nb_nmap_process} Nmap process launched...(${pourcentage}%)${end_color}"
 
 }
 
@@ -431,17 +430,30 @@ done < nmap-input.txt
 
 wait
 
-reset
+sleep 2 && tset
 
-echo -e "${yellow_color}[I] 100% of Nmap process termined.${end_color}"
 echo -e "${green_color}[V] Nmap phase is ended.${end_color}"
+
+# Verifying vulnerable hosts
+vuln_hosts_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep "Nmap" | sort -u | grep -c "Nmap")"
+vuln_ports_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep -Eoc '(/udp.*open|/tcp.*open)')"
+vuln_hosts="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done)"
+vuln_hosts_ip="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep ^"Nmap scan report for" | cut -d" " -f5 | sort -u)"
+date="$(date +%F_%H-%M-%S)"
+
+if [[ ${vuln_hosts_count} != "0" ]]; then
+	echo -e "${red_color}[X] ${vuln_hosts_count} vulnerable (or potentially vulnerable) host(s) found concerning ${vuln_ports_count} port(s).${end_color}"
+	echo -e -n "${vuln_hosts_ip}\n" | while read line; do
+		host="$(host "${line}")"
+		echo "${line}" "${host}" >> vulnerable_hosts.txt 
+	done
+fi
 
 ##########################
 # 4/4 Generating reports #
 ##########################
 
 nmap_bootstrap="./stylesheet/nmap-bootstrap.xsl"
-date="$(date +%F_%H-%M-%S)"
 report_folder="$(pwd)/reports/"
 
 echo -e "${blue_color}${bold_color}Do you want giving a specific name to your report(s)?${end_color}"
@@ -455,22 +467,8 @@ read -p "Report(s) name? >> " -r -t 60 what_report_name
 			vulnerable_report_name="${what_report_name}_vulnerable_hosts_"
 	fi
 
-# Verifying vulnerable hosts
-vuln_hosts_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep "Nmap" | sort -u | grep -c "Nmap")"
-vuln_ports_count="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep -Eoc '(/udp.*open|/tcp.*open)')"
-
 if [[ ${vuln_hosts_count} != "0" ]]; then
-	vuln_hosts="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done)"
-	vuln_hosts_ip="$(for i in ${nmap_temp}/*.nmap; do tac "$i" | sed -n -e '/|_.*CVE-\|VULNERABLE/,/^Nmap/p' | tac ; done | grep ^"Nmap scan report for" | cut -d" " -f5 | sort -u)"
-
-	echo -e "${red_color}\n[X] ${vuln_hosts_count} vulnerable (or potentially vulnerable) host(s) found concerning ${vuln_ports_count} port(s):${end_color}"
-	echo -e -n "${vuln_hosts_ip}\n" | while read line; do
-		host="$(host "${line}")"
-		echo "${line}" "${host}" >> vulnerable_hosts.txt
-	done
-
 	vuln_hosts_format="$(awk '{print $1 "\t" $NF}' vulnerable_hosts.txt |  sed 's/3(NXDOMAIN)/\No reverse DNS entry found/' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 | sort -u)"
-	echo -e -n "${vuln_hosts_format}\n"
 	echo -e -n "\t----------------------------\n" > "${report_folder}${vulnerable_report_name}${date}.txt"
 	echo -e -n "Report date: $(date)\n" >> "${report_folder}${vulnerable_report_name}${date}.txt"
 	echo -e -n "Host(s) found: ${vuln_hosts_count}\n" >> "${report_folder}${vulnerable_report_name}${date}.txt"
@@ -480,11 +478,10 @@ if [[ ${vuln_hosts_count} != "0" ]]; then
 	echo -e -n "\n\t----------------------------\n" >> "${report_folder}${vulnerable_report_name}${date}.txt"
 	echo -e -n "${vuln_hosts}\n" >> "${report_folder}${vulnerable_report_name}${date}.txt"
 
-
-	echo -e "${yellow_color}[I] All details on the vulnerabilities in this TXT file: ${report_folder}${vulnerable_report_name}${date}.txt${end_color}"
+	echo -e "${yellow_color}[I] All details on the vulnerabilities: ${report_folder}${vulnerable_report_name}${date}.txt${end_color}"
 	
 	else
-		echo -e "${blue_color}${bold_color} No vulnerable host found... at first sight!.${end_color}"
+		echo -e "${blue_color}${bold_color}No vulnerable host found... at first sight!.${end_color}"
 fi
 
 # Merging all the Nmap XML files to one big XML file
