@@ -9,8 +9,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20190730
-# Version        : 1.8.6
+# Date           : 20190830
+# Version        : 1.8.7
 # Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
@@ -20,7 +20,7 @@
 #
 #############################################################################################################################
 
-version="1.8.6"
+version="1.8.7"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -29,6 +29,8 @@ blue_color="\033[0;36m"
 bold_color="\033[1m"
 end_color="\033[0m"
 source_installation="./sources/installation.sh"
+source_top_tcp="./sources/top-ports-tcp-1000.txt"
+source_top_udp="./sources/top-ports-udp-1000.txt"
 
 # Root user?
 root_user(){
@@ -39,11 +41,26 @@ if [[ $(id -u) != "0" ]]; then
 fi
 }
 
-# Verifying if source file exist
+# Verifying if installation source file exist
 source_file(){
 if [[ -z ${source_installation} ]] || [[ ! -s ${source_installation} ]]; then
 	echo -e "${red_color}[X] Source file \"${source_installation}\" does not exist or is empty.${end_color}"
 	echo -e "${yellow_color}[I] This file can install the prerequisites for you.${end_color}"
+	echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
+	exit 1
+fi
+}
+
+# Verifying if top-ports source files exist
+source_file_top(){
+if [[ -z ${source_top_tcp} ]] || [[ ! -s ${source_top_tcp} ]]; then
+	echo -e "${red_color}[X] Source file \"${source_top_tcp}\" does not exist or is empty.${end_color}"
+	echo -e "${yellow_color}[I] This file is a prerequisite to scan TCP top ports.${end_color}"
+	echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
+	exit 1
+elif [[ -z ${source_top_udp} ]] || [[ ! -s ${source_top_udp} ]]; then
+	echo -e "${red_color}[X] Source file \"${source_top_udp}\" does not exist or is empty.${end_color}"
+	echo -e "${yellow_color}[I] This file is a prerequisite to scan UDP top ports.${end_color}"
 	echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
 	exit 1
 fi
@@ -199,6 +216,9 @@ fi
 clear
 
 # Interactive mode "on" or "off"?
+top_ports_tcp="$(grep -v ^"#" sources/top-ports-tcp-1000.txt)"
+top_ports_udp="$(grep -v ^"#" sources/top-ports-udp-1000.txt)"
+
 if [[ ${interactive} = "on" ]] && [[ ${all_ports} = "on" ]]; then
         echo -e "${red_color}Sorry, but you can't chose interactive (-i) mode with all ports scanning mode (-a).${end_color}"
 	exit 1
@@ -220,26 +240,30 @@ elif [[ ${interactive} = "on" ]]; then
         echo "  -p1-65535,U:1-65535             all TCP AND UDP ports"
         read -p "Port(s) to scan? >> " -r -t 60 ports_list
                 if [[ -z ${ports_list} ]];then
-                        ports="--top-ports 1000"
+			source_file_top
+                        ports="-p${top_ports_tcp},U:${top_ports_udp}"
+			echo -e "${yellow_color}[I] Default parameter: --top-ports 1000 (TCP/UDP).${end_color}"
                         else
                                 ports=${ports_list}
+				echo -e "${yellow_color}[I] Port(s) to scan: ${ports}${end_color}"
                 fi
-        echo -e "${yellow_color}[I] Port(s) to scan: ${ports}${end_color}"
         # Which rate?
         echo -e "${blue_color}Which rate (pkts/sec)?${end_color}"
         echo -e "${blue_color}[default: --max-rate 2500, just typing \"Enter|Return\" key to continue]${end_color}"
         echo -e "${red_color}Be carreful, beyond \"10000\" it coud be dangerous for your network!!!${end_color}"
-        read -p "Rate ? >> " -r -t 60 max_rate
+        read -p "Rate? >> " -r -t 60 max_rate
                 if [[ -z ${max_rate} ]];then
                         rate="2500"
+			echo -e "${yellow_color}[I] Default parameter: --max-rate 2500.${end_color}"
                         else
                                 rate=${max_rate}
+				echo -e "${yellow_color}[I] Rate chosen: ${rate}${end_color}"
                 fi
-        echo -e "${yellow_color}[I] Rate chosen: ${rate}${end_color}"
         else
-		echo -e "${yellow_color}[I] Default parameters: --top-ports 1000 (TCP/UDP) and --max-rate 2500.${end_color}"
-                ports="--top-ports 1000"
+		source_file_top
+		ports="-p${top_ports_tcp},U:${top_ports_udp}"
                 rate="2500"
+		echo -e "${yellow_color}[I] Default parameters: --top-ports 1000 (TCP/UDP) and --max-rate 2500.${end_color}"
 fi
 
 ################################################
@@ -259,7 +283,7 @@ if [[ ${nb_interfaces} -gt "2" ]]; then
 	echo -e "${blue_color}(or typing \"Enter|Return\" key to use the one corresponding to the default route]${end_color}"
         read -p "Interface number? >> " -r -t 60 interface_number
                 if [[ -z ${interface_number} ]];then
-        		echo -e "${yellow_color}No interface chosen...the script will use the one with the default route.${end_color}"
+        		echo -e "${yellow_color}[I] No interface chosen, we will use the one with the default route.${end_color}"
                         else
                                 interface="${interfaces_tab[${interface_number}]}"
                 fi
@@ -347,7 +371,7 @@ if [[ ${check_vulners_api_status} == "open" ]]; then
 	echo -e "${yellow_color}[I] Vulners.com site is reachable on port 443.${end_color}"
 	else
 		echo -e "${blue_color}${bold_color}Warning: Vulners.com site is NOT reachable on port 443. Please, check your firewall rules, dns configuration and your Internet link.${end_color}"
-		echo -e "${blue_color}${bold_color}So, vulnerability check will be not possible, only opened ports will be present in the HTML report.${end_color}"
+		echo -e "${blue_color}${bold_color}So, vulnerability check will be not possible, only opened ports will be present in the report.${end_color}"
 fi 
 
 # Preparing the input file for Nmap
@@ -447,6 +471,8 @@ if [[ ${vuln_hosts_count} != "0" ]]; then
 		host="$(host "${line}")"
 		echo "${line}" "${host}" >> vulnerable_hosts.txt 
 	done
+	else
+		echo -e "${blue_color}No vulnerable host found... at first sight!.${end_color}"
 fi
 
 ##########################
@@ -457,7 +483,7 @@ nmap_bootstrap="./stylesheet/nmap-bootstrap.xsl"
 report_folder="$(pwd)/reports/"
 
 echo -e "${blue_color}${bold_color}Do you want giving a specific name to your report(s)?${end_color}"
-echo -e "${blue_color}${bold_color}[if not, just pressing \"Enter|Return\" key]${end_color}"
+echo -e "${blue_color}${bold_color}[if not, just pressing \"Enter|Return\" key for a generic name]${end_color}"
 read -p "Report(s) name? >> " -r -t 60 what_report_name
 	if [[ -z ${what_report_name} ]];then
 		global_report_name="global-report_"
@@ -477,11 +503,7 @@ if [[ ${vuln_hosts_count} != "0" ]]; then
 	echo -e -n "All the details below." >> "${report_folder}${vulnerable_report_name}${date}.txt"
 	echo -e -n "\n\t----------------------------\n" >> "${report_folder}${vulnerable_report_name}${date}.txt"
 	echo -e -n "${vuln_hosts}\n" >> "${report_folder}${vulnerable_report_name}${date}.txt"
-
 	echo -e "${yellow_color}[I] All details on the vulnerabilities: ${report_folder}${vulnerable_report_name}${date}.txt${end_color}"
-	
-	else
-		echo -e "${blue_color}${bold_color}No vulnerable host found... at first sight!.${end_color}"
 fi
 
 # Merging all the Nmap XML files to one big XML file
