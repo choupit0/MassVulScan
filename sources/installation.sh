@@ -22,6 +22,16 @@ error_color="\033[1;41m"
 blue_color="\033[0;36m"
 bold_color="\033[1m"
 end_color="\033[0m"
+script_start="$SECONDS"
+
+# Time elapsed
+time_elapsed(){
+script_end="$SECONDS"
+script_duration="$((script_end-script_start))"
+
+printf 'Duration: %02dh:%02dm:%02ds\n' $((${script_duration}/3600)) $((${script_duration}%3600/60)) $((${script_duration}%60))
+}
+
 
 # Root user?
 root_user(){
@@ -130,6 +140,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	proc_status
 	echo -n -e "\r                                           "
 	echo -n -e "${green_color}\r[V] Installation finished.\n${end_color}"
+	time_elapsed
 	echo -e "${blue_color}${bold_color}Please, now launch again the script to see options.\n${end_color}"
 	exit 0
 	else
@@ -158,6 +169,7 @@ if [[ $(which apt) ]] || [[ $(which apt-get) ]]; then
 		# Clearing the screen
 		clear
 		prerequisites_install
+		time_elapsed
 		exit 0
 	fi
 else

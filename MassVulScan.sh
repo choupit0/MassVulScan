@@ -9,8 +9,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20190830
-# Version        : 1.8.7
+# Date           : 20190903
+# Version        : 1.8.8
 # Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] | [-v] [-h]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
@@ -20,7 +20,7 @@
 #
 #############################################################################################################################
 
-version="1.8.7"
+version="1.8.8"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -31,6 +31,15 @@ end_color="\033[0m"
 source_installation="./sources/installation.sh"
 source_top_tcp="./sources/top-ports-tcp-1000.txt"
 source_top_udp="./sources/top-ports-udp-1000.txt"
+script_start="$SECONDS"
+
+# Time elapsed 
+time_elapsed(){
+script_end="$SECONDS"
+script_duration="$((script_end-script_start))"
+
+printf 'Duration: %02dh:%02dm:%02ds\n' $((${script_duration}/3600)) $((${script_duration}%3600/60)) $((${script_duration}%60))
+}
 
 # Root user?
 root_user(){
@@ -197,6 +206,14 @@ done
 
 root_user
 
+# Checking if process already running
+check_proc="$(ps -C "MassVulScan.sh" | grep -c "MassVulScan\.sh")"
+
+if [[ ${check_proc} -gt "2" ]]; then
+	echo -e "${red_color}[X] A process \"MassVulScan.sh\" is already running.${end_color}"
+	exit 1
+fi
+
 # Valid input file?
 if [[ -z ${hosts} ]] || [[ ! -s ${hosts} ]]; then
 	echo -e "${red_color}[X] Input file \"${hosts}\" does not exist or is empty.${end_color}"
@@ -308,6 +325,7 @@ if [[ ${check} = "on" ]]; then
 			echo -e "${error_color}[X] ERROR! Thanks to verify your parameters or your input/exclude file format.${end_color}"
 			echo -e "${error_color}[X] ERROR! Or maybe there is no host detected online. The script is ended.${end_color}"
 			rm -rf temp-nmap-output
+			time_elapsed			
 			exit 1
 		fi
 
@@ -350,6 +368,7 @@ fi
 if [[ ! -s masscan-output.txt ]]; then
         echo -e "${green_color}[!] No ip with open TCP/UDP ports found, so, exit! ->${end_color}"
 	rm -rf masscan-output.txt
+	time_elapsed
 	exit 0
 	else
 		tcp_ports="$(grep -c "^open tcp" masscan-output.txt)"
@@ -529,5 +548,7 @@ echo -e "${yellow_color}[I] Global HTML report generated: ${report_folder}${glob
 echo -e "${green_color}[V] Report phase is ended, bye!${end_color}"
 
 rm -rf temp-nmap-output nmap-input.temp.txt nmap-input.txt masscan-output.txt process_nmap_done.txt vulnerable_hosts.txt nmap-output.xml "${nmap_temp}" 2>/dev/null
+
+time_elapsed
 
 exit 0
