@@ -80,3 +80,5 @@ vi MassVulScan.sh
 ```
 Note that the advantage of using the NSE vulners.nse script is that it systematically polls the vulners.com site database, so it will be the latest available data. Similarly, the latter performs a ranking and sorting of identified VECs, the most severe at the top of the list, which is very convenient.
 Last thing, hit the "D" (= debug) key during nmap scans if you want to see what's going on.
+# Known issues
+Sometimes UDP port scan doesn't seems correctly working with masscan program. I'm trying to find a solution.
