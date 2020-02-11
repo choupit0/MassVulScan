@@ -105,7 +105,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	cd "${temp_folder}"
 	git clone https://github.com/robertdavidgraham/masscan.git &>> "${log_file}"
 	git clone https://github.com/vulnersCom/nmap-vulners &>> "${log_file}"
-	wget https://nmap.org/dist/nmap-7.70.tgz &>> "${log_file}"
+	wget https://nmap.org/dist/nmap-7.80.tgz &>> "${log_file}"
 	cd "${temp_folder}/masscan"
 	echo -n -e "\r                                                                            "
 	echo -n -e "${blue_color}\r[-] Compiling \"Masscan\" ...${end_color}" && echo "---- COMPILING MASSCAN ---" &>> "${log_file}"
@@ -115,7 +115,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	mv -f "bin/masscan" "/usr/bin/" &>> "${log_file}"
 	proc_status
 	cd "${temp_folder}"
-	tar -xzf nmap-7.70.tgz &>> "${log_file}"
+	tar -xzf nmap-7.80.tgz &>> "${log_file}"
 	cd "nmap-7.70"
 	echo -n -e "${blue_color}\r[-] Resolving dependencies for \"Nmap\"...${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> "${log_file}"
 	./configure &>> "${log_file}"
