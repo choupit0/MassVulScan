@@ -116,7 +116,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	proc_status
 	cd "${temp_folder}"
 	tar -xzf nmap-7.80.tgz &>> "${log_file}"
-	cd "nmap-7.70"
+	cd "nmap-7.80"
 	echo -n -e "${blue_color}\r[-] Resolving dependencies for \"Nmap\"...${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> "${log_file}"
 	./configure &>> "${log_file}"
 	proc_status
