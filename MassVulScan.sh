@@ -529,19 +529,23 @@ fi
 
 # Output file with hostnames
 merge_ip_hostname(){
-cat nmap-input.txt | while IFS=, read -r line; do
-	search_ip=$(echo ${line} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+if [[ -s file_with_IPs_unsorted.txt ]]; then
+	cat nmap-input.txt | while IFS=, read -r line; do
+		search_ip=$(echo ${line} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
 
-		if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt) ]]; then
+			if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt) ]]; then
 
-			if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}') ]]; then
-				search_hostname=$(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}')
-				echo "${line} ${search_hostname}" >> IPs_hostnames_merged.txt
-			else
-				echo "${line}" >> IPs_hostnames_merged.txt
+				if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}') ]]; then
+					search_hostname=$(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}')
+					echo "${line} ${search_hostname}" >> IPs_hostnames_merged.txt
+				else
+					echo "${line}" >> IPs_hostnames_merged.txt
+				fi
 			fi
-		fi
 	done
+else
+	cp nmap-input.txt IPs_hostnames_merged.txt 
+fi
 }
 
 # Hosts list scanned
