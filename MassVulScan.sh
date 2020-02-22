@@ -263,6 +263,8 @@ clear
 # Parsing the input file #
 ##########################
 
+echo -n -e "${blue_color}${bold_color}\r[-] Parsing the input file..."
+
 # First parsing to translate the hostnames to IPs
 num_hosts=$(grep -v "^#" ${hosts} | grep "\S" | grep -vEoc '([0-9]{1,3}\.){3}[0-9]{1,3}')
 
@@ -285,7 +287,7 @@ fi
 
 if [[ -s hosts_converted.txt ]]; then
 	num_valid_hosts=$(sort -u hosts_converted.txt | wc -l)
-	echo -e "${blue_color}${bold_color}${num_valid_hosts} Valid hostname(s) has been detected, we will translate them to IPv4 format:${end_color}"
+	echo -n -e "${blue_color}${bold_color}\r${num_valid_hosts} Valid hostname(s) has been detected, we will translate them to IPv4 format:\n${end_color}"
 fi	
 
 if [[ -s file_with_IPs_only.txt ]]; then
@@ -334,7 +336,7 @@ if [[ -s file_with_IPs_unsorted.txt ]]; then
 	echo -e "${bold_color}$(cat file_with_IPs_unsorted.txt)${end_color}"
 	cut -d" " -f1 file_with_IPs_unsorted.txt | sort -u | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > ${hosts}_sorted
 else
-        echo -e "${blue_color}${bold_color}Only IPs has been detected in the input file.${end_color}"
+        echo -n -e "${blue_color}${bold_color}\rOnly IPs has been detected in the input file.\n${end_color}"
 	cut -d" " -f1 ${hosts} | sort -u | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > ${hosts}_sorted
 fi
 
