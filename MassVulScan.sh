@@ -9,8 +9,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20200214
-# Version        : 1.8.9
+# Date           : 20200219
+# Version        : 1.9.0
 # Usage          : ./MassVulScan.sh [[-f file] + [-e file] [-i] [-a] [-c] [-k] [-ns] | [-h] [-v]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc package is also necessary.
@@ -20,7 +20,7 @@
 #
 #############################################################################################################################
 
-version="1.8.9"
+version="1.9.0"
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -128,14 +128,15 @@ fi
 # Usage of script
 usage(){
         logo
-	echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo${end_color} ./$(basename "$0") [[-f file] + [-e file] [-i] [-a] [-c] [-k] | [-v] [-h]]"
+	echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo${end_color} ./$(basename "$0") [[-f file] + [-e file] [-i] [-a] [-c] [-k] [-ns] | [-v] [-h]]"
+	echo -e "${blue_color}${bold_color}[-] Information: Bash script which identifies open network ports and any associated vulnerabilities.${end_color}"
 	echo -e "${bold_color}    * Mandatory parameter:"
 	echo -e "${yellow_color}        -f | --include-file${end_color}"
-	echo "          Input file including IPv4 addresses (NO hostname) to scan, compatible with subnet mask."
+	echo "          Input file including IPv4 addresses and/or hostnames to scan, compatible with subnet mask."
 	echo "          Example:"
 	echo "                  # You can add a comment in the file"
 	echo "                  10.66.0.0/24"
-	echo "                  10.66.6.224"
+	echo "                  webmail.acme.corp"
 	echo -e "${bold_color}          By default: the top 1000 TCP/UDP ports are scanned, the rate is fix to 2.5K pkts/sec, and${end_color}"
 	echo -e "${bold_color}          the NSE vulners.nse is used.${end_color}"
 	echo -e "${bold_color}    * Optional parameters (must be used in addition of \"-f\" parameter):"
@@ -160,11 +161,11 @@ usage(){
 	echo "          Keep IPs scanned with and without open ports and protocols in two files (same exiting file is overwritten)"
 	echo "          By default, all the files used are deleted at the end of the script."
 	echo "          Example:"
-	echo "                  All_IPs_scanned_with_ports.txt:    tcp:10.66.6.11:3269,53,464,88,445,389,139,135,636"
-	echo "                                                     udp:10.66.6.11:53,137"
+	echo "                  All_IPs_scanned_with_ports.txt:    tcp:10.66.6.11:25,443 webmail.acme.corp,smtp.acme.corp"
+	echo "                                                     udp:10.66.6.12:53,137"
 	echo "                  All_IPs_scanned_without_ports.txt: 10.66.6.11"
 	echo -e "${yellow_color}        -ns | --no-nmap-scan${end_color}"
-	echo "          Use only the script to detected the hosts with open ports (no reports provided)."
+	echo "          Use only the script to detect the hosts with open ports (no reports provided)."
 	echo -e "${yellow_color}        -h | --help${end_color}"
 	echo "          This help menu."
 	echo -e "${yellow_color}        -v | --version${end_color}"
@@ -246,13 +247,96 @@ if [[ ${file_to_exclude} = "yes" ]]; then
         fi
 fi
 
-# Cleaning
-rm -rf temp-nmap-output nmap-input.temp.txt nmap-input.txt masscan-output.txt process_nmap_done.txt vulnerable_hosts.txt nmap-output.xml All_IPs_scanned_without_ports_temp.txt /tmp/nmap_temp-* 2>/dev/null
+# Cleaning old files
+rm -rf IPs_hostnames_merged.txt file_with_IPs_and_hostnames.txt hosts_to_convert.txt \
+hosts_converted.txt file_with_IPs_sorted temp-nmap-output nmap-input.temp.txt \
+nmap-input.txt masscan-output.txt process_nmap_done.txt vulnerable_hosts.txt \
+file_with_uniq_IP_only.txt file_with_multiple_IPs_only.txt nmap-output.xml file_with_IPs_unsorted.txt \
+All_IPs_scanned_without_ports_temp.txt /tmp/nmap_temp-* *_sorted 2>/dev/null
 
 # Folder for temporary Nmap file(s)
 nmap_temp="$(mktemp -d /tmp/nmap_temp-XXXXXXXX)"
 
 clear
+
+##########################
+# Parsing the input file #
+##########################
+
+# First parsing to translate the hostnames to IPs
+num_hosts=$(grep -v "^#" ${hosts} | grep "\S" | grep -vEoc '([0-9]{1,3}\.){3}[0-9]{1,3}')
+
+if [[ ${num_hosts} != "0" ]]; then
+
+        # Saving IPs first
+        grep -v "^#" ${hosts} | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' > file_with_IPs_only.txt
+
+        # Filtering on the hosts only
+        grep -v "^#" ${hosts} | grep "\S" | grep -vE '([0-9]{1,3}\.){3}[0-9]{1,3}' > hosts_to_convert.txt
+
+        while IFS=, read -r host_to_convert; do
+		host_ip=$(host ${host_to_convert} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+		echo $host_ip ${host_to_convert} | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' >> hosts_converted.txt
+        done < hosts_to_convert.txt
+
+fi
+
+if [[ -s hosts_converted.txt ]]; then
+	num_valid_hosts=$(sort -u hosts_converted.txt | wc -l)
+	echo -e "${blue_color}${bold_color}${num_valid_hosts} Valid hostname(s) has been detected, we will translate them to IPv4 format:${end_color}"
+fi	
+
+if [[ -s file_with_IPs_only.txt ]]; then
+	mv file_with_IPs_only.txt file_with_IPs_and_hostnames.txt
+fi
+
+# Second parsing to detect multiple IPs for the same hostname
+if [[ -s hosts_converted.txt ]]; then
+	while read line; do
+		num_ips=$(echo ${line} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | wc -l)
+
+		if [[ ${num_ips} -gt "1" ]]; then
+			# Filtering on the multiple IPs only
+			hostname=$(echo ${line} | grep -oE '[^ ]+$')
+			ips_list=$(echo ${line} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+			ips_tab=(${ips_list})
+			ips_loop="$(for index in "${!ips_tab[@]}"; do echo "${ips_tab[${index}]} ${hostname}"; done)"
+
+			echo "${ips_loop}" >> file_with_multiple_IPs_only.txt
+
+		elif [[ ${num_ips} -eq "1" ]]; then
+			# Saving uniq IP
+			echo ${line} >> file_with_uniq_IP_only.txt
+		fi
+	done < hosts_converted.txt
+
+	if [[ -s file_with_uniq_IP_only.txt ]]; then
+		cat file_with_uniq_IP_only.txt >> file_with_IPs_and_hostnames.txt
+	fi
+
+	if [[ -s file_with_multiple_IPs_only.txt ]]; then
+		cat file_with_multiple_IPs_only.txt >> file_with_IPs_and_hostnames.txt
+	fi
+
+	# Third parsing to detect duplicate IPs and keep the multiple hostnames
+	# Source: http://www.whxy.org/book/mastering-kali-linux-advanced-pen-testing-2nd/text/part0103.html
+
+	cat file_with_IPs_and_hostnames.txt | awk '/.+/ { \
+				if (!($1 in ips_list)) { \
+				value[++i] = $1 } ips_list[$1] = ips_list[$1] $2 "," } END { \
+				for (j = 1; j <= i; j++) { \
+				printf("%s %s\n%s", value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' > file_with_IPs_unsorted.txt
+fi
+
+if [[ -s file_with_IPs_unsorted.txt ]]; then
+	echo -e "${bold_color}$(cat file_with_IPs_unsorted.txt)${end_color}"
+	cut -d" " -f1 file_with_IPs_unsorted.txt | sort -u | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > ${hosts}_sorted
+else
+        echo -e "${blue_color}${bold_color}Only IPs has been detected in the input file.${end_color}"
+	cut -d" " -f1 ${hosts} | sort -u | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > ${hosts}_sorted
+fi
+
+hosts="${hosts}_sorted"	
 
 # Interactive mode "on" or "off"?
 top_ports_tcp="$(grep -v ^"#" sources/top-ports-tcp-1000.txt)"
@@ -405,12 +489,12 @@ echo -e "${blue_color}[-] Verifying Masscan parameters and running the tool...pl
 
 if [[ ${exclude_file} = "" ]] && [[ $(id -u) = "0" ]]; then
 	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
-	elif [[ ${exclude_file} = "" ]] && [[ $(id -u) != "0" ]]; then
-		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
-	elif [[ ${exclude_file} != "" ]] && [[ $(id -u) = "0" ]]; then
-		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
-	else
-		sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
+elif [[ ${exclude_file} = "" ]] && [[ $(id -u) != "0" ]]; then
+	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL masscan-output.txt
+elif [[ ${exclude_file} != "" ]] && [[ $(id -u) = "0" ]]; then
+	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
+else
+	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${exclude_file}" --max-rate "${rate}" -oL masscan-output.txt
 fi
 
 if [[ $? != "0" ]]; then
@@ -443,12 +527,27 @@ fi
 # 3/4 Identifying open services with Nmap and if they are vulnerable with vulners script  #
 ###########################################################################################
 
+# Output file with hostnames
+merge_ip_hostname(){
+cat nmap-input.txt | while IFS=, read -r line; do
+	search_ip=$(echo ${line} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+
+		if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt) ]]; then
+
+			if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}') ]]; then
+				search_hostname=$(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}')
+				echo "${line} ${search_hostname}" >> IPs_hostnames_merged.txt
+			else
+				echo "${line}" >> IPs_hostnames_merged.txt
+			fi
+		fi
+	done
+}
+
 # Hosts list scanned
 hosts_scanned(){
-	grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
 	echo -e "${bold_color}Host(s) discovered with an open port(s):${end_color}"
-	echo -e -n "${bold_color}$(cat nmap-input.txt)\n${end_color}"
-	echo -e "${yellow_color}[I] No Nmap scan to perform.${end_color}"	
+	grep ^open masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
 }
 
 # Preparing the input file for Nmap
@@ -492,10 +591,13 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 
 	# Keep the nmap input file?
 	if [[ ${keep} == "on" ]]; then
-		cp nmap-input.txt All_IPs_scanned_with_ports.txt
-		grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' nmap-input.txt > All_IPs_scanned_without_ports_temp.txt
-		sort -u All_IPs_scanned_without_ports_temp.txt > All_IPs_scanned_without_ports.txt
-		echo -e "${yellow_color}[I] All the IPs scanned are in these 2 files: \"All_IPs_scanned_with_ports.txt\" and \"All_IPs_scanned_without_ports.txt\"${end_color}"
+		hosts_scanned
+		merge_ip_hostname
+		mv IPs_hostnames_merged.txt ${report_folder}All_IPs_scanned_with_ports.txt
+		grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' nmap-input.txt | sort -u > ${report_folder}All_IPs_scanned_without_ports.txt
+		echo -e "${yellow_color}[I] All the IPs scanned are in these 2 files:${end_color}"
+		echo -e "${blue_color}-> ${report_folder}All_IPs_scanned_with_ports.txt${end_color}"
+		echo -e "${blue_color}-> ${report_folder}All_IPs_scanned_without_ports.txt${end_color}"
 	fi
 
 	# Function for parallel Nmap scans
@@ -583,14 +685,20 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	fi
 
 elif [[ ${no_nmap_scan} == "on" ]] && [[ ${keep} == "on" ]]; then
+	echo -e "${yellow_color}[I] No Nmap scan to perform.${end_color}"
 	hosts_scanned
-	cp nmap-input.txt All_IPs_scanned_with_ports.txt
-	grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' nmap-input.txt > All_IPs_scanned_without_ports_temp.txt
-	sort -u All_IPs_scanned_without_ports_temp.txt > All_IPs_scanned_without_ports.txt
-	echo -e "${yellow_color}[I] All the IPs scanned are in these 2 files: \"All_IPs_scanned_with_ports.txt\" and \"All_IPs_scanned_without_ports.txt\"${end_color}"
+	merge_ip_hostname
+	mv IPs_hostnames_merged.txt ${report_folder}All_IPs_scanned_with_ports.txt
+	grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' nmap-input.txt | sort -u > ${report_folder}All_IPs_scanned_without_ports.txt
+	echo -e "${yellow_color}[I] All the IPs scanned are in these 2 files:${end_color}"
+	echo -e "${blue_color}-> ${report_folder}All_IPs_scanned_with_ports.txt${end_color}"
+	echo -e "${blue_color}-> ${report_folder}All_IPs_scanned_without_ports.txt${end_color}"
 
 else
+	echo -e "${yellow_color}[I] No Nmap scan to perform.${end_color}"
 	hosts_scanned
+	merge_ip_hostname
+	echo -e "${bold_color}$(cat IPs_hostnames_merged.txt)${end_color}"
 fi
 
 ##########################
@@ -613,9 +721,11 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 
 	if [[ -s ${report_folder}vulnerable_hosts_details_${date}.txt ]] && [[ ${report_folder}vulnerable_hosts_details_${date}.txt != ${report_folder}${vulnerable_report_name}${date}.txt ]]; then
 		mv ${report_folder}vulnerable_hosts_details_${date}.txt ${report_folder}${vulnerable_report_name}${date}.tx
-		echo -e "${yellow_color}[I] All details on the vulnerabilities: ${report_folder}${vulnerable_report_name}${date}.txt${end_color}"
+		echo -e "${yellow_color}[I] All details on the vulnerabilities:"
+		echo -e "${blue_color}-> ${report_folder}${vulnerable_report_name}${date}.txt${end_color}"
 	elif [[ -s ${report_folder}vulnerable_hosts_details_${date}.txt ]] && [[ ${report_folder}vulnerable_hosts_details_${date}.txt == ${report_folder}${vulnerable_report_name}${date}.txt ]]; then
-		echo -e "${yellow_color}[I] All details on the vulnerabilities: ${report_folder}vulnerable_hosts_details_${date}.txt${end_color}"
+		echo -e "${yellow_color}[I] All details on the vulnerabilities:"
+		echo -e "${blue_color}-> ${report_folder}vulnerable_hosts_details_${date}.txt${end_color}"
 	fi
 
 	# Merging all the Nmap XML files to one big XML file
@@ -637,14 +747,19 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	xsltproc -o "${report_folder}${global_report_name}${date}.html" "${nmap_bootstrap}" nmap-output.xml 2>/dev/null
 
 	# End of script
-	echo -e "${yellow_color}[I] Global HTML report generated: ${report_folder}${global_report_name}${date}.html${end_color}"
+	echo -e "${yellow_color}[I] Global HTML report generated:"
+	echo -e "${blue_color}-> ${report_folder}${global_report_name}${date}.html${end_color}"
 	echo -e "${green_color}[V] Report phase is ended, bye!${end_color}"
 else
 	echo -e "${yellow_color}[I] No reports to produce with --no-nmap-scan parameter.${end_color}"
 
 fi
 
-rm -rf temp-nmap-output nmap-input.temp.txt nmap-input.txt masscan-output.txt process_nmap_done.txt vulnerable_hosts.txt nmap-output.xml All_IPs_scanned_without_ports_temp.txt "${nmap_temp}" 2>/dev/null
+rm -rf IPs_hostnames_merged.txt file_with_IPs_and_hostnames.txt hosts_to_convert.txt \
+hosts_converted.txt file_with_IPs_sorted temp-nmap-output nmap-input.temp.txt \
+nmap-input.txt masscan-output.txt process_nmap_done.txt vulnerable_hosts.txt \
+file_with_uniq_IP_only.txt file_with_multiple_IPs_only.txt nmap-output.xml file_with_IPs_unsorted.txt \
+All_IPs_scanned_without_ports_temp.txt "${nmap_temp}" ${hosts} 2>/dev/null
 
 time_elapsed
 
