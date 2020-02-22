@@ -29,7 +29,7 @@ The main steps of the script:
 
 The HTML report uses a bootstrap style sheet (https://github.com/honze-net/nmap-bootstrap-xsl) for more convenience.
 # How to use it?
-All you have to do is indicate the file (-f | --include-file) containing a list of networks / hosts to scan:
+All you have to do is indicate the file (-f | --include-file) containing a list of networks, hosts or hostnames (version 1.9.0) to scan:
 ```
 git clone https://github.com/choupit0/MassVulScan.git
 cd MassVulScan
@@ -38,21 +38,22 @@ chmod +x MassVulScan.sh
 ```
 List of available parameters/arguments:
 ```
--f (input file) = mandatory parameter that will contain the list of networks/hosts to scan
--e (exclude file) = optional parameter to exclude a list of networks/hosts to scan
+-f (input file) = mandatory parameter that will contain the list of networks, hosts or hostnames to scan
+-e (exclude file) = optional parameter to exclude a list of networks/hosts (no hostnames) to scan
 -i (interactive mode) = optional parameter to choose ports to scan, speed (pkts/sec for Masscan) and Nmap script
 -a (all ports) = optional parameter to scan all 65535 ports (TCP and UDP), at rate to 5K pkts/sec
 -c (check) = optional parameter which perform a pre-scanning to identify online hosts and scan only them
 -k (keep files) = optional parameter to keep all the IPs scanned in 2 files (with and without ports)
 -ns (no Nmap scan) = optional parameter to detect the hosts with open ports only
 ```
-By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 5000 by default.
+By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 2500 by default.
 
 For the format of the files, you will find two examples in the dedicated directory:
 ```
 root@ubuntu:~/audit/MassVulScan# cat example/hosts.txt
 # Private subnet
 192.168.2.0/24
+webmail.acme.corp
 root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Gateway
 192.168.2.254
@@ -73,14 +74,7 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Compatibility
 The script has only been tested on Debian family OS but should work on most Linux distributions (except for prerequisites installation). It can detect open ports on TCP and UDP protocols.
 # Notes / Tips
-The script is also compatible with Nmap's "Vuln" option to search for more vulnerabilities (the better known as ms17-010, EternalBlue) in addition to the CVEs identified from vulners.com. All you have to do is modify the lines of the script containing "**--script vulners**" and replace with "**--script vuln,vulners**".
-With the VI editor it's very simple:
-```
-vi MassVulScan.sh
-:%s/--script vulners/--script vuln,vulners/g
-:wq
-```
-Note that the advantage of using the NSE vulners.nse script is that it systematically polls the vulners.com site database, so it will be the latest available data. Similarly, the latter performs a ranking and sorting of identified VECs, the most severe at the top of the list, which is very convenient.
-Last thing, hit the "D" (= debug) key during nmap scans if you want to see what's going on.
+The script is also compatible with Nmap's "Vuln" option to search for more vulnerabilities (the better known as ms17-010, EternalBlue) in addition to the CVEs identified from vulners.com.
+Note that the advantage of using the NSE vulners.nse script is that it systematically polls the vulners.com site database, so it will be the latest available data. Similarly, the latter performs a ranking and sorting of identified CVEs, the most severe at the top of the list, which is very convenient.
 # Known issues
 Concerning SNMP, sometimes UDP port scan doesn't seems correctly working with masscan program. I'm trying to find a solution.
