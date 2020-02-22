@@ -29,7 +29,7 @@ The main steps of the script:
 
 The HTML report uses a bootstrap style sheet (https://github.com/honze-net/nmap-bootstrap-xsl) for more convenience.
 # How to use it?
-All you have to do is indicate the file (-f | --include-file) containing a list of networks, hosts or hostnames (version 1.9.0) to scan:
+All you have to do is indicate the file (-f | --include-file) containing a list of networks, IP or hostnames (version 1.9.0) to scan:
 ```
 git clone https://github.com/choupit0/MassVulScan.git
 cd MassVulScan
@@ -38,8 +38,8 @@ chmod +x MassVulScan.sh
 ```
 List of available parameters/arguments:
 ```
--f (input file) = mandatory parameter that will contain the list of networks, hosts or hostnames to scan
--e (exclude file) = optional parameter to exclude a list of networks/hosts (no hostnames) to scan
+-f (input file) = mandatory parameter that will contain the list of networks, IP or hostnames to scan
+-e (exclude file) = optional parameter to exclude a list of networks or IP (no hostnames) to scan
 -i (interactive mode) = optional parameter to choose ports to scan, speed (pkts/sec for Masscan) and Nmap script
 -a (all ports) = optional parameter to scan all 65535 ports (TCP and UDP), at rate to 5K pkts/sec
 -c (check) = optional parameter which perform a pre-scanning to identify online hosts and scan only them
