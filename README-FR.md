@@ -46,7 +46,7 @@ Liste des paramètres/arguments disponibles :
 -k (keep files) = paramètre optionnel pour conserver les hosts scannés avec et sans le(s) port(s) dans 2 fichiers
 -ns (No Nmap scan) = paramètre optionnel pour détecter uniquement les ports ouverts de chacun des hosts
 ```
-Par défaut le script ne scannera que les 1000 premiers ports TCP/UDP parmi les ports les plus courants. Vous pouvez retrouver la liste ici : /usr/local/share/nmap/nmap-services. De même, le taux ou le nombre de paquets par seconde est fixé à 5000 par défaut.
+Par défaut le script ne scannera que les 1000 premiers ports TCP/UDP parmi les ports les plus courants. Vous pouvez retrouver la liste ici : /usr/local/share/nmap/nmap-services. De même, le taux ou le nombre de paquets par seconde est fixé à 2500 par défaut.
 
 Pour le format des fichiers, vous trouverez deux exemples dans le répertoire dédié :
 ```
