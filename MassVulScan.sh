@@ -728,7 +728,7 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 		fi
 
 	if [[ -s ${report_folder}vulnerable_hosts_details_${date}.txt ]] && [[ ${report_folder}vulnerable_hosts_details_${date}.txt != ${report_folder}${vulnerable_report_name}${date}.txt ]]; then
-		mv ${report_folder}vulnerable_hosts_details_${date}.txt ${report_folder}${vulnerable_report_name}${date}.tx
+		mv ${report_folder}vulnerable_hosts_details_${date}.txt ${report_folder}${vulnerable_report_name}${date}.txt
 		echo -e "${yellow_color}[I] All details on the vulnerabilities:"
 		echo -e "${blue_color}-> ${report_folder}${vulnerable_report_name}${date}.txt${end_color}"
 	elif [[ -s ${report_folder}vulnerable_hosts_details_${date}.txt ]] && [[ ${report_folder}vulnerable_hosts_details_${date}.txt == ${report_folder}${vulnerable_report_name}${date}.txt ]]; then
