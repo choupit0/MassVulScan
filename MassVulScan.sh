@@ -269,13 +269,15 @@ num_hosts=$(grep -v "^#" ${hosts} | grep "\S" | grep -vEoc '([0-9]{1,3}\.){3}[0-
 if [[ ${num_hosts} != "0" ]]; then
 
         # Saving IPs first
-        grep -v "^#" ${hosts} | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' > file_with_IPs_only.txt
+	if [[ $(grep -v "^#" ${hosts} | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}') ]]; then
+		grep -v "^#" ${hosts} | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' > file_with_IPs_only.txt
+	fi
 
         # Filtering on the hosts only
         grep -v "^#" ${hosts} | grep "\S" | grep -vE '([0-9]{1,3}\.){3}[0-9]{1,3}' > hosts_to_convert.txt
 
         while IFS=, read -r host_to_convert; do
-		host_ip=$(host ${host_to_convert} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+		host_ip=$(dig ${host_to_convert} +short | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
 		echo $host_ip ${host_to_convert} | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' >> hosts_converted.txt
         done < hosts_to_convert.txt
 
@@ -670,7 +672,7 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	if [[ ${vuln_hosts_count} != "0" ]]; then
 		echo -e "${red_color}[X] ${vuln_hosts_count} vulnerable (or potentially vulnerable) host(s) found.${end_color}"
 		echo -e -n "${vuln_hosts_ip}\n" | while read line; do
-			host="$(host "${line}")"
+			host="$(dig -x "${line}" +short)"
 			echo "${line}" "${host}" >> vulnerable_hosts.txt
 		done
 	
