@@ -29,7 +29,7 @@ Déroulement du script :
 
 Le rapport HTML utilise une feuille de style bootstrap (https://github.com/honze-net/nmap-bootstrap-xsl) pour plus de confort.
 # Comment l'utiliser ?
-Il suffit d'indiquer en paramètre (-f|--include-file) le fichier contenant une liste de réseaux/hosts à scanner :
+Il suffit d'indiquer en paramètre (-f|--include-file) le fichier contenant une liste de réseaux, adresses IP ou noms d'hôtes (version 1.9.0) à scanner :
 ```
 git clone https://github.com/choupit0/MassVulScan.git
 cd MassVulScan
@@ -38,8 +38,8 @@ chmod +x MassVulScan.sh
 ```
 Liste des paramètres/arguments disponibles :
 ```
--f [input file] = paramètre obligatoire qui contiendra la liste des réseaux/hosts à scanner
--e [exclude file] = paramètre optionnel afin d'exclure une liste de réseaux/hosts à scanner
+-f [input file] = paramètre obligatoire qui contiendra la liste des réseaux, IP ou noms d'hôtes à scanner
+-e [exclude file] = paramètre optionnel afin d'exclure une liste de réseaux ou IP (pas de noms d'hôtes) à scanner
 -i (interactive mode) = paramètre optionnel pour choisir les ports à scanner, la vitesse (pkts/sec) et le script Nmap
 -a (all ports) = paramètre optionnel pour scanner les 65535 ports (TCP et UDP), à la vitesse de 5K pkts/sec
 -c (check) = paramètre optionnel pour trouver les hosts en ligne (pré-scan) et ne scanner que ceux-là
@@ -53,6 +53,7 @@ Pour le format des fichiers, vous trouverez deux exemples dans le répertoire d�
 root@ubuntu:~/audit/MassVulScan# cat example/hosts.txt
 # Private subnet
 192.168.2.0/24
+webmail.acme.corp
 root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Gateway
 192.168.2.254
@@ -73,14 +74,7 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Compatibilité
 Le script a uniquement été testé sur des OS de la famille Debian mais devrait fonctionner sur la majorité des distributions Linux (hormis pour l'installation des pré-requis). Il peut détecter les ports ouverts sur les protocoles TCP et UDP.
 # Remarques / Astuces
-Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. Il vous suffit pour cela de modifier les lignes contenant "**--script vulners**" et de remplacer par "**--script vuln,vulners**".
-C'est très simple avec l'éditeur VI :
-```
-vi MassVulScan.sh
-:%s/--script vulners/--script vuln,vulners/g
-:wq
-```
+Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. 
 A noter que l'avantage d'utiliser le script NSE vulners.nse est qu'il interroge systématiquement la base de données du site de vulners.com, il s'agira donc des dernières données disponibles. De même, ce dernier effectue un classement et un trie des CVE identifiées, les plus sévères en haut de la liste, ce qui est bien pratique.
-Dernière chose, tapez sur la touche "D" (= debug) durant les phases de scans nmap si vous voulez voir ce qui se passe.
 # Problème connus
 Concernant SNMP, parfois, l'analyse du port UDP ne semble pas fonctionner correctement avec le programme masscan. J'essaie de trouver une solution.
