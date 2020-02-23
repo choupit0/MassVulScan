@@ -536,7 +536,7 @@ merge_ip_hostname(){
 cat nmap-input.txt | while IFS=, read -r line; do
 	search_ip=$(echo ${line} | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
 
-	if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt) ]]; then
+	if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt) ]] 2>/dev/null; then
 
 		if [[ $(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}') ]]; then
 			search_hostname=$(grep "${search_ip}" file_with_IPs_unsorted.txt | awk -F" " '{print $2}')
