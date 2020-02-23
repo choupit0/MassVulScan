@@ -357,7 +357,7 @@ elif [[ ${all_ports} = "on" ]]; then
 elif [[ ${interactive} = "on" ]]; then
         echo -e "${yellow_color}[I] We will use the input file: ${hosts}${end_color}"
         # Ports to scan?
-        echo -e "${blue_color}Now, which TCP/UDP port(s) do you want to scan?${end_color}"
+        echo -e "${blue_color}${bold_color}Now, which TCP/UDP port(s) do you want to scan?${end_color}"
         echo -e "${blue_color}[default: --top-ports 1000 (TCP/UDP), just typing \"Enter|Return\" key to continue]?${end_color}"
         echo "(\"Top ports\" from list: /usr/local/share/nmap/nmap-services)"
         echo -e "${blue_color}Usage example:${end_color}"
@@ -376,7 +376,7 @@ elif [[ ${interactive} = "on" ]]; then
 				echo -e "${yellow_color}[I] Port(s) to scan: ${ports}${end_color}"
                 fi
         # Which rate?
-        echo -e "${blue_color}Which rate (pkts/sec)?${end_color}"
+        echo -e "${blue_color}${bold_color}Which rate (pkts/sec)?${end_color}"
         echo -e "${blue_color}[default: --max-rate 2500, just typing \"Enter|Return\" key to continue]${end_color}"
         echo -e "${red_color}Be carreful, beyond \"10000\" it coud be dangerous for your network!!!${end_color}"
         read -p "Rate? >> " -r -t 60 max_rate
@@ -405,15 +405,31 @@ elif [[ ${interactive} = "on" ]]; then
 		scripts_tab=(${scripts_list})
 		scripts_loop="$(for index in "${!scripts_tab[@]}"; do echo "${index}) ${scripts_tab[${index}]}"; done)"
 		echo -e "${blue_color}${scripts_loop}${end_color}"
-		echo -e "${blue_color}Which Nmap Scripting Engine (NSE)? [choose the corresponding number to the script name]${end_color}"
-		echo -e "${blue_color}(or typing \"Enter|Return\" key to use the default on: vulners.nse]${end_color}"
+		echo -e "${blue_color}${bold_color}Which Nmap Scripting Engine (NSE) to use?${end_color}"
+		echo -e "${blue_color}[choose the corresponding number to the script name]${end_color}"
+		echo -e "${blue_color}[or type the script name and args (e.g. ${bold_color}vulners --script-args mincvss=5)]${end_color}"
+		echo -e "${blue_color}${bold_color}Or typing \"Enter|Return\" key to use the default on: vulners.nse${end_color}"
 		read -p "Script number? >> " -r -t 60 script_number
-			if [[ -z ${script_number} ]];then
-				script="vulners"
-				echo -e "${yellow_color}[I] No script chosen, we will use the default one (vulners.nse).${end_color}"
-				else
+	
+			case "${script_number}" in
+				[0-9]* )
 					script="${scripts_tab[${script_number}]}"
 					echo -e "${yellow_color}[I] Script name chosen: ${script}${end_color}"
+					;;
+				'' )
+					script="vulners"
+					echo -e "${yellow_color}[I] No script chosen, we will use the default one (vulners.nse).${end_color}"
+					;;
+				* )
+					script=${script_number}
+					echo -e "${yellow_color}[I] Script name and args chosen: ${script}${end_color}"
+					;;
+			esac
+			
+			# For bad numbers
+			if [[ -z ${script} ]]; then
+				echo -e "${red_color}[X] Please, choose the right number or the right categorie name.${end_color}"
+				exit 1
 			fi
 	fi
 
@@ -445,8 +461,8 @@ if [[ ${nb_interfaces} -gt "2" ]]; then
 	echo -e "${blue_color}${bold_color}Warning: multiple network interfaces have been detected:${end_color}"
 	interfaces_loop="$(for index in "${!interfaces_tab[@]}"; do echo "${index}) ${interfaces_tab[${index}]}"; done)"
 	echo -e "${blue_color}${interfaces_loop}${end_color}"
-	echo -e "${blue_color}Which one do you want to use? [choose the corresponding number to the interface name]${end_color}"
-	echo -e "${blue_color}(or typing \"Enter|Return\" key to use the one corresponding to the default route]${end_color}"
+	echo -e "${blue_color}${bold_color}Which one do you want to use? [choose the corresponding number to the interface name]${end_color}"
+	echo -e "${blue_color}${bold_color}Or typing \"Enter|Return\" key to use the one corresponding to the default route${end_color}"
         read -p "Interface number? >> " -r -t 60 interface_number
                 if [[ -z ${interface_number} ]];then
         		echo -e "${yellow_color}[I] No interface chosen, we will use the one with the default route.${end_color}"
