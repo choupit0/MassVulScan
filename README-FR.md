@@ -74,7 +74,10 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 # Compatibilité
 Le script a uniquement été testé sur des OS de la famille Debian mais devrait fonctionner sur la majorité des distributions Linux (hormis pour l'installation des pré-requis). Il peut détecter les ports ouverts sur les protocoles TCP et UDP.
 # Remarques / Astuces
-Le script est également compatible avec l'option "vuln" de Nmap permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. 
 A noter que l'avantage d'utiliser le script NSE vulners.nse est qu'il interroge systématiquement la base de données du site de vulners.com, il s'agira donc des dernières données disponibles. De même, ce dernier effectue un classement et un trie des CVE identifiées, les plus sévères en haut de la liste, ce qui est bien pratique.
+
+Le script est également compatible avec les catégories de Nmap (https://nmap.org/book/nse-usage.html#nse-categories) permettant de rechercher davantage de vulnérabilités (les plus connues comme ms17-010, EternalBlue) en plus des CVE identifiées depuis vulners.com. 
+
+Enfin, avec le "mode interactif" (-i) vous avez la possibilité de préciser des arguments au script, par exemple : vulners --script-args mincvss=5
 # Problème connus
 Concernant SNMP, parfois, l'analyse du port UDP ne semble pas fonctionner correctement avec le programme masscan. J'essaie de trouver une solution.
