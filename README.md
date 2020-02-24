@@ -2,7 +2,7 @@
 # Description
 Bash script which combines the power of the Masscan scanner to find open ports, the efficiency of the Nmap scanner to identify open services and their version, and finally the NSE vulners.nse script to identify potential vulnerabilities (CVEs). An HTML report will be generated containing the result of the analysis as well as a TXT file allowing to focus on the vulnerable hosts.
 
-![Example Menu](screenshots/Menu.PNG)
+![Example Menu](screenshots/Menu_1-9-0.PNG)
 
 # Prerequisites
 - Package xsltproc (for the conversion of an XML file to HTML, for the final report)
