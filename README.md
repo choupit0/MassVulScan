@@ -18,6 +18,7 @@ This feature has been validated on the following 64bit OS (2 core CPU and 2GB RA
 - Elementary 5.0
 - LinuxMint 19.1
 - Ubuntu 19.04
+- Parrot 5.5.17 (HackTheBox / HTB)
 # How the script works?
 The main steps of the script:
 1) Express identification of hosts that are online (nmap)
