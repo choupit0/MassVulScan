@@ -82,3 +82,5 @@ The script is also compatible with Nmap's categories (https://nmap.org/book/nse-
 Finally, with the "interactive mode" (-i) you have the possibility to type scripts args also, e.g. vulners --script-args mincvss=5
 # Known issues
 Concerning SNMP, sometimes UDP port scan doesn't seems correctly working with masscan program. I'm trying to find a solution.
+# TODO
+Manage better multiple IP addresses on one network interface.
