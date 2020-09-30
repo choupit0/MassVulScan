@@ -82,3 +82,5 @@ Le script est également compatible avec les catégories de Nmap (https://nmap.o
 Enfin, avec le "mode interactif" (-i) vous avez la possibilité de préciser des arguments au script, par exemple : vulners --script-args mincvss=5
 # Problème connus
 Concernant SNMP, parfois, l'analyse du port UDP ne semble pas fonctionner correctement avec le programme masscan. J'essaie de trouver une solution.
+
+Inclure package netcat lors du check des prérequis.
