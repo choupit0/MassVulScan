@@ -86,3 +86,5 @@ Concerning SNMP, sometimes UDP port scan doesn't seems correctly working with ma
 Manage better multiple IP addresses on one network interface.
 
 Improve process of installation (install what is strictly necessary, comparison of versions).
+
+Include netcat packages.
