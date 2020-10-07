@@ -179,4 +179,14 @@ else
 fi
 }
 
-auto_install_menu
+if [[ $1 == "-y" ]]; then
+        root_user
+        echo -e "${blue_color}${bold_color}[-] Great, we starting the installation...please, be patient!${end_color}"
+        # Clearing the screen
+        clear
+        prerequisites_install
+        time_elapsed
+        exit 0
+else
+        auto_install_menu
+fi
