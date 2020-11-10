@@ -42,7 +42,7 @@ Liste des paramètres/arguments disponibles :
 -f [input file] = paramètre obligatoire qui contiendra la liste des réseaux, IP ou noms d'hôtes à scanner
 -e [exclude file] = paramètre optionnel afin d'exclure une liste de réseaux ou IP (pas de noms d'hôtes) à scanner
 -i (interactive mode) = paramètre optionnel pour choisir les ports à scanner, la vitesse (pkts/sec) et le script Nmap
--a (all ports) = paramètre optionnel pour scanner les 65535 ports (TCP et UDP), à la vitesse de 5K pkts/sec
+-a (all ports) = paramètre optionnel pour scanner les 65535 ports (TCP et UDP), à la vitesse de 2K pkts/sec
 -c (check) = paramètre optionnel pour trouver les hosts en ligne (pré-scan) et ne scanner que ceux-là
 -k (keep files) = paramètre optionnel pour conserver les hosts scannés avec et sans le(s) port(s) dans 2 fichiers
 -ns (No Nmap scan) = paramètre optionnel pour détecter uniquement les ports ouverts de chacun des hosts
