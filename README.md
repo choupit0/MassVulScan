@@ -42,7 +42,7 @@ List of available parameters/arguments:
 -f (input file) = mandatory parameter that will contain the list of networks, IP or hostnames to scan
 -e (exclude file) = optional parameter to exclude a list of networks or IP (no hostnames) to scan
 -i (interactive mode) = optional parameter to choose ports to scan, speed (pkts/sec for Masscan) and Nmap script
--a (all ports) = optional parameter to scan all 65535 ports (TCP and UDP), at rate to 5K pkts/sec
+-a (all ports) = optional parameter to scan all 65535 ports (TCP and UDP), at rate to 2K pkts/sec
 -c (check) = optional parameter which perform a pre-scanning to identify online hosts and scan only them
 -k (keep files) = optional parameter to keep all the IPs scanned in 2 files (with and without ports)
 -ns (no Nmap scan) = optional parameter to detect the hosts with open ports only
