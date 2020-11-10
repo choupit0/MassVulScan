@@ -152,7 +152,7 @@ usage(){
 	echo "                  2) Rate level (pkts/sec)"
 	echo "                  3) Nmap Scripting Engine (NSE) to use (default is vulners.nse)"
 	echo -e "${yellow_color}        -a | --all-ports${end_color}"
-	echo "          Scan all 65535 ports (TCP + UDP), the maximum rate is fix to 5K pkts/sec, and"
+	echo "          Scan all 65535 ports (TCP + UDP), the maximum rate is fix to 2K pkts/sec, and"
 	echo "          the NSE vulners.nse script is used."
 	echo -e "${yellow_color}        -c | --check${end_color}"
 	echo "          Perform a pre-scanning to identify online hosts and scan only them."
@@ -352,7 +352,7 @@ if [[ ${interactive} = "on" ]] && [[ ${all_ports} = "on" ]]; then
 elif [[ ${all_ports} = "on" ]]; then
         echo -e "${yellow_color}[I] Okay, 65535 ports to be scan both on TCP and UDP.${ports}${end_color}"
 	ports="-p1-65535,U:1-65535"
-	rate="5000"
+	rate="2000"
 	script="vulners"
 elif [[ ${interactive} = "on" ]]; then
         echo -e "${yellow_color}[I] We will use the input file: ${hosts}${end_color}"
