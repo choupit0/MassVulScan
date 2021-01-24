@@ -2,7 +2,7 @@
 
 #    This file is part of MassVulScan.
 #
-#    Copyright (C) 2020 choupit0
+#    Copyright (C) 2021 choupit0
 #
 #    MassVulScan is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,8 +16,6 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with MassVulScan.  If not, see <https://www.gnu.org/licenses/>.
-
-############################################################################################################################
 #
 # Script Name    : installation.sh
 # Description    : This script is part of MassVulScan.sh main script but it could be launch alone if needed.
@@ -30,7 +28,6 @@
 # Usage          : ./installation.sh
 # Prerequisites  : N/A
 #
-#############################################################################################################################
 
 yellow_color="\033[1;33m"
 green_color="\033[0;32m"
@@ -110,11 +107,11 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	if [[ $(which apt) ]]; then
 		apt update &>> "${log_file}"
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
-		apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc &>> "${log_file}"
+		apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat &>> "${log_file}"
 	elif [[ $(which apt-get) ]]; then
 		apt-get update &>> "${log_file}"
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
-		apt-get install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc &>> "${log_file}"
+		apt-get install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat &>> "${log_file}"
 	fi
 	proc_status
 	# Packages Masscan, Nmap and NSE script Vulners.nse
@@ -122,7 +119,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	cd "${temp_folder}"
 	git clone https://github.com/robertdavidgraham/masscan.git &>> "${log_file}"
 	git clone https://github.com/vulnersCom/nmap-vulners &>> "${log_file}"
-	wget https://nmap.org/dist/nmap-7.80.tgz &>> "${log_file}"
+	wget https://nmap.org/dist/nmap-7.90.tgz &>> "${log_file}"
 	cd "${temp_folder}/masscan"
 	echo -n -e "\r                                                                            "
 	echo -n -e "${blue_color}\r[-] Compiling \"Masscan\" ...${end_color}" && echo "---- COMPILING MASSCAN ---" &>> "${log_file}"
@@ -132,8 +129,8 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	mv -f "bin/masscan" "/usr/bin/" &>> "${log_file}"
 	proc_status
 	cd "${temp_folder}"
-	tar -xzf nmap-7.80.tgz &>> "${log_file}"
-	cd "nmap-7.80"
+	tar -xzf nmap-7.90.tgz &>> "${log_file}"
+	cd "nmap-7.90"
 	echo -n -e "${blue_color}\r[-] Resolving dependencies for \"Nmap\"...${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> "${log_file}"
 	./configure &>> "${log_file}"
 	proc_status

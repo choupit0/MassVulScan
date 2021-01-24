@@ -1,0 +1,115 @@
+	----------------------------
+Report date: Sun Jan 24 13:51:40 EST 2021
+Host(s) found: 1
+Port(s) found: 2
+192.168.2.1	192.168.2.1
+All the details below.
+	----------------------------
+Nmap scan report for 192.168.2.1
+Host is up (0.016s latency).
+
+PORT      STATE SERVICE     VERSION
+53/tcp    open  domain      dnsmasq 2.55
+| vulners: 
+|   cpe:/a:thekelleys:dnsmasq:2.55: 
+|     	SSV:96623	7.8	https://vulners.com/seebug/SSV:96623	*EXPLOIT*
+|     	EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	7.8	https://vulners.com/exploitpack/EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	*EXPLOIT*
+|     	CVE-2017-14496	7.8	https://vulners.com/cve/CVE-2017-14496
+|     	1337DAY-ID-28727	7.8	https://vulners.com/zdt/1337DAY-ID-28727	*EXPLOIT*
+|     	SSV:96620	7.5	https://vulners.com/seebug/SSV:96620	*EXPLOIT*
+|     	SSV:96619	7.5	https://vulners.com/seebug/SSV:96619	*EXPLOIT*
+|     	SSV:96618	7.5	https://vulners.com/seebug/SSV:96618	*EXPLOIT*
+|     	EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	*EXPLOIT*
+|     	EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	7.5	https://vulners.com/exploitpack/EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	*EXPLOIT*
+|     	EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	*EXPLOIT*
+|     	CVE-2017-14493	7.5	https://vulners.com/cve/CVE-2017-14493
+|     	CVE-2017-14492	7.5	https://vulners.com/cve/CVE-2017-14492
+|     	CVE-2017-14491	7.5	https://vulners.com/cve/CVE-2017-14491
+|     	1337DAY-ID-28724	7.5	https://vulners.com/zdt/1337DAY-ID-28724	*EXPLOIT*
+|     	1337DAY-ID-28723	7.5	https://vulners.com/zdt/1337DAY-ID-28723	*EXPLOIT*
+|     	1337DAY-ID-28720	7.5	https://vulners.com/zdt/1337DAY-ID-28720	*EXPLOIT*
+|     	CVE-2015-3294	6.4	https://vulners.com/cve/CVE-2015-3294
+|     	SSV:96622	5.0	https://vulners.com/seebug/SSV:96622	*EXPLOIT*
+|     	EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	5.0	https://vulners.com/exploitpack/EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	*EXPLOIT*
+|     	CVE-2019-14513	5.0	https://vulners.com/cve/CVE-2019-14513
+|     	CVE-2017-15107	5.0	https://vulners.com/cve/CVE-2017-15107
+|     	CVE-2017-14495	5.0	https://vulners.com/cve/CVE-2017-14495
+|     	CVE-2017-13704	5.0	https://vulners.com/cve/CVE-2017-13704
+|     	CVE-2015-8899	5.0	https://vulners.com/cve/CVE-2015-8899
+|     	CVE-2013-0198	5.0	https://vulners.com/cve/CVE-2013-0198
+|     	CVE-2012-3411	5.0	https://vulners.com/cve/CVE-2012-3411
+|     	1337DAY-ID-28726	5.0	https://vulners.com/zdt/1337DAY-ID-28726	*EXPLOIT*
+|     	SSV:96621	4.3	https://vulners.com/seebug/SSV:96621	*EXPLOIT*
+|     	EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	4.3	https://vulners.com/exploitpack/EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	*EXPLOIT*
+|     	CVE-2019-14834	4.3	https://vulners.com/cve/CVE-2019-14834
+|     	CVE-2017-14494	4.3	https://vulners.com/cve/CVE-2017-14494
+|     	1337DAY-ID-28725	4.3	https://vulners.com/zdt/1337DAY-ID-28725	*EXPLOIT*
+|     	PACKETSTORM:144480	0.0	https://vulners.com/packetstorm/PACKETSTORM:144480	*EXPLOIT*
+|     	PACKETSTORM:144479	0.0	https://vulners.com/packetstorm/PACKETSTORM:144479	*EXPLOIT*
+|     	PACKETSTORM:144473	0.0	https://vulners.com/packetstorm/PACKETSTORM:144473	*EXPLOIT*
+|     	PACKETSTORM:144471	0.0	https://vulners.com/packetstorm/PACKETSTORM:144471	*EXPLOIT*
+|     	PACKETSTORM:144468	0.0	https://vulners.com/packetstorm/PACKETSTORM:144468	*EXPLOIT*
+|     	PACKETSTORM:144462	0.0	https://vulners.com/packetstorm/PACKETSTORM:144462	*EXPLOIT*
+|     	EDB-ID:42946	0.0	https://vulners.com/exploitdb/EDB-ID:42946	*EXPLOIT*
+|     	EDB-ID:42945	0.0	https://vulners.com/exploitdb/EDB-ID:42945	*EXPLOIT*
+|     	EDB-ID:42944	0.0	https://vulners.com/exploitdb/EDB-ID:42944	*EXPLOIT*
+|     	EDB-ID:42943	0.0	https://vulners.com/exploitdb/EDB-ID:42943	*EXPLOIT*
+|     	EDB-ID:42942	0.0	https://vulners.com/exploitdb/EDB-ID:42942	*EXPLOIT*
+|     	EDB-ID:42941	0.0	https://vulners.com/exploitdb/EDB-ID:42941	*EXPLOIT*
+|     	1337DAY-ID-772	0.0	https://vulners.com/zdt/1337DAY-ID-772	*EXPLOIT*
+|     	1337DAY-ID-2841	0.0	https://vulners.com/zdt/1337DAY-ID-2841	*EXPLOIT*
+|_    	1337DAY-ID-2838	0.0	https://vulners.com/zdt/1337DAY-ID-2838	*EXPLOIT*
+Nmap scan report for 192.168.2.1
+Host is up (0.00045s latency).
+
+PORT    STATE SERVICE    VERSION
+53/udp  open  domain     dnsmasq 2.55
+| vulners: 
+|   cpe:/a:thekelleys:dnsmasq:2.55: 
+|     	SSV:96623	7.8	https://vulners.com/seebug/SSV:96623	*EXPLOIT*
+|     	EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	7.8	https://vulners.com/exploitpack/EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	*EXPLOIT*
+|     	CVE-2017-14496	7.8	https://vulners.com/cve/CVE-2017-14496
+|     	1337DAY-ID-28727	7.8	https://vulners.com/zdt/1337DAY-ID-28727	*EXPLOIT*
+|     	SSV:96620	7.5	https://vulners.com/seebug/SSV:96620	*EXPLOIT*
+|     	SSV:96619	7.5	https://vulners.com/seebug/SSV:96619	*EXPLOIT*
+|     	SSV:96618	7.5	https://vulners.com/seebug/SSV:96618	*EXPLOIT*
+|     	EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	*EXPLOIT*
+|     	EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	7.5	https://vulners.com/exploitpack/EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	*EXPLOIT*
+|     	EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	*EXPLOIT*
+|     	CVE-2017-14493	7.5	https://vulners.com/cve/CVE-2017-14493
+|     	CVE-2017-14492	7.5	https://vulners.com/cve/CVE-2017-14492
+|     	CVE-2017-14491	7.5	https://vulners.com/cve/CVE-2017-14491
+|     	1337DAY-ID-28724	7.5	https://vulners.com/zdt/1337DAY-ID-28724	*EXPLOIT*
+|     	1337DAY-ID-28723	7.5	https://vulners.com/zdt/1337DAY-ID-28723	*EXPLOIT*
+|     	1337DAY-ID-28720	7.5	https://vulners.com/zdt/1337DAY-ID-28720	*EXPLOIT*
+|     	CVE-2015-3294	6.4	https://vulners.com/cve/CVE-2015-3294
+|     	SSV:96622	5.0	https://vulners.com/seebug/SSV:96622	*EXPLOIT*
+|     	EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	5.0	https://vulners.com/exploitpack/EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	*EXPLOIT*
+|     	CVE-2019-14513	5.0	https://vulners.com/cve/CVE-2019-14513
+|     	CVE-2017-15107	5.0	https://vulners.com/cve/CVE-2017-15107
+|     	CVE-2017-14495	5.0	https://vulners.com/cve/CVE-2017-14495
+|     	CVE-2017-13704	5.0	https://vulners.com/cve/CVE-2017-13704
+|     	CVE-2015-8899	5.0	https://vulners.com/cve/CVE-2015-8899
+|     	CVE-2013-0198	5.0	https://vulners.com/cve/CVE-2013-0198
+|     	CVE-2012-3411	5.0	https://vulners.com/cve/CVE-2012-3411
+|     	1337DAY-ID-28726	5.0	https://vulners.com/zdt/1337DAY-ID-28726	*EXPLOIT*
+|     	SSV:96621	4.3	https://vulners.com/seebug/SSV:96621	*EXPLOIT*
+|     	EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	4.3	https://vulners.com/exploitpack/EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	*EXPLOIT*
+|     	CVE-2019-14834	4.3	https://vulners.com/cve/CVE-2019-14834
+|     	CVE-2017-14494	4.3	https://vulners.com/cve/CVE-2017-14494
+|     	1337DAY-ID-28725	4.3	https://vulners.com/zdt/1337DAY-ID-28725	*EXPLOIT*
+|     	PACKETSTORM:144480	0.0	https://vulners.com/packetstorm/PACKETSTORM:144480	*EXPLOIT*
+|     	PACKETSTORM:144479	0.0	https://vulners.com/packetstorm/PACKETSTORM:144479	*EXPLOIT*
+|     	PACKETSTORM:144473	0.0	https://vulners.com/packetstorm/PACKETSTORM:144473	*EXPLOIT*
+|     	PACKETSTORM:144471	0.0	https://vulners.com/packetstorm/PACKETSTORM:144471	*EXPLOIT*
+|     	PACKETSTORM:144468	0.0	https://vulners.com/packetstorm/PACKETSTORM:144468	*EXPLOIT*
+|     	PACKETSTORM:144462	0.0	https://vulners.com/packetstorm/PACKETSTORM:144462	*EXPLOIT*
+|     	EDB-ID:42946	0.0	https://vulners.com/exploitdb/EDB-ID:42946	*EXPLOIT*
+|     	EDB-ID:42945	0.0	https://vulners.com/exploitdb/EDB-ID:42945	*EXPLOIT*
+|     	EDB-ID:42944	0.0	https://vulners.com/exploitdb/EDB-ID:42944	*EXPLOIT*
+|     	EDB-ID:42943	0.0	https://vulners.com/exploitdb/EDB-ID:42943	*EXPLOIT*
+|     	EDB-ID:42942	0.0	https://vulners.com/exploitdb/EDB-ID:42942	*EXPLOIT*
+|     	EDB-ID:42941	0.0	https://vulners.com/exploitdb/EDB-ID:42941	*EXPLOIT*
+|     	1337DAY-ID-772	0.0	https://vulners.com/zdt/1337DAY-ID-772	*EXPLOIT*
+|     	1337DAY-ID-2841	0.0	https://vulners.com/zdt/1337DAY-ID-2841	*EXPLOIT*
+|_    	1337DAY-ID-2838	0.0	https://vulners.com/zdt/1337DAY-ID-2838	*EXPLOIT*

@@ -1,12 +1,13 @@
 Debian/Ubuntu OS based installation with root user:
 
--- xsltproc installation
+-- Packages installation
 
 apt update
-apt install -y xsltproc
+apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat
 
 Verification:
 xsltproc -V
+ipcalc -v
 
 -- Masscan installation
 

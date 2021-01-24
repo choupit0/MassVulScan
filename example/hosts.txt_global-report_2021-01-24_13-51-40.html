@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="referrer" content="no-referrer">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css" type="text/css" integrity="sha384-VEpVDzPR2x8NbTDZ8NFW4AWbtT2g/ollEzX/daZdW/YvUBlbgVtsxMftnJ84k0Cn" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha384-fJU6sGmyn07b+uD1nMk7/iSb4yvaowcueiQhfVgQuD98rfva8mcr1eSvjchfpMrH" crossorigin="anonymous"></script><script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js" integrity="sha384-rgWRqC0OFPisxlUvl332tiM/qmaNxnlY46eksSZD84t+s2vZlqGeHrncwIRX7CGp" crossorigin="anonymous"></script><script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js" integrity="sha384-7PXRkl4YJnEpP8uU4ev9652TTZSxrqC8uOpcV1ftVEC7LVyLZqqDUAaq+Y+lGgr9" crossorigin="anonymous"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><style>
+          .target:before {
+            content: "";
+            display: block;
+            height: 50px;
+            margin: -20px 0 0;
+          }
+          @media only screen and (min-width:1900px) {
+            .container {
+              width: 1800px;
+              }
+          }
+          .footer {
+            margin-top:60px;
+            padding-top:60px;
+            width: 100%;
+            height: 180px;
+            background-color: #f5f5f5;
+          }
+        </style>
+<title>Scan Report Nmap 7.80</title>
+</head>
+<body>
+<nav class="navbar navbar-default navbar-fixed-top"><div class="container-fluid">
+<div class="navbar-header">
+<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="#"><span class="glyphicon glyphicon-home"></span></a>
+</div>
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><ul class="nav navbar-nav">
+<li><a href="#scannedhosts">Scanned Hosts</a></li>
+<li><a href="#onlinehosts">Online Hosts</a></li>
+<li><a href="#openservices">Open Services</a></li>
+</ul></div>
+</div></nav><div class="container">
+<div class="jumbotron">
+<h1>Scan Report<br><small>Nmap 7.80</small>
+</h1>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">nmap --max-retries 2 --max-rtt-timeout 500ms -p[port(s)] -Pn -s(T|U) -sV -n --script vulners [ip(s)]</pre>
+<p class="lead"> – <br>4 hosts scanned.
+              4 hosts up.
+              0 hosts down.
+            </p>
+<div class="progress">
+<div class="progress-bar progress-bar-success" style="width:100%;">4<span class="sr-only"></span>
+</div>
+<div class="progress-bar progress-bar-danger" style="width:0%;">0<span class="sr-only"></span>
+</div>
+</div>
+</div>
+<h2 id="scannedhosts" class="target">Scanned Hosts</h2>
+<div class="table-responsive"><table id="table-overview" class="table table-striped dataTable" role="grid">
+<thead><tr>
+<th>State</th>
+<th>Address</th>
+<th>Hostname</th>
+<th>TCP (open)</th>
+<th>UDP (open)</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.15</td>
+<td></td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.1</td>
+<td></td>
+<td>7</td>
+<td>0</td>
+</tr>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.1</td>
+<td></td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.26</td>
+<td></td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td><span class="label label-success">up</span></td>
+<td>192.168.2.27</td>
+<td></td>
+<td>3</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></div>
+<script>
+            $(document).ready(function() {
+              $('#table-overview').DataTable();
+            });
+          </script><h2 id="onlinehosts" class="target">Online Hosts</h2>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.15</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">139</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Microsoft Windows netbios-ssn</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:microsoft:windows">cpe:/o:microsoft:windows</a></td></tr>
+<tr class="success">
+<td title="Port">445</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">microsoft-ds</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">999</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">garcon</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">5900</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">vnc</td>
+<td title="Product">VNC</td>
+<td title="Version"></td>
+<td title="Extra Info">protocol 3.8</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.1</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">53</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">domain</td>
+<td title="Product">dnsmasq</td>
+<td title="Version">2.55</td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:thekelleys:dnsmasq:2.55">cpe:/a:thekelleys:dnsmasq:2.55</a><h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:thekelleys:dnsmasq:2.55: 
+    	SSV:96623	7.8	https://vulners.com/seebug/SSV:96623	*EXPLOIT*
+    	EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	7.8	https://vulners.com/exploitpack/EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	*EXPLOIT*
+    	CVE-2017-14496	7.8	https://vulners.com/cve/CVE-2017-14496
+    	1337DAY-ID-28727	7.8	https://vulners.com/zdt/1337DAY-ID-28727	*EXPLOIT*
+    	SSV:96620	7.5	https://vulners.com/seebug/SSV:96620	*EXPLOIT*
+    	SSV:96619	7.5	https://vulners.com/seebug/SSV:96619	*EXPLOIT*
+    	SSV:96618	7.5	https://vulners.com/seebug/SSV:96618	*EXPLOIT*
+    	EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	*EXPLOIT*
+    	EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	7.5	https://vulners.com/exploitpack/EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	*EXPLOIT*
+    	EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	*EXPLOIT*
+    	CVE-2017-14493	7.5	https://vulners.com/cve/CVE-2017-14493
+    	CVE-2017-14492	7.5	https://vulners.com/cve/CVE-2017-14492
+    	CVE-2017-14491	7.5	https://vulners.com/cve/CVE-2017-14491
+    	1337DAY-ID-28724	7.5	https://vulners.com/zdt/1337DAY-ID-28724	*EXPLOIT*
+    	1337DAY-ID-28723	7.5	https://vulners.com/zdt/1337DAY-ID-28723	*EXPLOIT*
+    	1337DAY-ID-28720	7.5	https://vulners.com/zdt/1337DAY-ID-28720	*EXPLOIT*
+    	CVE-2015-3294	6.4	https://vulners.com/cve/CVE-2015-3294
+    	SSV:96622	5.0	https://vulners.com/seebug/SSV:96622	*EXPLOIT*
+    	EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	5.0	https://vulners.com/exploitpack/EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	*EXPLOIT*
+    	CVE-2019-14513	5.0	https://vulners.com/cve/CVE-2019-14513
+    	CVE-2017-15107	5.0	https://vulners.com/cve/CVE-2017-15107
+    	CVE-2017-14495	5.0	https://vulners.com/cve/CVE-2017-14495
+    	CVE-2017-13704	5.0	https://vulners.com/cve/CVE-2017-13704
+    	CVE-2015-8899	5.0	https://vulners.com/cve/CVE-2015-8899
+    	CVE-2013-0198	5.0	https://vulners.com/cve/CVE-2013-0198
+    	CVE-2012-3411	5.0	https://vulners.com/cve/CVE-2012-3411
+    	1337DAY-ID-28726	5.0	https://vulners.com/zdt/1337DAY-ID-28726	*EXPLOIT*
+    	SSV:96621	4.3	https://vulners.com/seebug/SSV:96621	*EXPLOIT*
+    	EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	4.3	https://vulners.com/exploitpack/EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	*EXPLOIT*
+    	CVE-2019-14834	4.3	https://vulners.com/cve/CVE-2019-14834
+    	CVE-2017-14494	4.3	https://vulners.com/cve/CVE-2017-14494
+    	1337DAY-ID-28725	4.3	https://vulners.com/zdt/1337DAY-ID-28725	*EXPLOIT*
+    	PACKETSTORM:144480	0.0	https://vulners.com/packetstorm/PACKETSTORM:144480	*EXPLOIT*
+    	PACKETSTORM:144479	0.0	https://vulners.com/packetstorm/PACKETSTORM:144479	*EXPLOIT*
+    	PACKETSTORM:144473	0.0	https://vulners.com/packetstorm/PACKETSTORM:144473	*EXPLOIT*
+    	PACKETSTORM:144471	0.0	https://vulners.com/packetstorm/PACKETSTORM:144471	*EXPLOIT*
+    	PACKETSTORM:144468	0.0	https://vulners.com/packetstorm/PACKETSTORM:144468	*EXPLOIT*
+    	PACKETSTORM:144462	0.0	https://vulners.com/packetstorm/PACKETSTORM:144462	*EXPLOIT*
+    	EDB-ID:42946	0.0	https://vulners.com/exploitdb/EDB-ID:42946	*EXPLOIT*
+    	EDB-ID:42945	0.0	https://vulners.com/exploitdb/EDB-ID:42945	*EXPLOIT*
+    	EDB-ID:42944	0.0	https://vulners.com/exploitdb/EDB-ID:42944	*EXPLOIT*
+    	EDB-ID:42943	0.0	https://vulners.com/exploitdb/EDB-ID:42943	*EXPLOIT*
+    	EDB-ID:42942	0.0	https://vulners.com/exploitdb/EDB-ID:42942	*EXPLOIT*
+    	EDB-ID:42941	0.0	https://vulners.com/exploitdb/EDB-ID:42941	*EXPLOIT*
+    	1337DAY-ID-772	0.0	https://vulners.com/zdt/1337DAY-ID-772	*EXPLOIT*
+    	1337DAY-ID-2841	0.0	https://vulners.com/zdt/1337DAY-ID-2841	*EXPLOIT*
+    	1337DAY-ID-2838	0.0	https://vulners.com/zdt/1337DAY-ID-2838	*EXPLOIT*</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">80</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">lighttpd</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:lighttpd:lighttpd">cpe:/a:lighttpd:lighttpd</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">HTTP Server</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">139</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Samba smbd</td>
+<td title="Version">3.X - 4.X</td>
+<td title="Extra Info">workgroup: WORKGROUP</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:samba:samba">cpe:/a:samba:samba</a></td></tr>
+<tr class="success">
+<td title="Port">443</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">http</td>
+<td title="Product">lighttpd</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:lighttpd:lighttpd">cpe:/a:lighttpd:lighttpd</a><h5>http-server-header</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">HTTP Server</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">445</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">netbios-ssn</td>
+<td title="Product">Samba smbd</td>
+<td title="Version">3.X - 4.X</td>
+<td title="Extra Info">workgroup: WORKGROUP</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:samba:samba">cpe:/a:samba:samba</a></td></tr>
+<tr class="success">
+<td title="Port">9000</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">upnp</td>
+<td title="Product">TwonkyMedia UPnP</td>
+<td title="Version"></td>
+<td title="Extra Info">Linux 2.X.X; UPnP 1.0; pvConnect SDK 1.0</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:packetvideo:twonky">cpe:/a:packetvideo:twonky</a></td></tr>
+<tr class="success">
+<td title="Port">49154</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">upnp</td>
+<td title="Product">Portable SDK for UPnP devices</td>
+<td title="Version">1.6.18</td>
+<td title="Extra Info">Linux 3.4.11-rt19; UPnP 1.0</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel:3.4.11-rt19">cpe:/o:linux:linux_kernel:3.4.11-rt19</a></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.1</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">53</td>
+<td title="Protocol">udp</td>
+<td title="State / Reason">open<br>udp-response</td>
+<td title="Service">domain</td>
+<td title="Product">dnsmasq</td>
+<td title="Version">2.55</td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/a:thekelleys:dnsmasq:2.55">cpe:/a:thekelleys:dnsmasq:2.55</a><h5>vulners</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  cpe:/a:thekelleys:dnsmasq:2.55: 
+    	SSV:96623	7.8	https://vulners.com/seebug/SSV:96623	*EXPLOIT*
+    	EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	7.8	https://vulners.com/exploitpack/EXPLOITPACK:708148DF89AFEA44750A9B84E292A6B9	*EXPLOIT*
+    	CVE-2017-14496	7.8	https://vulners.com/cve/CVE-2017-14496
+    	1337DAY-ID-28727	7.8	https://vulners.com/zdt/1337DAY-ID-28727	*EXPLOIT*
+    	SSV:96620	7.5	https://vulners.com/seebug/SSV:96620	*EXPLOIT*
+    	SSV:96619	7.5	https://vulners.com/seebug/SSV:96619	*EXPLOIT*
+    	SSV:96618	7.5	https://vulners.com/seebug/SSV:96618	*EXPLOIT*
+    	EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:E661AED6AF5BCC1565D1CB0F9878E40B	*EXPLOIT*
+    	EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	7.5	https://vulners.com/exploitpack/EXPLOITPACK:95340EB39AF331E01096F2B1CF7F1DE2	*EXPLOIT*
+    	EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	7.5	https://vulners.com/exploitpack/EXPLOITPACK:572F56450B83EECCA41D07EF1B33B48B	*EXPLOIT*
+    	CVE-2017-14493	7.5	https://vulners.com/cve/CVE-2017-14493
+    	CVE-2017-14492	7.5	https://vulners.com/cve/CVE-2017-14492
+    	CVE-2017-14491	7.5	https://vulners.com/cve/CVE-2017-14491
+    	1337DAY-ID-28724	7.5	https://vulners.com/zdt/1337DAY-ID-28724	*EXPLOIT*
+    	1337DAY-ID-28723	7.5	https://vulners.com/zdt/1337DAY-ID-28723	*EXPLOIT*
+    	1337DAY-ID-28720	7.5	https://vulners.com/zdt/1337DAY-ID-28720	*EXPLOIT*
+    	CVE-2015-3294	6.4	https://vulners.com/cve/CVE-2015-3294
+    	SSV:96622	5.0	https://vulners.com/seebug/SSV:96622	*EXPLOIT*
+    	EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	5.0	https://vulners.com/exploitpack/EXPLOITPACK:C0456C7DF1625677A211CB9799B79F9A	*EXPLOIT*
+    	CVE-2019-14513	5.0	https://vulners.com/cve/CVE-2019-14513
+    	CVE-2017-15107	5.0	https://vulners.com/cve/CVE-2017-15107
+    	CVE-2017-14495	5.0	https://vulners.com/cve/CVE-2017-14495
+    	CVE-2017-13704	5.0	https://vulners.com/cve/CVE-2017-13704
+    	CVE-2015-8899	5.0	https://vulners.com/cve/CVE-2015-8899
+    	CVE-2013-0198	5.0	https://vulners.com/cve/CVE-2013-0198
+    	CVE-2012-3411	5.0	https://vulners.com/cve/CVE-2012-3411
+    	1337DAY-ID-28726	5.0	https://vulners.com/zdt/1337DAY-ID-28726	*EXPLOIT*
+    	SSV:96621	4.3	https://vulners.com/seebug/SSV:96621	*EXPLOIT*
+    	EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	4.3	https://vulners.com/exploitpack/EXPLOITPACK:22D470FAFA79A3DB978CC3F8766CC759	*EXPLOIT*
+    	CVE-2019-14834	4.3	https://vulners.com/cve/CVE-2019-14834
+    	CVE-2017-14494	4.3	https://vulners.com/cve/CVE-2017-14494
+    	1337DAY-ID-28725	4.3	https://vulners.com/zdt/1337DAY-ID-28725	*EXPLOIT*
+    	PACKETSTORM:144480	0.0	https://vulners.com/packetstorm/PACKETSTORM:144480	*EXPLOIT*
+    	PACKETSTORM:144479	0.0	https://vulners.com/packetstorm/PACKETSTORM:144479	*EXPLOIT*
+    	PACKETSTORM:144473	0.0	https://vulners.com/packetstorm/PACKETSTORM:144473	*EXPLOIT*
+    	PACKETSTORM:144471	0.0	https://vulners.com/packetstorm/PACKETSTORM:144471	*EXPLOIT*
+    	PACKETSTORM:144468	0.0	https://vulners.com/packetstorm/PACKETSTORM:144468	*EXPLOIT*
+    	PACKETSTORM:144462	0.0	https://vulners.com/packetstorm/PACKETSTORM:144462	*EXPLOIT*
+    	EDB-ID:42946	0.0	https://vulners.com/exploitdb/EDB-ID:42946	*EXPLOIT*
+    	EDB-ID:42945	0.0	https://vulners.com/exploitdb/EDB-ID:42945	*EXPLOIT*
+    	EDB-ID:42944	0.0	https://vulners.com/exploitdb/EDB-ID:42944	*EXPLOIT*
+    	EDB-ID:42943	0.0	https://vulners.com/exploitdb/EDB-ID:42943	*EXPLOIT*
+    	EDB-ID:42942	0.0	https://vulners.com/exploitdb/EDB-ID:42942	*EXPLOIT*
+    	EDB-ID:42941	0.0	https://vulners.com/exploitdb/EDB-ID:42941	*EXPLOIT*
+    	1337DAY-ID-772	0.0	https://vulners.com/zdt/1337DAY-ID-772	*EXPLOIT*
+    	1337DAY-ID-2841	0.0	https://vulners.com/zdt/1337DAY-ID-2841	*EXPLOIT*
+    	1337DAY-ID-2838	0.0	https://vulners.com/zdt/1337DAY-ID-2838	*EXPLOIT*</pre>
+</td></tr>
+<tr class="success">
+<td title="Port">137</td>
+<td title="Protocol">udp</td>
+<td title="State / Reason">open<br>udp-response</td>
+<td title="Service">netbios-ns</td>
+<td title="Product">Microsoft Windows netbios-ns</td>
+<td title="Version"></td>
+<td title="Extra Info">workgroup: WORKGROUP</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:microsoft:windows">cpe:/o:microsoft:windows</a></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.26</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">1443</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">upnp</td>
+<td title="Product">Sonos upnpd</td>
+<td title="Version">58.1-77280</td>
+<td title="Extra Info">UPnP 1.0; model ZPS21</td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:linux:linux_kernel">cpe:/o:linux:linux_kernel</a></td></tr>
+<tr class="success">
+<td title="Port">7000</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">rtsp</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7">
+<a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a><h5>fingerprint-strings</h5>
+<pre style="white-space:pre-wrap; word-wrap:break-word;">
+  FourOhFourRequest, GetRequest: 
+    HTTP/1.1 404 Not Found
+    Content-Length: 0
+    Server: AirTunes/366.0
+  HTTPOptions: 
+    HTTP/1.1 200 OK
+    Public: ANNOUNCE, SETUP, RECORD, PAUSE, FLUSH, FLUSHBUFFERED, TEARDOWN, OPTIONS, POST, GET, PUT
+    Server: AirTunes/366.0
+  RTSPRequest: 
+    RTSP/1.0 200 OK
+    Public: ANNOUNCE, SETUP, RECORD, PAUSE, FLUSH, FLUSHBUFFERED, TEARDOWN, OPTIONS, POST, GET, PUT
+    Server: AirTunes/366.0
+  SIPOptions: 
+    RTSP/1.0 200 OK
+    Public: ANNOUNCE, SETUP, RECORD, PAUSE, FLUSH, FLUSHBUFFERED, TEARDOWN, OPTIONS, POST, GET, PUT
+    Server: AirTunes/366.0
+    CSeq: 42 OPTIONS</pre>
+</td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">192.168.2.27</h3></div>
+<div class="panel-body">
+<h4>Ports</h4>
+<div class="table-responsive"><table class="table table-bordered">
+<thead><tr>
+<th>Port</th>
+<th>Protocol</th>
+<th>State<br>Reason</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>Extra Info</th>
+</tr></thead>
+<tbody>
+<tr class="success">
+<td title="Port">135</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">msrpc</td>
+<td title="Product">Microsoft Windows RPC</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:microsoft:windows">cpe:/o:microsoft:windows</a></td></tr>
+<tr class="success">
+<td title="Port">445</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">microsoft-ds</td>
+<td title="Product"></td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version="></a></td></tr>
+<tr class="success">
+<td title="Port">3389</td>
+<td title="Protocol">tcp</td>
+<td title="State / Reason">open<br>syn-ack</td>
+<td title="Service">ms-wbt-server</td>
+<td title="Product">Microsoft Terminal Services</td>
+<td title="Version"></td>
+<td title="Extra Info"></td>
+</tr>
+<tr><td colspan="7"><a href="https://nvd.nist.gov/vuln/search/results?form_type=Advanced&amp;cves=on&amp;cpe_version=cpe:/o:microsoft:windows">cpe:/o:microsoft:windows</a></td></tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<h2 id="openservices" class="target">Open Services</h2>
+<div class="table-responsive"><table id="table-services" class="table table-striped dataTable" role="grid">
+<thead><tr>
+<th>Address</th>
+<th>Port</th>
+<th>Protocol</th>
+<th>Service</th>
+<th>Product</th>
+<th>Version</th>
+<th>CPE</th>
+<th>Extra info</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>192.168.2.15</td>
+<td>139</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Microsoft Windows netbios-ssn</td>
+<td></td>
+<td>cpe:/o:microsoft:windows</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.15</td>
+<td>445</td>
+<td>tcp</td>
+<td>microsoft-ds</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.15</td>
+<td>999</td>
+<td>tcp</td>
+<td>garcon</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.15</td>
+<td>5900</td>
+<td>tcp</td>
+<td>vnc</td>
+<td>VNC</td>
+<td></td>
+<td></td>
+<td>protocol 3.8</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>53</td>
+<td>tcp</td>
+<td>domain</td>
+<td>dnsmasq</td>
+<td>2.55</td>
+<td>cpe:/a:thekelleys:dnsmasq:2.55</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>80</td>
+<td>tcp</td>
+<td>http</td>
+<td>lighttpd</td>
+<td></td>
+<td>cpe:/a:lighttpd:lighttpd</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>139</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Samba smbd</td>
+<td>3.X - 4.X</td>
+<td>cpe:/a:samba:samba</td>
+<td>workgroup: WORKGROUP</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>443</td>
+<td>tcp</td>
+<td>http</td>
+<td>lighttpd</td>
+<td></td>
+<td>cpe:/a:lighttpd:lighttpd</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>445</td>
+<td>tcp</td>
+<td>netbios-ssn</td>
+<td>Samba smbd</td>
+<td>3.X - 4.X</td>
+<td>cpe:/a:samba:samba</td>
+<td>workgroup: WORKGROUP</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>9000</td>
+<td>tcp</td>
+<td>upnp</td>
+<td>TwonkyMedia UPnP</td>
+<td></td>
+<td>cpe:/a:packetvideo:twonky</td>
+<td>Linux 2.X.X; UPnP 1.0; pvConnect SDK 1.0</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>49154</td>
+<td>tcp</td>
+<td>upnp</td>
+<td>Portable SDK for UPnP devices</td>
+<td>1.6.18</td>
+<td>cpe:/o:linux:linux_kernel:3.4.11-rt19</td>
+<td>Linux 3.4.11-rt19; UPnP 1.0</td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>53</td>
+<td>udp</td>
+<td>domain</td>
+<td>dnsmasq</td>
+<td>2.55</td>
+<td>cpe:/a:thekelleys:dnsmasq:2.55</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.1</td>
+<td>137</td>
+<td>udp</td>
+<td>netbios-ns</td>
+<td>Microsoft Windows netbios-ns</td>
+<td></td>
+<td>cpe:/o:microsoft:windows</td>
+<td>workgroup: WORKGROUP</td>
+</tr>
+<tr>
+<td>192.168.2.26</td>
+<td>1443</td>
+<td>tcp</td>
+<td>upnp</td>
+<td>Sonos upnpd</td>
+<td>58.1-77280</td>
+<td>cpe:/o:linux:linux_kernel</td>
+<td>UPnP 1.0; model ZPS21</td>
+</tr>
+<tr>
+<td>192.168.2.26</td>
+<td>7000</td>
+<td>tcp</td>
+<td>rtsp</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.27</td>
+<td>135</td>
+<td>tcp</td>
+<td>msrpc</td>
+<td>Microsoft Windows RPC</td>
+<td></td>
+<td>cpe:/o:microsoft:windows</td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.27</td>
+<td>445</td>
+<td>tcp</td>
+<td>microsoft-ds</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>192.168.2.27</td>
+<td>3389</td>
+<td>tcp</td>
+<td>ms-wbt-server</td>
+<td>Microsoft Terminal Services</td>
+<td></td>
+<td>cpe:/o:microsoft:windows</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<script>
+            $(document).ready(function() {
+              $('#table-services').DataTable();
+            });
+          </script>
+</div>
+<footer class="footer"><div class="container"><p class="text-muted">
+              This report was generated with <a href="https://github.com/honze-net/nmap-bootstrap-xsl">Nmap Bootstrap XSL</a>.<br>
+              Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons BY-SA</a>.<br>
+              Designed and built by Andreas Hontzia (<a href="https://www.twitter.com/honze_net">@honze_net</a>).<br></p></div></footer>
+</body>
+</html>
