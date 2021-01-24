@@ -132,6 +132,6 @@ Mieux gérer les multiples adresses IP sur une seule interface réseau.
 
 Améliorer la phase d'installtion des pré-requis pour n'installer que le strict nécessaire.
 
-Améliorer l'analyse des fichiers en entrée afin d'éviter les scans en double, par exemple: 10.10.18.0/24 and 10.10.18.0/28
+Améliorer l'analyse des fichiers en entrée afin d'éviter les scans en double, par exemple: 10.10.18.0/24 et 10.10.18.0/28
 # Changelog
 [Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
