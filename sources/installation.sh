@@ -23,7 +23,7 @@
 #                  It's only available for Debian OS family.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20190724
+# Date           : 20210112
 # Version        : 1.0
 # Usage          : ./installation.sh
 # Prerequisites  : N/A
