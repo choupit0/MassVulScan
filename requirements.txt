@@ -24,9 +24,9 @@ masscan -V
 -- Nmap installation
 
 cd /tmp
-wget https://nmap.org/dist/nmap-7.80.tgz
-tar -xvzf nmap-7.80.tgz
-cd nmap-7.80
+wget https://nmap.org/dist/nmap-7.90.tgz
+tar -xvzf nmap-7.90.tgz
+cd nmap-7.90
 ./configure
 make -j$(nproc)
 make install
