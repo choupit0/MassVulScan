@@ -1,6 +1,6 @@
-# MassVulScan :alien: [Version Francaise](https://github.com/choupit0/MassVulScan/blob/master/README-FR.md)
+# MassVulScan :alien: [Version Francaise](https://github.com/choupit0/MassVulScan/blob/dev/README-FR.md)
 [![Generic badge](https://img.shields.io/badge/Version-1.9.1-<COLOR>.svg)](https://github.com/choupit0/MassVulScan/releases)
-[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/choupit0/MassVulScan/blob/master/LICENSE)
+[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/choupit0/MassVulScan/blob/dev/LICENSE)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/choupit0/MassVulScan/graphs/commit-activity)
 [![made-with-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
 # Description
@@ -42,10 +42,12 @@ chmod +x MassVulScan.sh
 (root user or sudo) ./MassVulScan.sh -f [input file]
 ```
 List of available parameters/arguments:
+**Mandatory parameter:**
 ```
-Mandatory parameter:
 -f | --include-file = File including IPv4 addresses (CIDR format) or hostnames to scan (one by line)
-Optional parameters:
+```
+**Optional parameters:**
+```
 -x | --exclude-file = File including IPv4 addresses ONLY (CIDR format) to NOT scan (one by line)
 -i | --interactive = Extra parameters: ports to scan, rate level and NSE script
 -a | --all-ports = Scan all 65535 ports (TCP + UDP) at 2K pkts/sec with NSE vulners script
@@ -131,4 +133,4 @@ Improve process of installation (install what is strictly necessary, comparison 
 
 Improve the parsing of hosts file to detect duplicate networks, Ex: 10.10.18.0/24 and 10.10.18.0/28, and avoid duplicate scan.
 # Changelog
-[Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
+[Changelog](https://github.com/choupit0/MassVulScan/blob/dev/CHANGELOG.md)

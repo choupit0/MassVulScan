@@ -1,6 +1,6 @@
-# MassVulScan :alien: [English version](https://github.com/choupit0/MassVulScan/blob/master/README.md)
+# MassVulScan :alien: [English version](https://github.com/choupit0/MassVulScan/blob/dev/README.md)
 [![Generic badge](https://img.shields.io/badge/Version-1.9.1-<COLOR>.svg)](https://github.com/choupit0/MassVulScan/releases)
-[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/choupit0/MassVulScan/blob/master/LICENSE)
+[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/choupit0/MassVulScan/blob/dev/LICENSE)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/choupit0/MassVulScan/graphs/commit-activity)
 [![made-with-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
 # Description
@@ -42,10 +42,12 @@ chmod +x MassVulScan.sh
 (root user or sudo) ./MassVulScan.sh -f [input file]
 ```
 Liste des paramètres/arguments disponibles :
+**Paramètre obligatoire:**
 ```
-Paramètre obligatoire:
 -f | --include-file = Fichier incluant les addresses IPv4 (format CIDR) et/ou noms d'hôtes à scanner (un(e) par ligne)
-Paramètres optionnels:
+```
+**Paramètres optionnels:**
+```
 -x | --exclude-file = Fichier incluant les addresses IPv4 (format CIDR) et/ou noms d'hôtes à NE PAS scanner (un(e) par ligne)
 -i | --interactive = Paramètres supplémentaires : liste des ports à scanner, vitesse et script Nmap (NSE)
 -a | --all-ports = Scanner les 65535 ports (TCP et UDP), à la vitesse de 2K pkts/sec et script Nmap vulners.nse 
@@ -131,4 +133,4 @@ Améliorer la phase d'installtion des pré-requis pour n'installer que le strict
 
 Améliorer l'analyse des fichiers en entrée afin d'éviter les scans en double, par exemple: 10.10.18.0/24 and 10.10.18.0/28
 # Changelog
-[Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
+[Changelog](https://github.com/choupit0/MassVulScan/blob/dev/CHANGELOG.md)

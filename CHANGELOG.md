@@ -1,7 +1,7 @@
 # Changelog
 1.9.1 (2021-01-22)
 
-**Améliorations or changements/Implemented enhancements or changes:**
+**Améliorations ou changements/Implemented enhancements or changes:**
 
 Nmap 7.90 compatibility
 Masscan 1.3.0 compatibility
