@@ -148,7 +148,7 @@ fi
 # Usage of script
 usage(){
         logo
-	echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo ./$(basename "$0") [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-v] [-h]]${end_color}"
+	echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo ./$(basename "$0") [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-V] [-h]]${end_color}"
 	echo -e "${bold_color}    * Mandatory parameter:"
 	echo -e "${purple_color}        -f | --include-file${end_color} \tFile including IPv4 addresses (CIDR format) or hostnames to scan (one by line)"
 	echo -e "${bold_color}    * Optional parameters (must be used in addition of \"-f\" parameter):"
