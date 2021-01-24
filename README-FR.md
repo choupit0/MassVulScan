@@ -42,6 +42,7 @@ chmod +x MassVulScan.sh
 (root user or sudo) ./MassVulScan.sh -f [input file]
 ```
 Liste des paramètres/arguments disponibles :
+
 **Paramètre obligatoire:**
 ```
 -f | --include-file = Fichier incluant les addresses IPv4 (format CIDR) et/ou noms d'hôtes à scanner (un(e) par ligne)
