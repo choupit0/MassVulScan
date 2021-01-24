@@ -1,4 +1,4 @@
-Debian/Ubuntu OS based installation with root user:
+Debian/Ubuntu OS based installation, with root user:
 
 -- Packages installation
 
