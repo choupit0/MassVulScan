@@ -50,7 +50,7 @@ script_start="$SECONDS"
 report_folder="$(pwd)/reports/"
 # Name server used for the DNS queries/lookups
 # Change it for your private DNS server if you want scan your private LAN
-dns="10.10.8.13"
+dns="1.1.1.1"
 
 # Time elapsed 
 time_elapsed(){
