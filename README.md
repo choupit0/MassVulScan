@@ -17,7 +17,7 @@ Bash script which combines the power of the Masscan scanner to find open ports, 
 
 **I invite you to read the file "requirements.txt" if you have difficulties. It will tell you how to install each of the prerequisites.**
 
-The script can install for you all the prerequisites necessary for the script. You have just to launch the script like this:
+**Otherwise, the script can install for you all the prerequisites. You have just to launch the script like this the first time:**
 ```
 (root user or sudo) ./MassVulScan.sh -y
 ```
