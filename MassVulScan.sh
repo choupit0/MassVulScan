@@ -555,7 +555,6 @@ if [[ ${check} = "on" ]]; then
 
 echo -e "${green_color}[V] Pre-scanning phase is ended.${end_color}"
 rm -rf ips_list.txt 2>/dev/null
-hosts="live_hosts.txt"
 nb_hosts_nmap="$(wc -l "${hosts}")"
 echo -e "${purple_color}[I] ${nb_hosts_nmap} ip(s) to check.${end_color}"
 
@@ -565,8 +564,12 @@ fi
 # 2/4 Using Masscan to find open ports #
 ########################################
 
-cut -d" " -f1 "${hosts_file}" > ips_list.txt
-hosts="ips_list.txt"
+if [[ -s "live_hosts.txt" ]] && [[ ! -z "live_hosts.txt" ]]; then
+        hosts="live_hosts.txt"
+        else
+                cut -d" " -f1 "${hosts_file}" > ips_list.txt
+                hosts="ips_list.txt"
+fi
 
 echo -e "${blue_color}[-] Verifying Masscan parameters and running the tool...please, be patient!${end_color}"
 
