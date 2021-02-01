@@ -15,6 +15,7 @@
 **Correction de bugs/Fixed bugs:**
 
 - Issue solved with some hosts file outside of MassVulScan folder
+- Issue solved to find live hosts
 
 **Correction de bugs/Fixed bugs:**
 
