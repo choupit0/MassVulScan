@@ -347,6 +347,11 @@ if [[ -s hosts_converted.txt ]]; then
         rm -rf IPs_and_hostnames.txt
 fi
 
+if [[ ! -s IPs_unsorted.txt ]] && [[ ! -s IPs.txt ]]; then
+        echo -n -e "${red_color}\r[X] No valid host found.\n${end_color}"
+        exit 1
+fi
+
 if [[ -s IPs_unsorted.txt ]] && [[ -s IPs.txt ]]; then
         echo -n -e "\r                                                                                             "
         echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
