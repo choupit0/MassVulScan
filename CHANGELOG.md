@@ -1,4 +1,10 @@
 # Changelog
+1.9.2 (2021-03-08)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Improved parsing of input files
+
 1.9.1 (2021-01-22)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
