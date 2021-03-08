@@ -24,8 +24,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20210124
-# Version        : 1.9.1
+# Date           : 20210308
+# Version        : 1.9.2
 # Usage          : ./MassVulScan.sh [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-h] [-V]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc and ipcalc packages are also necessary.
@@ -34,7 +34,7 @@
 #                  the installation of these prerequisites is automatic.
 #
 
-version="1.9.1"
+version="1.9.2"
 yellow_color="\033[1;33m"
 purple_color="\033[1;35m"
 green_color="\033[0;32m"
@@ -261,8 +261,8 @@ fi
 #######################################
 # Parsing the input and exclude files #
 #######################################
-num_hostnames_init=$(grep -v "^#" ${hosts} | grep "\S" | sort -u | grep -vEc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
-num_ips_init=$(grep -v "^#" ${hosts} | grep "\S" | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
+num_hostnames_init=$(grep '[[:alnum:].-]' ${hosts} | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -vEc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
+num_ips_init=$(grep '[[:alnum:].-]' ${hosts} | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
 
 valid_ip(){
 ip_to_check="$1"
@@ -278,7 +278,7 @@ echo -n -e "${blue_color}\r[-] Parsing the input file (DNS lookups, duplicate IP
 
 # Saving IPs first
 if [[ ${num_ips_init} -gt "0" ]]; then
-        ips_tab_init=($(grep -v "^#" ${hosts} | grep "\S" | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*'))
+        ips_tab_init=($(grep '[[:alnum:].-]' ${hosts} | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*'))
         printf '%s\n' "${ips_tab_init[@]}" | while IFS=, read -r check_ip; do
                 valid_ip "${check_ip}"
                 if [[ "${is_valid}" == "yes" ]]; then
@@ -292,7 +292,7 @@ fi
 # First parsing to translate the hostnames to IPs
 if [[ ${num_hostnames_init} != "0" ]]; then
         # Filtering on the hosts only
-        hostnames_tab=($(grep -v "^#" ${hosts} | grep "\S" | grep -vE '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u))
+        hostnames_tab=($(grep '[[:alnum:].-]' ${hosts} | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | grep -vE '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u))
 
         # Conversion to IPs
         printf '%s\n' "${hostnames_tab[@]}" | while IFS=, read -r host_to_convert; do
@@ -379,9 +379,9 @@ hosts_file="${hosts}_parsed"
 if [[ ${exclude_file} != "" ]]; then
 	echo -n -e "\r                                                                                                                 "
 	echo -n -e "${blue_color}\r[-] Parsing the exclude file (valid IPv4 addresses ONLY)...${end_color}"
-	num_xips_init=$(grep -v "^#" ${exclude_file} | grep "\S" | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
+	num_xips_init=$(grep -Ev '^[[:punct:]]|[[:punct:]]$' ${exclude_file} | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
 	if [[ ${num_xips_init} -gt "0" ]]; then
-		xips_tab_init=($(grep -v "^#" ${exclude_file} | grep "\S" | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*'))
+		xips_tab_init=($(grep -Ev '^[[:punct:]]|[[:punct:]]$' ${exclude_file} | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*'))
 		printf '%s\n' "${xips_tab_init[@]}" | while IFS=, read -r check_ip; do
 			valid_ip "${check_ip}"
 			if [[ "${is_valid}" == "yes" ]]; then
