@@ -193,7 +193,7 @@ else
 fi
 }
 
-if [[ $1 == "-y" ]]; then
+if [[ $1 == "--auto-installation" ]]; then
         root_user
         echo -e "${blue_color}${bold_color}[-] Great, we starting the installation...please, be patient!${end_color}"
         # Clearing the screen
