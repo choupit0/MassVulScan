@@ -19,7 +19,7 @@ Script Bash qui combine la puissance du scanner Masscan pour trouver des ports o
 
 **Sinon, le script installera pour vous tous les pré-requis nécessaires au fonctionnement du script. Il vous suffit de lancer le script de cette manière la première fois :**
 ```
-(root user or sudo) ./MassVulScan.sh -y
+(root user or sudo) ./MassVulScan.sh --auto-installation
 ```
 Seuls les OS de la famille Debian sont concernés pour le moment.
 Cette fonctionnalité a été validée sur les OS 64bits suivants (2 core CPU et 2GB RAM ~5 minutes) :
