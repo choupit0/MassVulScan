@@ -235,7 +235,7 @@ elif [[ $1 == "--auto-installation-apt" ]]; then
 	git clone https://github.com/vulnersCom/nmap-vulners > /dev/null 2>&1
 	echo -n -e "\r                                                            "
 	echo -n -e "${blue_color}\r[-] Installing/upgrading \"Vulners.nse\"...${end_color}"
-	mv -f "${temp_folder}/nmap-vulners/vulners.nse" "/usr/local/share/nmap/scripts/" > /dev/null 2>&1
+	mv -f "${temp_folder}/nmap-vulners/vulners.nse" "/usr/share/nmap/scripts/" > /dev/null 2>&1
 	echo -n -e "\r                                              "
 	echo -n -e "${blue_color}\r[-] Updating the databases...${end_color}"
 	updatedb > /dev/null 2>&1
