@@ -19,11 +19,11 @@ Bash script which combines the power of the Masscan scanner to find open ports, 
 
 **Otherwise, the script can install for you all the prerequisites. You have just to launch the script like this the first time:**
 ```
-(root user or sudo) ./MassVulScan.sh --auto-installation-latest (latest packages of Nmap and Masscan ~5 minutes)
+(root or sudo) ./MassVulScan.sh --auto-installation-latest (latest packages of Nmap and Masscan ~5 minutes)
 ```
 **Or:**
 ```
-(root user or sudo) ./MassVulScan.sh --auto-installation-apt (speedtest but without the last versions ~1 minute)
+(root or sudo) ./MassVulScan.sh --auto-installation-apt (speedtest but without the last versions ~1 minute)
 ```
 Only Debian OS family is currently compatible.
 This feature has been validated on the following 64bit OS (2 core CPU and 2GB RAM ~5 minutes):
