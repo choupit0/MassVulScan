@@ -157,7 +157,7 @@ usage(){
 	echo -e "${purple_color}        -a | --all-ports${end_color} \tScan all 65535 ports (TCP + UDP) at 2K pkts/sec with NSE vulners script"
 	echo -e "${purple_color}        -c | --check${end_color} \t\tPerform a pre-scanning to identify online hosts and scan only them"
 	echo -e "${purple_color}        -r | --report${end_color} \t\tFile including IPs scanned with open ports and protocols"
-	echo -e "${purple_color}        -n | --no-nmap-scan${end_color} \tUse only the script to detect the hosts with open ports (no reports provided)"
+	echo -e "${purple_color}        -n | --no-nmap-scan${end_color} \tUse only the script to detect the hosts with open ports (no HTML report)"
 	echo -e "${bold_color}      Information:"
 	echo -e "${purple_color}        -h | --help${end_color} \t\tThis help menu"
 	echo -e "${purple_color}        -V | --version${end_color} \t\tScript version"
