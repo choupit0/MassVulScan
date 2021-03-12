@@ -196,9 +196,8 @@ fi
 # Latest packages of Nmap and Masscan with compilation (~5 minutes)
 if [[ $1 == "--auto-installation-latest" ]]; then
         root_user
-        echo -e "${blue_color}${bold_color}[-] Great, we starting the installation...please, be patient!${end_color}"
-        # Clearing the screen
         clear
+	echo -e "${blue_color}${bold_color}[-] We starting the installation...please, be patient!${end_color}"
         prerequisites_install
         time_elapsed
         exit 0
@@ -207,10 +206,9 @@ if [[ $1 == "--auto-installation-latest" ]]; then
 elif [[ $1 == "--auto-installation-apt" ]]; then
 	temp_folder="$(mktemp -d /tmp/temp_folder-XXXXXXXX)"
 	root_user
-        echo -e "${blue_color}${bold_color}[-] Great, we starting the installation...please, be patient!${end_color}"
-        # Clearing the screen
-        clear
-
+	clear
+	echo -e "${blue_color}${bold_color}[-] We tarting the installation...${end_color}"
+        
 	# Checking the Internet connection
 	check_github_status="$(nc -z -v -w 1 github.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
 	check_nmap_status="$(nc -z -v -w 1 nmap.org 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
