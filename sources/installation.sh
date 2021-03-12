@@ -223,11 +223,11 @@ elif [[ $1 == "--auto-installation-apt" ]]; then
 	if [[ $(command -v apt) ]]; then
 		apt update > /dev/null 2>&1
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}"
-		apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat masscan nmap > /dev/null 2>&1
+		apt install -y git wget net-tools locate xsltproc ipcalc dnsutils netcat masscan nmap > /dev/null 2>&1
 	elif [[ $(command -v apt-get) ]]; then
 		apt-get update > /dev/null 2>&1
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}"
-		apt-get install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat masscan nmap > /dev/null 2>&1
+		apt-get install -y git wget net-tools locate xsltproc ipcalc dnsutils netcat masscan nmap > /dev/null 2>&1
 	fi
 
 	# NSE Vulners
