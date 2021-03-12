@@ -197,8 +197,7 @@ fi
 if [[ $1 == "--auto-installation-latest" ]]; then
         root_user
         clear
-	echo -e "${yellow_color}${bold_color}[I] We starting the installation...please, be patient!${end_color}"
-        prerequisites_install
+	prerequisites_install
         time_elapsed
         exit 0
 # APT installation, more speed without verification and not with the latest versions of Nmap and Masscan
