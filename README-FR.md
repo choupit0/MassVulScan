@@ -25,8 +25,12 @@ Script Bash qui combine la puissance du scanner Masscan pour trouver des ports o
 ```
 (root ou sudo) ./MassVulScan.sh --auto-installation-apt (+ rapide mais sans les dernières versions ~1 minute)
 ```
-Seuls les OS de la famille Debian sont concernés pour le moment.
-Cette fonctionnalité a été validée sur les OS 64bits suivants (2 core CPU et 2GB RAM ~5 minutes) :
+**Note a sujet de la version APT:**
+J'ai détecté une erreur avec cette verison. La balise de Masscan version 1.0.5 pointe vers un commit qui contient toujours la version 1.0.4. Mais c'est le code correct pour la version 1.0.5. Détails ici: https://github.com/robertdavidgraham/masscan/issues/566#issuecomment-798877419
+(Merci à https://github.com/rhertzog)
+
+**Seuls les OS de la famille Debian sont concernés pour le moment.**
+Cette fonctionnalité a été validée sur les OS 64bits suivants (2 core CPU et 2GB RAM ~5 minutes avec les dernières versions) :
 - Debian 10.0
 - Elementary 5.0
 - LinuxMint 19.1
