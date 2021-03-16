@@ -549,7 +549,7 @@ fi
 if [[ ${check} = "on" ]]; then
 	cut -d" " -f1 "${hosts_file}" > ips_list.txt
 	echo -e "${blue_color}[-] Verifying how many hosts are online...please, be patient!${end_color}"	
-	nmap -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL ips_list.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > live_hosts.txt
+	nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL ips_list.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > live_hosts.txt
 		if [[ $? != "0" ]]; then
 			echo -e "${error_color}[X] ERROR! Maybe there is no host detected online. The script is ended.${end_color}"
 			rm -rf live_hosts.txt ${hosts}_parsed
