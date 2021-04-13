@@ -140,6 +140,8 @@ Enfin, avec le "mode interactif" (-i) vous avez la possibilité de préciser des
 Concernant SNMP, parfois, l'analyse du port UDP ne semble pas fonctionner correctement avec le programme masscan. J'essaie de trouver une solution.
 
 # A faire
+Améliorer la phase d'identification des hôtes qui sont en ligne/actifs (utiliser fping).
+
 Mieux gérer les multiples adresses IP sur une seule interface réseau.
 
 Améliorer la phase d'installtion des pré-requis pour n'installer que le strict nécessaire.
