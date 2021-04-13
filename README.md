@@ -141,6 +141,8 @@ Finally, with the "interactive mode" (-i) you have the possibility to type scrip
 # Known issues
 Concerning SNMP, sometimes UDP port scan doesn't seems correctly working with masscan program. I'm trying to find a solution.
 # TODO
+Improve the pre-scanning phase to identify online hosts (fping).
+
 Manage better multiple IP addresses on one network interface.
 
 Improve process of installation (install what is strictly necessary, comparison of versions).
