@@ -131,7 +131,7 @@ root@Unknown-Device:~/MassVulScan# tree
 6 directories, 22 files
 ```
 # Compatibility
-The script has only been tested on Debian family OS but should work on most Linux distributions (except for prerequisites installation). It can detect open ports on TCP and UDP protocols.
+The script has only been tested on Debian family OS but should work on most Linux distributions (except for the automatic prerequisites installation). It can detect open ports on TCP and UDP protocols.
 # Notes / Tips
 Note that the advantage of using the NSE vulners.nse script is that it systematically polls the vulners.com site database, so it will be the latest available data. Similarly, the latter performs a ranking and sorting of identified CVEs, the most severe at the top of the list, which is very convenient.
 
