@@ -337,7 +337,6 @@ if [[ -s hosts_converted.txt ]]; then
         fi
 
         # Third parsing to detect duplicate IPs and keep the multiple hostnames
-        # Source: http://www.whxy.org/book/mastering-kali-linux-advanced-pen-testing-2nd/text/part0103.html
 
         cat IPs_and_hostnames.txt | awk '/.+/ { \
                 if (!($1 in ips_list)) { \
@@ -648,7 +647,6 @@ hosts_scanned(){
 nmap_file(){
 proto="$1"
 
-# Source: http://www.whxy.org/book/mastering-kali-linux-advanced-pen-testing-2nd/text/part0103.html
 grep "^open ${proto}" masscan-output.txt | awk '/.+/ { \
 				if (!($4 in ips_list)) { \
 				value[++i] = $4 } ips_list[$4] = ips_list[$4] $3 "," } END { \
