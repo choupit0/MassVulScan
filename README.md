@@ -23,7 +23,7 @@ Bash script which combines the power of the Masscan scanner to find open ports, 
 ```
 **Or:**
 ```
-(root or sudo) ./MassVulScan.sh --auto-installation-apt (speedtest but without the last versions ~1 minute)
+(root or sudo) ./MassVulScan.sh --auto-installation-apt (speedest but without the last versions ~1 minute)
 ```
 **Note about APT installation**
 Warning, I detected an error with the APT version. There is a mistake of upstream. The Masscan version 1.0.5 tag points to
