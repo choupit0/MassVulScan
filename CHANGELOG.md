@@ -5,6 +5,10 @@
 
 - Improved parsing of input files
 
+**Correction de bugs/Fixed bugs:**
+
+- no reported issue by the community
+
 1.9.1 (2021-01-22)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
@@ -22,8 +26,4 @@
 
 - Issue solved with some hosts file outside of MassVulScan folder
 - Issue solved to find live hosts
-
-**Correction de bugs/Fixed bugs:**
-
-- no reported issue by the community
 
