@@ -34,7 +34,7 @@
 #                  the installation of these prerequisites is automatic.
 #
 
-version="1.9.2"
+version="1.9.1"
 yellow_color="\033[1;33m"
 purple_color="\033[1;35m"
 green_color="\033[0;32m"
