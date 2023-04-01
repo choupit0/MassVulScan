@@ -1,5 +1,11 @@
 # Changelog
-1.9.2 (2021-03-08)
+1.9.2 (2023-03-28)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Code cleaning (shellcheck, symlink compatible now)
+
+1.9.1 (2021-03-08)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
 
@@ -9,7 +15,7 @@
 
 - no reported issue by the community
 
-1.9.1 (2021-01-22)
+1.9.0 (2021-01-22)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
 
