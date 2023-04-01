@@ -36,6 +36,7 @@ error_color="\033[1;41m"
 blue_color="\033[0;36m"
 bold_color="\033[1m"
 end_color="\033[0m"
+dir_name="$(dirname -- "$( readlink -f -- "$0"; )")"
 script_start="$SECONDS"
 
 # Time elapsed
@@ -95,11 +96,11 @@ check_github_status="$(nc -z -v -w 1 github.com 443 2>&1 | grep -oE '(succeeded!
 check_nmap_status="$(nc -z -v -w 1 nmap.org 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
 
 if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]]; then
-	temp_folder="$(mktemp -d /tmp/temp_folder-XXXXXXXX)"
-	if [[ ! -d "./log" ]]; then
-		mkdir "$(pwd)"/log
+	temp_dir_install="$(mktemp -d /tmp/temp_dir_install-XXXXXXXX)"
+	if [[ ! -d "${dir_name}/log" ]]; then
+		mkdir "${dir_name}"/log
 	fi
-	log_file="$(pwd)/log/log_$(date +%F_%H-%M-%S).txt"
+	log_file="${dir_name}/log/log_$(date +%F_%H-%M-%S).txt"
 	echo -e "${yellow_color}\r[I] To view the detailled progression: tail -f ${bold_color}${log_file}${end_color}"
 	# Prerequisites packages
 	echo -n -e "\r                                       "
@@ -116,11 +117,11 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	proc_status
 	# Packages Masscan, Nmap and NSE script Vulners.nse
 	echo -n -e "${blue_color}\r[-] Getting the source packages \"Masscan\", \"Nmap\" and \"Vulners.nse\"...${end_color}" && echo "---- DOWNLOAD SOURCES ---" &>> "${log_file}"
-	cd "${temp_folder}"
+	cd "${temp_dir_install}"
 	git clone https://github.com/robertdavidgraham/masscan.git &>> "${log_file}"
 	git clone https://github.com/vulnersCom/nmap-vulners &>> "${log_file}"
 	wget https://nmap.org/dist/nmap-7.90.tgz &>> "${log_file}"
-	cd "${temp_folder}/masscan"
+	cd "${temp_dir_install}/masscan"
 	echo -n -e "\r                                                                            "
 	echo -n -e "${blue_color}\r[-] Compiling \"Masscan\" ...${end_color}" && echo "---- COMPILING MASSCAN ---" &>> "${log_file}"
 	make -j"$(nproc)" &>> "${log_file}"
@@ -128,7 +129,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	echo -n -e "${blue_color}\r[-] Installing/upgrading \"Masscan\"...${end_color}" && echo "---- MASSCAN INSTALLATION ---" &>> "${log_file}"
 	mv -f "bin/masscan" "/usr/bin/" &>> "${log_file}"
 	proc_status
-	cd "${temp_folder}"
+	cd "${temp_dir_install}"
 	tar -xzf nmap-7.90.tgz &>> "${log_file}"
 	cd "nmap-7.90"
 	echo -n -e "${blue_color}\r[-] Resolving dependencies for \"Nmap\"...${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> "${log_file}"
@@ -142,7 +143,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	proc_status
 	echo -n -e "\r                                                            "
 	echo -n -e "${blue_color}\r[-] Installing/upgrading \"Vulners.nse\"...${end_color}" && echo "---- VULNERS.NSE INSTALLATION ---" &>> "${log_file}"
-	mv -f "${temp_folder}/nmap-vulners/vulners.nse" "/usr/local/share/nmap/scripts/"
+	mv -f "${temp_dir_install}/nmap-vulners/vulners.nse" "/usr/local/share/nmap/scripts/"
 	proc_status
 	echo -n -e "\r                                              "
 	echo -n -e "${blue_color}\r[-] Updating the databases...${end_color}" && echo "---- DATABASES UPDATE ---" &>> "${log_file}"
@@ -150,7 +151,7 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	nmap --script-updatedb &>> "${log_file}"
 	proc_status
 	echo -n -e "${blue_color}\r[-] Removing temporary files and folders...${end_color}" && echo "---- REMOVE TEMP FOLDERS ---" &>> "${log_file}"
-	rm -rf "${temp_folder}" &>> "${log_file}"
+	rm -rf "${temp_dir_install}" &>> "${log_file}"
 	proc_status
 	echo -n -e "\r                                           "
 	echo -n -e "${green_color}\r[V] Installation finished.\n${end_color}"
@@ -203,7 +204,7 @@ if [[ $1 == "--auto-installation-latest" ]]; then
 # APT installation, more speed without verification and not with the latest versions of Nmap and Masscan
 # Mode used by osic4MVS script for a cloud installation on a recent distribution such as Debian 10
 elif [[ $1 == "--auto-installation-apt" ]]; then
-	temp_folder="$(mktemp -d /tmp/temp_folder-XXXXXXXX)"
+	temp_dir_install="$(mktemp -d /tmp/temp_dir_install-XXXXXXXX)"
 	root_user
 	clear
 	echo -e "${yellow_color}${bold_color}[I] We tarting the installation${end_color}"
@@ -228,17 +229,17 @@ elif [[ $1 == "--auto-installation-apt" ]]; then
 	fi
 
 	# NSE Vulners
-	cd "${temp_folder}"
+	cd "${temp_dir_install}"
 	git clone https://github.com/vulnersCom/nmap-vulners > /dev/null 2>&1
 	echo -n -e "\r                                                            "
 	echo -n -e "${blue_color}\r[-] Installing/upgrading \"Vulners.nse\"...${end_color}"
-	mv -f "${temp_folder}/nmap-vulners/vulners.nse" "/usr/share/nmap/scripts/" > /dev/null 2>&1
+	mv -f "${temp_dir_install}/nmap-vulners/vulners.nse" "/usr/share/nmap/scripts/" > /dev/null 2>&1
 	echo -n -e "\r                                              "
 	echo -n -e "${blue_color}\r[-] Updating the databases...${end_color}"
 	updatedb > /dev/null 2>&1
 	nmap --script-updatedb > /dev/null 2>&1
 	echo -n -e "${blue_color}\r[-] Removing temporary files and folders...${end_color}"
-	rm -rf "${temp_folder}" > /dev/null 2>&1
+	rm -rf "${temp_dir_install}" > /dev/null 2>&1
 	echo -n -e "\r                                           "
 	echo -n -e "${green_color}\r[V] Installation finished.\n${end_color}"
 	echo -e "${blue_color}${bold_color}Please, now launch again the script to see options.${end_color}"
