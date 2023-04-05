@@ -17,7 +17,7 @@ Script Bash qui combine la puissance du scanner Masscan pour trouver des ports o
 
 **Je vous invite à lire le fichier "requirements.txt" si vous avez des difficultés. Il vous indiquera la marche à suivre pour installer chacun des pré-requis.**
 
-**Sinon, le script installera pour vous tous les pré-requis nécessaires au fonctionnement du script. Il vous suffit de lancer le script de cette manière la première fois :**
+**Sinon, le script installera pour vous tous les pré-requis nécessaires lors de l'execution. Autrement, il vous suffit d'appeler le script d'installation de cette manière la première fois :**
 ```
 (root ou sudo) sources/installation.sh --auto-installation-latest (dernières versions de Nmap and Masscan ~5 minutes)
 ```
