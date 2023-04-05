@@ -207,7 +207,7 @@ elif [[ $1 == "--auto-installation-apt" ]]; then
 	temp_dir_install="$(mktemp -d /tmp/temp_dir_install-XXXXXXXX)"
 	root_user
 	clear
-	echo -e "${yellow_color}${bold_color}[I] We tarting the installation${end_color}"
+	echo -e "${yellow_color}${bold_color}[I] We starting the installation${end_color}"
         
 	# Checking the Internet connection
 	check_github_status="$(nc -z -v -w 1 github.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"

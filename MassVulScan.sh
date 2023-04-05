@@ -47,6 +47,7 @@ source_installation="${dir_name}/sources/installation.sh"
 source_top_tcp="${dir_name}/sources/top-ports-tcp-1000.txt"
 source_top_udp="${dir_name}/sources/top-ports-udp-1000.txt"
 report_folder="${dir_name}/reports/"
+nmap_scripts_folder="/usr/local/share/nmap/scripts/"
 script_start="$SECONDS"
 # Name server used for the DNS queries/lookups
 # Change it for your private DNS server if you want scan your private LAN
@@ -461,7 +462,7 @@ elif [[ ${interactive} = "on" ]]; then
 		# Which script?
 	
 	if [[ ${no_nmap_scan} != "on" ]]; then
-		locate_scripts="$(locate vulners.nse | grep "/nmap/scripts/vulners.nse" | sed 's/vulners.nse//')"
+		locate_scripts="${nmap_scripts_folder}"
 		scripts_list="$(ls "${locate_scripts}"*.nse 2>/dev/null)"
 
 		# Verifying is Nmap folder scripts is present
@@ -472,8 +473,9 @@ elif [[ ${interactive} = "on" ]]; then
 		exit 1
 		fi
 
-		scripts_tab=("${scripts_list}")
+		scripts_tab=(${scripts_list})
 		scripts_loop="$(for index in "${!scripts_tab[@]}"; do echo "${index}) ${scripts_tab[${index}]}"; done)"
+		
 		echo -e "${blue_color}${scripts_loop}${end_color}"
 		echo -e "${blue_color}${bold_color}Which Nmap Scripting Engine (NSE) to use?${end_color}"
 		echo -e "${blue_color}[choose the corresponding number to the script name]${end_color}"
