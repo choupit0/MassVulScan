@@ -17,7 +17,7 @@ Bash script which combines the power of the Masscan scanner to find open ports, 
 
 **I invite you to read the file "requirements.txt" if you have difficulties. It will tell you how to install each of the prerequisites.**
 
-**Otherwise, the script can install for you all the prerequisites. You have just to launch the script like this the first time:**
+**Otherwise, the script will install all necessary prerequisites for you at runtime. Or, you just need to call the install script like this the first time:**
 ```
 (root or sudo) sources/installation.sh --auto-installation-latest (latest packages of Nmap and Masscan ~5 minutes)
 ```
