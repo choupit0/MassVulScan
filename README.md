@@ -37,6 +37,7 @@ This feature has been validated on the following 64bit OS (2 core CPU and 2GB RA
 - LinuxMint 19.1
 - Ubuntu 19.04
 - Parrot 5.5.17 (HackTheBox / HTB)
+- Kali 2023 (HackTheBox / HTB compatible)
 # How the script works?
 The main steps of the script:
 1) Express identification of hosts that are online with nmap (optional)
