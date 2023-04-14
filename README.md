@@ -36,7 +36,7 @@ This feature has been validated on the following 64bit OS (2 core CPU and 2GB RA
 - Elementary 5.0
 - LinuxMint 19.1
 - Ubuntu 19.04
-- Parrot 5.5.17 (HackTheBox / HTB)
+- Parrot 5.5.17 (HackTheBox / HTB compatible)
 - Kali 2023 (HackTheBox / HTB compatible)
 # How the script works?
 The main steps of the script:
