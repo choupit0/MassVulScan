@@ -319,7 +319,7 @@ if [[ -s ${temp_dir}/hosts_converted.txt ]]; then
                 if [[ ${check_ips} -gt "1" ]]; then
                         hostname=$(echo "${line}" | grep -oE '[^ ]+$')
                         ips_list=$(echo "${line}" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-                        ips_tab=("${ips_list}")
+                        ips_tab=(${ips_list})
                         ips_loop="$(for index in "${!ips_tab[@]}"; do echo "${ips_tab[${index}]} ${hostname}"; done)"
 
                         echo "${ips_loop}" >> "${temp_dir}"/multiple_IPs.txt
@@ -529,7 +529,7 @@ nb_interfaces="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -co "^[[:al
 
 if [[ ${nb_interfaces} -gt "2" ]]; then
 	interfaces_list="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -o "^[[:alnum:]]*")"
-	interfaces_tab=("${interfaces_list}")
+	interfaces_tab=(${interfaces_list})
 	echo -e "${blue_color}${bold_color}Warning: multiple network interfaces have been detected:${end_color}"
 	interfaces_loop="$(for index in "${!interfaces_tab[@]}"; do echo "${index}) ${interfaces_tab[${index}]}"; done)"
 	echo -e "${blue_color}${interfaces_loop}${end_color}"
