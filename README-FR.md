@@ -35,7 +35,8 @@ Cette fonctionnalité a été validée sur les OS 64bits suivants (2 core CPU et
 - Elementary 5.0
 - LinuxMint 19.1
 - Ubuntu 19.04
-- Parrot 5.5.17 (HackTheBox / HTB)
+- Parrot 5.5.17 (HackTheBox / HTB compatible)
+- Kali 2023 (compatible HackTheBox / HTB)
 # Fonctionnement
 Déroulement du script :
 1) Identification express des hosts qui sont en ligne avec nmap (optionnel)
