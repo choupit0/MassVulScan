@@ -448,12 +448,12 @@ elif [[ ${interactive} = "on" ]]; then
                 fi
         # Which rate?
         echo -e "${blue_color}${bold_color}Which rate (pkts/sec)?${end_color}"
-        echo -e "${blue_color}[default: --max-rate 2300, just typing \"Enter|Return\" key to continue]${end_color}"
+        echo -e "${blue_color}[default: --max-rate 2200, just typing \"Enter|Return\" key to continue]${end_color}"
         echo -e "${red_color}Be carreful, beyond \"10000\" it coud be dangerous for your network!!!${end_color}"
         read -p "Rate? >> " -r -t 60 max_rate
                 if [[ -z ${max_rate} ]];then
-                        rate="2300"
-			echo -e "${purple_color}[I] Default parameter: --max-rate 2300.${end_color}"
+                        rate="2200"
+			echo -e "${purple_color}[I] Default parameter: --max-rate 2200.${end_color}"
                         else
                                 rate=${max_rate}
 				echo -e "${purple_color}[I] Rate chosen: ${rate}${end_color}"
@@ -509,14 +509,14 @@ elif [[ ${interactive} = "on" ]]; then
 		if [[ ${no_nmap_scan} != "on" ]]; then	
 			source_file_top
 			ports="-p${top_ports_tcp},U:${top_ports_udp}"
-			rate="2300"
+			rate="2200"
 			script="vulners"
-			echo -e "${purple_color}[I] Default parameters: --top-ports 1000 (TCP/UDP), --max-rate 2300 and Vulners script (NSE).${end_color}"
+			echo -e "${purple_color}[I] Default parameters: --top-ports 1000 (TCP/UDP), --max-rate 2200 and Vulners script (NSE).${end_color}"
 		else
 			source_file_top
 			ports="-p${top_ports_tcp},U:${top_ports_udp}"
-			rate="2300"
-			echo -e "${purple_color}[I] Default parameters: --top-ports 1000 (TCP/UDP) and --max-rate 2300 (no Nmap Scan).${end_color}"
+			rate="2200"
+			echo -e "${purple_color}[I] Default parameters: --top-ports 1000 (TCP/UDP) and --max-rate 2200 (no Nmap Scan).${end_color}"
 		fi
 fi
 
