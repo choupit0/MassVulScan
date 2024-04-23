@@ -34,7 +34,7 @@
 #                  the installation of these prerequisites is automatic.
 #
 
-version="1.9.2"
+version="1.9.3"
 purple_color="\033[1;35m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -269,11 +269,19 @@ num_ips_init=$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct
 
 valid_ip(){
 ip_to_check="$1"
-if [[ $(ipcalc "${ip_to_check}" | grep -c "INVALID") == "0" ]]; then
-        is_valid="yes"
-else
-        is_valid="no"
+stat=1
+regexv6='^([0-9a-fA-F]{0,4}:){1,7}[0-9a-fA-F]{0,4}$'
+if [[ ${ip_to_check} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=(${ip_to_check})
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+elif [[ $ip =~ $regexv6 ]]; then
+        stat=0
 fi
+return $stat
 }
 
 echo -n -e "\r                                                                                                                 "
@@ -283,8 +291,7 @@ echo -n -e "${blue_color}\r[-] Parsing the input file (DNS lookups, duplicate IP
 if [[ ${num_ips_init} -gt "0" ]]; then
         ips_tab_init=("$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')")
         printf '%s\n' "${ips_tab_init[@]}" | while IFS=, read -r check_ip; do
-                valid_ip "${check_ip}"
-                if [[ "${is_valid}" == "yes" ]]; then
+                if valid_ip "${check_ip}"; then
                         echo "${check_ip}" >> "${temp_dir}"/IPs.txt
                 else
                         echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask                           \n${end_color}"
