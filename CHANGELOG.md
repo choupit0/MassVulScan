@@ -1,4 +1,10 @@
 # Changelog
+1.9.3 (2024-04-23)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Much more efficient way to validate the IP addresses in input
+
 1.9.2 (2023-03-28)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
