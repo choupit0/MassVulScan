@@ -395,7 +395,7 @@ if [[ ${exclude_file} != "" ]]; then
 	if [[ ${num_xips_init} -gt "0" ]]; then
 		xips_tab_init=("$(grep -Ev '^[[:punct:]]|[[:punct:]]$' "${exclude_file}" | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')")
 		printf '%s\n' "${xips_tab_init[@]}" | while IFS=, read -r check_ip; do
-			if  "${check_ip}"; then
+			if valid_ip "${check_ip}"; then
 				echo "${check_ip}" >> "${temp_dir}"/xIPs.txt
 			else
 				echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask to exclude                    \n${end_color}"
