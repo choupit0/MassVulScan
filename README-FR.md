@@ -58,11 +58,11 @@ Liste des paramètres/arguments disponibles :
 
 **Paramètre obligatoire:**
 ```
--f | --include-file = Fichier incluant les addresses IPv4 (format CIDR) et/ou noms d'hôtes à scanner (un(e) par ligne)
+-f | --include-file = Fichier incluant les addresses IPv4 (compatible format CIDR) et/ou noms d'hôtes à scanner (un(e) par ligne)
 ```
 **Paramètres optionnels:**
 ```
--x | --exclude-file = Fichier incluant les addresses IPv4 (format CIDR) et/ou noms d'hôtes à NE PAS scanner (un(e) par ligne)
+-x | --exclude-file = Fichier incluant les addresses IPv4 (compatible format CIDR) et/ou noms d'hôtes à NE PAS scanner (un(e) par ligne)
 -i | --interactive = Paramètres supplémentaires : liste des ports à scanner, vitesse et script Nmap (NSE)
 -a | --all-ports = Scanner les 65535 ports (TCP et UDP), à la vitesse de 2K pkts/sec et script Nmap vulners.nse 
 -c | --check = Trouver les hosts en ligne (pré-scan) et ne scanner que ceux-là
