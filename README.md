@@ -59,11 +59,11 @@ List of available parameters/arguments:
 
 **Mandatory parameter:**
 ```
--f | --include-file = File including IPv4 addresses (CIDR format) or hostnames to scan (one by line)
+-f | --include-file = File including IPv4 addresses (CIDR format compatible) or hostnames to scan (one by line)
 ```
 **Optional parameters:**
 ```
--x | --exclude-file = File including IPv4 addresses ONLY (CIDR format) to NOT scan (one by line)
+-x | --exclude-file = File including IPv4 addresses ONLY (CIDR format compatible) to NOT scan (one by line)
 -i | --interactive = Extra parameters: ports to scan, rate level and NSE script
 -a | --all-ports = Scan all 65535 ports (TCP + UDP) at 2K pkts/sec with NSE vulners script
 -c | --check = Perform a pre-scanning to identify online hosts and scan only them
