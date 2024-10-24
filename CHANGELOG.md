@@ -1,4 +1,11 @@
 # Changelog
+1.9.4 (2024-10-24)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Detect and deduplicate CIDR subnets to avoid multiple scan
+  E.g.: 10.10.18.0/28 is contained within 10.10.18.0/24 so we only keep 10.10.18.0/24 (the larger one)
+
 1.9.3 (2024-04-23)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
