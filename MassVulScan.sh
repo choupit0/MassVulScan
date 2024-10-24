@@ -24,8 +24,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20230328
-# Version        : 1.9.2
+# Date           : 20241024
+# Version        : 1.9.4
 # Usage          : ./MassVulScan.sh [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-h] [-V]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
 #                  Xsltproc and ipcalc packages are also necessary.
@@ -34,7 +34,7 @@
 #                  the installation of these prerequisites is automatic.
 #
 
-version="1.9.3"
+version="1.9.4"
 purple_color="\033[1;35m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -298,6 +298,101 @@ if [[ ${num_ips_init} -gt "0" ]]; then
                 fi
         done
 fi
+
+# Detect and deduplicate CIDR subnets with the help of Claude 3.5 Sonnet from https://claude.ai/
+if [[ -s ${temp_dir}/IPs.txt ]]; then
+        # Extract CIDR only
+        sed -n '/\//p' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
+
+        # Remove the CIDR lines in the original file
+        sed -i '/\//d' "${temp_dir}"/IPs.txt
+
+        # Function to convert an IP address to a number
+        ip_to_int() {
+            local ip=$1
+            local IFS='.'
+            read -r i1 i2 i3 i4 <<< "$ip"
+            echo $(( (i1 << 24) + (i2 << 16) + (i3 << 8) + i4 ))
+        }
+
+        # Function to calculate the network mask
+        get_mask() {
+            local bits=$1
+            if [ "$bits" -eq 32 ]; then
+                echo 4294967295  # 2^32 - 1
+            else
+                echo $(( ((1 << bits) - 1) << (32 - bits) ))
+            fi
+        }
+
+        # Function to get the network address
+        get_network_addr() {
+            local ip=$1
+            local mask=$2
+            echo $(( ip & mask ))
+        }
+
+        # Function to check if one network is contained within another
+        is_subnet_contained() {
+            local net1=$1
+            local cidr1=$2
+            local net2=$3
+            local cidr2=$4
+
+            # If the first network has a larger mask (more specific),
+            # it could be contained in the second one
+            if [ "$cidr1" -ge "$cidr2" ]; then
+                local mask2=$(get_mask "$cidr2")
+                # If both networks have the same network address with the largest mask,
+                # then the first one is contained in the second
+                [ $(( net1 & mask2 )) -eq $(( net2 & mask2 )) ]
+                return $?
+            fi
+            return 1
+        }
+
+        # Associative array to cache IP -> int conversions
+        declare -A ip_cache
+
+        # Preprocessing: convert all IP addresses to numbers and sort by CIDR
+        while IFS=/ read -r ip cidr; do
+            if [ -z "${ip_cache[$ip]}" ]; then
+                ip_cache[$ip]=$(ip_to_int "$ip")
+            fi
+            echo "${ip_cache[$ip]} $cidr $ip/$cidr"
+        done < "${temp_dir}"/IPs_CIDR.txt | sort -k2 -n > "${temp_dir}"/IPs_CIDR_temp.txt
+
+        # Array to store unique networks
+        declare -a unique_networks
+
+        # Read each line from the preprocessed file
+        while IFS=' ' read -r ip_num cidr original_cidr; do
+            is_contained=false
+
+            # Check if this network is contained in any of the already found networks
+            for existing in "${unique_networks[@]}"; do
+                IFS=/ read -r existing_ip existing_cidr <<< "$existing"
+                if [ -z "${ip_cache[$existing_ip]}" ]; then
+                    ip_cache[$existing_ip]=$(ip_to_int "$existing_ip")
+                fi
+
+                if is_subnet_contained "$ip_num" "$cidr" "${ip_cache[$existing_ip]}" "$existing_cidr"; then
+                    is_contained=true
+                    break
+                fi
+            done
+
+            # If the network is not contained in another, add it to the list
+            if [ "$is_contained" = false ]; then
+                unique_networks+=("$original_cidr")
+            fi
+        done < "${temp_dir}"/IPs_CIDR_temp.txt
+
+        printf '%s\n' "${unique_networks[@]}" >> "${temp_dir}"/IPs.txt
+
+        rm -rf "${temp_dir}"/IPs_CIDR_temp.txt 2>/dev/null
+fi
+# End of detect and deduplicate CIDR subnets with the help of Claude 3.5 Sonnet from https://claude.ai/
 
 # First parsing to translate the hostnames to IPs
 if [[ ${num_hostnames_init} != "0" ]]; then
