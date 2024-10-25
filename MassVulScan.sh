@@ -28,7 +28,7 @@
 # Version        : 1.9.4
 # Usage          : ./MassVulScan.sh [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-h] [-V]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
-#                  Xsltproc and ipcalc packages are also necessary.
+#                  Xsltproc package is also necessary.
 #                  Please, read the file "requirements.txt" if you need some help.
 #                  With a popular OS from Debian OS family (e.g. Debian, Ubuntu, Linux Mint or Elementary),
 #                  the installation of these prerequisites is automatic.
@@ -96,7 +96,7 @@ fi
 }
 
 # Checking prerequisites
-if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.nse) ]] || [[ ! $(which xsltproc) ]] || [[ ! $(which ipcalc) ]]; then
+if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.nse) ]] || [[ ! $(which xsltproc) ]]; then
 	echo -e "${red_color}[X] There are some prerequisites to install before to launch this script.${end_color}"
 	echo -e "${purple_color}[I] Please, read the help file \"requirements.txt\" for installation instructions (Debian/Ubuntu):${end_color}"
 	grep ^-- "${dir_name}/requirements.txt"
