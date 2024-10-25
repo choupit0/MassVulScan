@@ -23,7 +23,7 @@
 #                  It's only available for Debian OS family.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20210311
+# Date           : 20241025
 # Version        : 1.1
 # Usage          : ./installation.sh
 # Prerequisites  : N/A
@@ -108,11 +108,11 @@ if [[ ${check_github_status} == "open" ]] && [[ ${check_nmap_status} == "open" ]
 	if [[ $(command -v apt) ]]; then
 		apt update &>> "${log_file}"
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
-		apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat &>> "${log_file}"
+		apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc dnsutils netcat &>> "${log_file}"
 	elif [[ $(command -v apt-get) ]]; then
 		apt-get update &>> "${log_file}"
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
-		apt-get install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat &>> "${log_file}"
+		apt-get install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc dnsutils netcat &>> "${log_file}"
 	fi
 	proc_status
 	# Packages Masscan, Nmap and NSE script Vulners.nse
@@ -170,7 +170,7 @@ auto_install_menu(){
 if [[ $(command -v apt) ]] || [[ $(command -v apt-get) ]]; then
 	echo -e "${blue_color}${bold_color}If you like, I can install the prerequisites for you (~5 minutes). Do you agree?${end_color}"
 	echo -e "${blue_color}${bold_color}All these packages will be installed or updated:${end_color}"
-	echo -e "${blue_color}\t--> From apt: build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat${end_color}"
+	echo -e "${blue_color}\t--> From apt: build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc dnsutils netcat${end_color}"
 	echo -e "${blue_color}\t--> From git: masscan (+compilation) and vulners.nse${end_color}"
 	echo -e "${blue_color}\t--> From source: nmap (+compilation)${end_color}"
 	echo -e "${blue_color}${bold_color}[default: no, just typing \"Enter|Return\" key to exit or write \"yes\" to continue]${end_color}"
@@ -221,11 +221,11 @@ elif [[ $1 == "--auto-installation-apt" ]]; then
 	if [[ $(command -v apt) ]]; then
 		apt update > /dev/null 2>&1
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}"
-		apt install -y git wget net-tools locate xsltproc ipcalc dnsutils netcat masscan nmap > /dev/null 2>&1
+		apt install -y git wget net-tools locate xsltproc dnsutils netcat masscan nmap > /dev/null 2>&1
 	elif [[ $(command -v apt-get) ]]; then
 		apt-get update > /dev/null 2>&1
 		echo -n -e "${blue_color}\r[-] Installing the prerequisites packages...${end_color}"
-		apt-get install -y git wget net-tools locate xsltproc ipcalc dnsutils netcat masscan nmap > /dev/null 2>&1
+		apt-get install -y git wget net-tools locate xsltproc dnsutils netcat masscan nmap > /dev/null 2>&1
 	fi
 
 	# NSE Vulners
