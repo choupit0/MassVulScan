@@ -300,7 +300,7 @@ if [[ ${num_ips_init} -gt "0" ]]; then
 fi
 
 # Detect and deduplicate CIDR subnets with the help of Claude 3.5 Sonnet from https://claude.ai/
-if [[ -s ${temp_dir}/IPs.txt ]]; then
+if [[ -s ${temp_dir}/IPs.txt ]] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+' "${temp_dir}"/IPs.txt; then
         # Extract CIDR only
         sed -n '/\//p' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
 
