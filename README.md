@@ -1,95 +1,132 @@
-# Changelog
+<p align="center">
+  <img src="https://github.com/choupit0/MassVulScan/blob/master/DALL%C2%B7E%20Logo.gif" width="150" alt="MassVulScan logo">
+</p>
+
+<h1 align="center">MassVulScan</h1>
+<p align="center">🔍 <b>A fast network scanning tool to detect open ports and security vulnerabilities</b></p>
+
+<p align="center">
+  <a href="https://github.com/choupit0/MassVulScan/tags"><img src="https://img.shields.io/github/v/tag/choupit0/MassVulScan?color=blue" alt="Tag"></a>
+  <a href="https://github.com/choupit0/MassVulScan/issues"><img src="https://img.shields.io/github/issues/choupit0/MassVulScan?color=green" alt="Issues"></a>
+  <a href="https://github.com/choupit0/MassVulScan/graphs/commit-activity"><img src="https://img.shields.io/github/last-commit/choupit0/MassVulScan?color=blue" alt="Last Commit"></a>
+  <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/made%20with-Bash-1f425f.svg" alt="Bash software"></a>
+  <a href="https://github.com/choupit0/MassVulScan/blob/master/LICENSE"><img src="https://img.shields.io/github/license/choupit0/MassVulScan?color=brightgreen" alt="License"></a>
+  <a href="https://github.com/choupit0/MassVulScan"><img src="https://img.shields.io/github/stars/choupit0/MassVulScan?color=yellow" alt="Stars"></a>
+</p>
+
+## 🌟 Overview
+**MassVulScan** is a high-performance network scanning tool for pentesters (HackTheBox / HTB compatible) and system/network administrators looking to identify open ports and potential vulnerabilities on their internal/external networks. Built on powerful tools like `masscan` and `nmap`, it combines speed and accuracy to scan large-scale networks efficiently.
+
+## 🎯 Features
+- **Fast Port Scanning**: Built on `masscan` for quick open-port detection.
+- **Vulnerability Detection**: Uses `nmap` scripts for detailed service analysis.
+- **Optimized Scans**: Intelligent subnet filtering to avoid duplicates.
+- **Platform Compatibility**: Runs on Linux, Debian OS family only.
+- **Power of Bash**: Simplicity meets performance
+
+## 📋 Changelog
 [Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
 
-# MassVulScan :alien: [Version Francaise](https://github.com/choupit0/MassVulScan/blob/master/README-FR.md)
-[![Generic badge](https://img.shields.io/badge/Version-1.9.4-<COLOR>.svg)](https://github.com/choupit0/MassVulScan/releases/tag/v1.9.4)
-[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/choupit0/MassVulScan/blob/master/LICENSE)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/choupit0/MassVulScan/graphs/commit-activity)
-[![made-with-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
-# Description
-Bash script which combines the power of the Masscan scanner to find open ports, the efficiency of the Nmap scanner to identify open services and their version, and finally the NSE vulners.nse script to identify potential vulnerabilities (CVEs). An HTML report will be generated containing the result of the analysis as well as a TXT file allowing to focus on the vulnerable hosts.
+### Last update
+1.9.4 (2024-10-24)
 
-![Example Menu](screenshots/Menu.PNG)
+**Implemented enhancements or changes:**
+- Detect and deduplicate CIDR subnets to avoid multiple scan
+  E.g.: 10.10.18.0/28 is contained within 10.10.18.0/24 so we only keep 10.10.18.0/24 (the larger one)
 
-# Prerequisites
-- Package xsltproc (for the conversion of an XML file to HTML, for the final report)
-- Package ipcalc (for IPs addresses validation)
-- Masscan, version >= 1.0.5 (https://github.com/robertdavidgraham/masscan)
-- Nmap (https://nmap.org)
-- NSE script vulners.nse (https://github.com/vulnersCom/nmap-vulners)
+**Fixed bugs:**
+- no reported issue by the community
 
-**I invite you to read the file "requirements.txt" if you have difficulties. It will tell you how to install each of the prerequisites.**
+## 📦 Installation
+Ensure the following prerequisites are installed:
 
-**Otherwise, the script will install all necessary prerequisites for you at runtime. Or, you just need to call the install script like this the first time:**
+- **masscan** (version >= 1.0.5)
+- **nmap**
+- **NSE vulners script**
+- **xsltproc package**
+
+```bash
+# Clone the repository
+git clone https://github.com/choupit0/MassVulScan.git
+
+# Go to the project directory
+cd MassVulScan
+
+# Install dependencies (root or sudo)
+./sources/installation.sh
 ```
-(root or sudo) sources/installation.sh --auto-installation-latest (latest packages of Nmap and Masscan ~5 minutes)
-```
-**Or:**
-```
-(root or sudo) sources/installation.sh --auto-installation-apt (speedest but without the last versions ~1 minute)
-```
+
+### Additional parameters
+| Parameter                   | Description                                                                        |
+|-----------------------------|------------------------------------------------------------------------------------|
+| `--auto-installation-latest`| compilation of the latest versions of `nmap` and `masscan` -> ~5 minutes (default) |
+| `--auto-installation-apt`   | speedest but not the last versions -> ~1 minute                                    |
+
 **Note about APT installation**
 Warning, I detected an error with the APT version. There is a mistake of upstream. The Masscan version 1.0.5 tag points to
 a commit that still contains 1.0.4 as version. But this is the correct code for the 1.0.5 version. https://github.com/robertdavidgraham/masscan/issues/566#issuecomment-798877419
 (Thank you to https://github.com/rhertzog)
 
-**Only Debian OS family is currently compatible.**
-This feature has been validated on the following 64bit OS (2 core CPU and 2GB RAM ~5 minutes with latest packages):
-- Debian 10.0
-- Elementary 5.0
-- LinuxMint 19.1
-- Ubuntu 19.04
-- Parrot 5.5.17 (HackTheBox / HTB compatible)
-- Kali 2023 (HackTheBox / HTB compatible)
-# How the script works?
-The main steps of the script:
-1) Express identification of hosts that are online with nmap (optional)
-2) For each host, extremely fast identification of open TCP/UDP ports (masscan)
-3) The result is sorted to gather all ports and protocols to be scanned BY host (could be saved, optional)
-4) Identification of services and vulnerabilities with multiple sessions in parallel (nmap + vulners.nse), one session per host
-5) Generated reports: HTML report containing all the details on each host, vulnerable or not, and TXT file allowing to focus on hosts (potentially) vulnerable
+## 🛠️ How MassVulScan Works
+**MassVulScan** follows a series of streamlined steps to identify active hosts, open ports, and potential vulnerabilities across your network:
 
-The HTML report uses a bootstrap style sheet (https://github.com/honze-net/nmap-bootstrap-xsl) for more convenience.
-# How to use it?
-All you have to do is indicate the file (-f | --include-file) containing a list of networks, IPs and/or hostnames to scan:
-```
-git clone https://github.com/choupit0/MassVulScan.git
-cd MassVulScan
-chmod +x MassVulScan.sh
-(root user or sudo) ./MassVulScan.sh -f [input file]
-```
-List of available parameters/arguments:
+1. **Quick Host Discovery** (optional): Uses `nmap` to identify online hosts efficiently.
+2. **Rapid Port Scanning**: For each host, `masscan` performs an ultra-fast scan to detect open TCP/UDP ports.
+3. **Data Organization**: Results are sorted to compile all detected ports and protocols by host. The organized data can be saved for later analysis (optional).
+4. **Service and Vulnerability Detection**: Runs multiple parallel sessions (`nmap` + `vulners.nse`) to detect services and vulnerabilities, one session per host.
+5. **Report Generation**: 
+   - **HTML Report**: Contains detailed information on each host, including vulnerabilities, with a clean and accessible layout.
+   - **TXT Report**: Focuses on potentially vulnerable hosts for quick reference.
 
-**Mandatory parameter:**
-```
--f | --include-file = File including IPv4 addresses (CIDR format compatible) or hostnames to scan (one by line)
-```
-**Optional parameters:**
-```
--x | --exclude-file = File including IPv4 addresses ONLY (CIDR format compatible) to NOT scan (one by line)
--i | --interactive = Extra parameters: ports to scan, rate level and NSE script
--a | --all-ports = Scan all 65535 ports (TCP + UDP) at 2K pkts/sec with NSE vulners script
--c | --check = Perform a pre-scanning to identify online hosts and scan only them
--r | --report = File including IPs scanned with open ports and protocols
--n | --no-nmap-scan = Use only the script to detect the hosts with open ports (no HTML report)
-```
-By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 2500 by default.
+The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github.com/honze-net/nmap-bootstrap-xsl)) for enhanced readability and a user-friendly format.
 
-For the format of the files, you will find two examples in the dedicated directory:
+## 🚀 Usage
+**File-based scanning mode:**
+
+`targets.txt` containing a list of networks, IPs and/or hostnames to scan.
+
+```bash
+sudo ./MassVulScan.sh -f targets.txt
 ```
-root@ubuntu:~/audit/MassVulScan# cat example/hosts.txt
-# Private subnet
-192.168.2.0/24
-webmail.acme.corp
-root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
-# Gateway
-192.168.2.254
+
+`exclude.txt` containing including IPv4 addresses (CIDR format compatible) to NOT scan.
+
+```bash
+sudo ./MassVulScan.sh -f targets.txt -x exclude.txt
 ```
+
+**Full option list:**
+
+```bash
+sudo ./MassVulScan.sh -h
+```
+
+### ⚙️ Required options
+| Option | Description                                                              |
+|--------|--------------------------------------------------------------------------|
+| `-f`   | File with IPs (CIDR format compatible) or hostnames to scan, one by line |
+
+### ⚙️ Optional options
+| Option | Description                                                                                              |
+|--------|----------------------------------------------------------------------------------------------------------|
+| `-x`   | Exclude these IPs (CIDR format compatible), one by line (e.g. gateways from your providers)              |
+| `-i`   | Interactive mode: ports to scan, rate level and NSE script to use (e.g. vulners --script-args mincvss=5) |
+| `-a`   | Scan all ports (TCP + UDP) at 1.5K pkts/sec with NSE vulners script                                      |
+| `-c`   | Perform a pre-scanning to identify online hosts and scan only them                                       |
+| `-r`   | Generate a TXT file including IPs scanned with open ports and protocols                                  |
+| `-n`   | Quick mode without full Nmap scan to detect the hosts with open ports (no HTML report)                   |
+| `-h`   | Show help                                                                                                |
+| `-V`   | Show MassVulScan version                                                                                 |
+
+By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 1500 by default.
+
 **Note that the script will detect if you have multiple network interfaces. This is important for Masscan, which will always used the interface that has the default route. You will be asked to choose one (no problem with Nmap).**
 
-# GIF Demo
+The script is also compatible with Nmap's categories (https://nmap.org/book/nse-usage.html#nse-categories) to search for specific vulnerabilities (the better known as ms17-010, EternalBlue) in addition to the CVEs identified from vulners.com.
+
+## 🎬 GIF Demo
 ![Example Demo](demo/MassVulScan_Demo.gif)
-# Some screenshots
+##  📸 Some screenshots
 ![Example Masscan](screenshots/Masscan.PNG)
 
 ![Example Nmap](screenshots/Nmap.PNG)
@@ -99,52 +136,10 @@ root@ubuntu:~/audit/MassVulScan# cat example/exclude.txt
 ![Example Vulnerable-hosts](screenshots/Ex-vulnerable-host-found.PNG)
 
 ![Example HTML](screenshots/HTML.PNG)
-# Tree structure
-```
-root@Unknown-Device:~/MassVulScan# tree
-.
-├── CHANGELOG.md
-├── demo
-│   └── MassVulScan_Demo.gif
-├── example
-│   ├── exclude-hosts.txt
-│   ├── hosts.txt
-│   ├── hosts.txt_global-report_2021-01-24_13-51-40.html
-│   ├── hosts.txt_open-ports_2021-01-24_13-50-51.txt
-│   └── hosts.txt_vulnerable-hosts-details_2021-01-24_13-51-40.txt
-├── LICENSE
-├── MassVulScan.sh
-├── README-FR.md
-├── README.md
-├── reports
-├── requirements.txt
-├── screenshots
-│   ├── Ex-vulnerable-host-found.PNG
-│   ├── Full-script.PNG
-│   ├── HTML.PNG
-│   ├── Masscan.PNG
-│   ├── Menu_1-9-1.PNG
-│   └── Nmap.PNG
-├── sources
-│   ├── installation.sh
-│   ├── top-ports-tcp-1000.txt
-│   └── top-ports-udp-1000.txt
-└── stylesheet
-    └── nmap-bootstrap.xsl
 
-6 directories, 22 files
-```
-# Compatibility
-The script has only been tested on Debian family OS but should work on most Linux distributions (except for the automatic prerequisites installation). It can detect open ports on TCP and UDP protocols.
-# Notes / Tips
-Note that the advantage of using the NSE vulners.nse script is that it systematically polls the vulners.com site database, so it will be the latest available data. Similarly, the latter performs a ranking and sorting of identified CVEs, the most severe at the top of the list, which is very convenient.
-
-The script is also compatible with Nmap's categories (https://nmap.org/book/nse-usage.html#nse-categories) to search for specific vulnerabilities (the better known as ms17-010, EternalBlue) in addition to the CVEs identified from vulners.com.
-
-Finally, with the "interactive mode" (-i) you have the possibility to type scripts args also, e.g. vulners --script-args mincvss=5
-# Known issues
-Concerning SNMP, sometimes UDP port scan doesn't seems correctly working with masscan program. I'm trying to find a solution.
-# TODO
+## 🐞 Known issues
+No known issues.
+## ✅ TODO
 Improve the pre-scanning phase to identify online hosts (fping).
 
 Manage better multiple IP addresses on one network interface.
