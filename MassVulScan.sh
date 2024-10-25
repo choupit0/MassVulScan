@@ -304,8 +304,11 @@ if [[ -s ${temp_dir}/IPs.txt ]]; then
         # Extract CIDR only
         sed -n '/\//p' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
 
-        # Remove the CIDR lines in the original file
-        sed -i '/\//d' "${temp_dir}"/IPs.txt
+        # Convert the other lines to CIDR format
+        sed -E 's|^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$|\1/32|' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
+
+        # Remove the original file
+        rm -rf "${temp_dir}"/IPs.txt
 
         # Function to convert an IP address to a number
         ip_to_int() {
