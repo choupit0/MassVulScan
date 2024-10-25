@@ -1,3 +1,6 @@
+# Changelog
+[Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
+
 # MassVulScan :alien: [Version Francaise](https://github.com/choupit0/MassVulScan/blob/master/README-FR.md)
 [![Generic badge](https://img.shields.io/badge/Version-1.9.4-<COLOR>.svg)](https://github.com/choupit0/MassVulScan/releases/tag/v1.9.4)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/choupit0/MassVulScan/blob/master/LICENSE)
@@ -149,5 +152,3 @@ Manage better multiple IP addresses on one network interface.
 Improve process of installation (install what is strictly necessary, comparison of versions).
 
 ~~Improve the parsing of hosts file to detect duplicate networks, Ex: 10.10.18.0/24 and 10.10.18.0/28, and avoid duplicate scan.~~
-# Changelog
-[Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
