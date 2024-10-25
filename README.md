@@ -41,7 +41,7 @@
 Ensure the following prerequisites are installed:
 
 - **masscan** (version >= 1.0.5)
-- **nmap**
+- **nmap** (version >= 7.60)
 - **NSE vulners script**
 - **xsltproc package**
 
