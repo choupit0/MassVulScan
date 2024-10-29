@@ -3,7 +3,7 @@ Debian/Ubuntu OS based installation, with root user:
 -- Packages installation
 
 apt update
-apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc ipcalc dnsutils netcat
+apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc dnsutils netcat
 
 Verification:
 xsltproc -V
