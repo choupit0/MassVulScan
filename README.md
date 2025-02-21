@@ -147,6 +147,13 @@ Manage better multiple IP addresses on one network interface.
 Improve process of installation (install what is strictly necessary, comparison of versions).
 
 ~~Improve the parsing of hosts file to detect duplicate networks, Ex: 10.10.18.0/24 and 10.10.18.0/28, and avoid duplicate scan.~~
+
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=choupit0/massvulscan&type=Date)](https://star-history.com/#choupit0/massvulscan&Date)
+<a href="https://star-history.com/#choupit0/massvulscan&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=choupit0/massvulscan&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=choupit0/massvulscan&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=choupit0/massvulscan&type=Date" />
+ </picture>
+</a>
