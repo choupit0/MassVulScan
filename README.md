@@ -28,14 +28,13 @@
 [Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
 
 ### Last update
-1.9.4 (2024-10-24)
+1.9.5 (2025-03-16)
 
-**Implemented enhancements or changes:**
-- Detect and deduplicate CIDR subnets to avoid multiple scan
-  E.g.: 10.10.18.0/28 is contained within 10.10.18.0/24 so we only keep 10.10.18.0/24 (the larger one)
+**Améliorations ou changements/Implemented enhancements or changes:**
+- Adding a new option "-h | --hosts" to scan one or more hosts via command-line argument (without using a file)
 
-**Fixed bugs:**
-- no reported issue by the community
+**Correction de bugs/Fixed bugs:**
+- Fixing a bug in the exclusion of ports to scan (option -i and --exclude-ports)
 
 ## 📦 Installation
 Ensure the following prerequisites are installed:
@@ -95,6 +94,12 @@ sudo ./MassVulScan.sh -f targets.txt
 sudo ./MassVulScan.sh -f targets.txt -x exclude.txt
 ```
 
+**Command-line argument mode:**
+
+```bash
+sudo ./MassVulScan.sh -h 172.18.0.0/24 -r -c -a
+```
+
 **Full option list:**
 
 ```bash
@@ -104,6 +109,7 @@ sudo ./MassVulScan.sh -h
 ### ⚙️ Required options
 | Option | Description                                                              |
 |--------|--------------------------------------------------------------------------|
+| `-h`   | Target host(s): IP address (CIDR format compatible)                      |
 | `-f`   | File with IPs (CIDR format compatible) or hostnames to scan, one by line |
 
 ### ⚙️ Optional options
@@ -145,6 +151,8 @@ Improve the pre-scanning phase to identify online hosts (fping).
 Manage better multiple IP addresses on one network interface.
 
 Improve process of installation (install what is strictly necessary, comparison of versions).
+
+~~Allow scanning a host without using an input file (command-line argument)~~
 
 ~~Improve the parsing of hosts file to detect duplicate networks, Ex: 10.10.18.0/24 and 10.10.18.0/28, and avoid duplicate scan.~~
 

@@ -170,7 +170,7 @@ auto_install_menu(){
 if [[ $(command -v apt) ]] || [[ $(command -v apt-get) ]]; then
 	echo -e "${blue_color}${bold_color}If you like, I can install the prerequisites for you (~5 minutes). Do you agree?${end_color}"
 	echo -e "${blue_color}${bold_color}All these packages will be installed or updated:${end_color}"
-	echo -e "${blue_color}\t--> From apt: build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc dnsutils netcat${end_color}"
+	echo -e "${blue_color}\t--> From apt: build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc dnsutils netcat ${end_color}"
 	echo -e "${blue_color}\t--> From git: masscan (+compilation) and vulners.nse${end_color}"
 	echo -e "${blue_color}\t--> From source: nmap (+compilation)${end_color}"
 	echo -e "${blue_color}${bold_color}[default: no, just typing \"Enter|Return\" key to exit or write \"yes\" to continue]${end_color}"

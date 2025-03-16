@@ -24,17 +24,17 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20241024
-# Version        : 1.9.4
+# Date           : 20250313
+# Version        : 1.9.5
 # Usage          : ./MassVulScan.sh [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-h] [-V]]
 # Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
-#                  Xsltproc package is also necessary.
+#                  The Xsltproc package is also necessary (for reports).
 #                  Please, read the file "requirements.txt" if you need some help.
 #                  With a popular OS from Debian OS family (e.g. Debian, Ubuntu, Linux Mint or Elementary),
 #                  the installation of these prerequisites is automatic.
 #
 
-version="1.9.4"
+version="1.9.5"
 purple_color="\033[1;35m"
 green_color="\033[0;32m"
 red_color="\033[1;31m"
@@ -149,18 +149,19 @@ fi
 # Usage of script
 usage(){
         logo
-	echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo ./$(basename "$0") [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-V] [-h]]${end_color}"
-	echo -e "${bold_color}    * Mandatory parameter:"
+	echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo ./$(basename "$0") [[-h] or [-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-V] [-H]]${end_color}"
+	echo -e "${bold_color}    * Required parameters (one of the two):"
+	echo -e "${purple_color}        -h | --hosts${end_color} \t\tTarget host(s): IP address (CIDR format compatible)"
 	echo -e "${purple_color}        -f | --include-file${end_color} \tFile including IPv4 addresses (CIDR format) or hostnames to scan (one by line)"
 	echo -e "${bold_color}    * Optional parameters (must be used in addition of \"-f\" parameter):"
 	echo -e "${purple_color}        -x | --exclude-file${end_color} \tFile including IPv4 addresses ONLY (CIDR format) to NOT scan (one by line)"
 	echo -e "${purple_color}        -i | --interactive${end_color} \tExtra parameters: ports to scan, rate level and NSE script"
 	echo -e "${purple_color}        -a | --all-ports${end_color} \tScan all 65535 ports (TCP + UDP) at 1.5K pkts/sec with NSE vulners script"
-	echo -e "${purple_color}        -c | --check${end_color} \t\tPerform a pre-scanning to identify online hosts and scan only them"
+	echo -e "${purple_color}        -c | --check-live-hosts${end_color} \t\tPerform a pre-scanning to identify online hosts and scan only them"
 	echo -e "${purple_color}        -r | --report${end_color} \t\tFile including IPs scanned with open ports and protocols"
 	echo -e "${purple_color}        -n | --no-nmap-scan${end_color} \tUse only the script to detect the hosts with open ports (no HTML report)"
 	echo -e "${bold_color}      Information:"
-	echo -e "${purple_color}        -h | --help${end_color} \t\tThis help menu"
+	echo -e "${purple_color}        -H | --help${end_color} \t\tThis help menu"
 	echo -e "${purple_color}        -V | --version${end_color} \t\tScript version"
 	echo ""
 }
@@ -175,12 +176,19 @@ fi
 # Available parameters
 while [[ "$1" != "" ]]; do
         case "$1" in
+                -h | --hosts )
+			host_parameter="yes"
+			shift
+                        initial_hosts="$1"
+                        hosts="$1"
+                        ;;
                 -f | --include-file )
+			file_of_hosts_to_include="yes"
                         shift
                         hosts="$1"
                         ;;
                 -x | --exclude-file )
-                        file_to_exclude="yes"
+                        file_of_hosts_to_exclude="yes"
                         shift
                         exclude_file="$1"
                         ;;
@@ -190,7 +198,7 @@ while [[ "$1" != "" ]]; do
                 -a | --all-ports )
                         all_ports="on"
                        ;;
-                -c | --check )
+                -c | --check-live-hosts )
                         check="on"
                         ;;
                 -r | --report )
@@ -199,7 +207,7 @@ while [[ "$1" != "" ]]; do
                 -n | --no-nmap-scan )
                         no_nmap_scan="on"
                         ;;
-                -h | --help )
+                -H | --help )
                         usage
                         exit 0
                         ;;
@@ -225,15 +233,20 @@ if [[ ${check_proc} -gt "2" ]]; then
 	exit 1
 fi
 
+# Only one required parameter at a time
+if [[ ${host_parameter} = "yes" ]] && [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes" ]]; then
+	echo -e "${red_color}Only one required parameter: -h | --hosts OR -f | --include-file${end_color}"
+	echo -e "${red_color}Also, -x | --exclude-file is incompatible with -h | --hosts${end_color}"
+        exit 1
 # Valid input file?
-if [[ -z ${hosts} ]] || [[ ! -s ${hosts} ]]; then
+elif [[ ${file_of_hosts_to_include} = "yes" ]] && [[ -z ${hosts} || ! -s ${hosts} ]]; then
 	echo -e "${red_color}[X] Input file \"${hosts}\" does not exist or is empty.${end_color}"
 	echo "Please, try again."
 	exit 1
 fi
 
 # Valid exclude file?
-if [[ ${file_to_exclude} = "yes" ]]; then
+if [[ ${file_of_hosts_to_exclude} = "yes" ]]; then
         if [[ -z ${exclude_file} ]] || [[ ! -s ${exclude_file} ]]; then
                 echo -e "${red_color}[X] Exclude file \"${exclude_file}\" does not exist or is empty.${end_color}"
                 echo "Please, try again."
@@ -241,8 +254,11 @@ if [[ ${file_to_exclude} = "yes" ]]; then
         fi
 fi
 
-# Complete path to the "hosts" file
-hosts="$(readlink -f "$hosts")"
+# Formatting of the "hosts" variable
+if [[ ${file_of_hosts_to_include} = "yes" ]]; then
+	# Complete path to the "hosts" file
+	hosts="$(readlink -f "$hosts")"
+fi
 
 # Cleaning old files - if the script is ended before the end (CTRL + C)
 rm -rf /tmp/temp_dir-* /tmp/temp_nmap-* paused.conf 2>/dev/null
@@ -251,22 +267,14 @@ rm -rf /tmp/temp_dir-* /tmp/temp_nmap-* paused.conf 2>/dev/null
 temp_dir="$(mktemp -d /tmp/temp_dir-XXXXXXXX)"
 temp_nmap="$(mktemp -d /tmp/temp_nmap-XXXXXXXX)"
 
-clear
-
 if [[ ${hosts} == "" ]]; then
-        echo -n -e "${red_color}\r[X] Please, set a hosts file in parameter.\n${end_color}"
-        exit 1
-elif [[ -z ${hosts} ]] || [[ ! -s ${hosts} ]]; then
-        echo -n -e "${red_color}\r[X] The file \"${hosts}\" does not exist or is empty.\n${end_color}"
+        echo -n -e "${red_color}\r[X] You must specify a target host or a file containing the hosts as a parameter.\n${end_color}"
         exit 1
 fi
 
-#######################################
-# Parsing the input and exclude files #
-#######################################
-num_hostnames_init=$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -vEc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
-num_ips_init=$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
+clear
 
+# Function to validate the format of an IP address
 valid_ip(){
 ip_to_check="$1"
 stat=1
@@ -284,236 +292,247 @@ fi
 return $stat
 }
 
-echo -n -e "\r                                                                                                                 "
-echo -n -e "${blue_color}\r[-] Parsing the input file (DNS lookups, duplicate IPs, multiple hostnames and valid IPs)...${end_color}"
+#######################################
+# Parsing the input and exclude files #
+#######################################
+if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes" ]]; then
+	num_hostnames_init=$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -vEc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
+	num_ips_init=$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
 
-# Saving IPs first
-if [[ ${num_ips_init} -gt "0" ]]; then
-        ips_tab_init=("$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')")
-        printf '%s\n' "${ips_tab_init[@]}" | while IFS=, read -r check_ip; do
-                if valid_ip "${check_ip}"; then
-                        echo "${check_ip}" >> "${temp_dir}"/IPs.txt
-                else
-                        echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask                           \n${end_color}"
-                fi
-        done
-fi
-
-# Detect and deduplicate CIDR subnets with the help of Claude 3.5 Sonnet from https://claude.ai/
-if [[ -s ${temp_dir}/IPs.txt ]] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+' "${temp_dir}"/IPs.txt; then
-        # Extract CIDR only
-        sed -n '/\//p' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
-
-        # Convert the other lines to CIDR format
-        sed -E 's|^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$|\1/32|' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
-
-        # Remove the original file
-        rm -rf "${temp_dir}"/IPs.txt
-
-        # Function to convert an IP address to a number
-        ip_to_int() {
-            local ip=$1
-            local IFS='.'
-            read -r i1 i2 i3 i4 <<< "$ip"
-            echo $(( (i1 << 24) + (i2 << 16) + (i3 << 8) + i4 ))
-        }
-
-        # Function to calculate the network mask
-        get_mask() {
-            local bits=$1
-            if [ "$bits" -eq 32 ]; then
-                echo 4294967295  # 2^32 - 1
-            else
-                echo $(( ((1 << bits) - 1) << (32 - bits) ))
-            fi
-        }
-
-        # Function to get the network address
-        get_network_addr() {
-            local ip=$1
-            local mask=$2
-            echo $(( ip & mask ))
-        }
-
-        # Function to check if one network is contained within another
-        is_subnet_contained() {
-            local net1=$1
-            local cidr1=$2
-            local net2=$3
-            local cidr2=$4
-
-            # If the first network has a larger mask (more specific),
-            # it could be contained in the second one
-            if [ "$cidr1" -ge "$cidr2" ]; then
-                local mask2=$(get_mask "$cidr2")
-                # If both networks have the same network address with the largest mask,
-                # then the first one is contained in the second
-                [ $(( net1 & mask2 )) -eq $(( net2 & mask2 )) ]
-                return $?
-            fi
-            return 1
-        }
-
-        # Associative array to cache IP -> int conversions
-        declare -A ip_cache
-
-        # Preprocessing: convert all IP addresses to numbers and sort by CIDR
-        while IFS=/ read -r ip cidr; do
-            if [ -z "${ip_cache[$ip]}" ]; then
-                ip_cache[$ip]=$(ip_to_int "$ip")
-            fi
-            echo "${ip_cache[$ip]} $cidr $ip/$cidr"
-        done < "${temp_dir}"/IPs_CIDR.txt | sort -k2 -n > "${temp_dir}"/IPs_CIDR_temp.txt
-
-        # Array to store unique networks
-        declare -a unique_networks
-
-        # Read each line from the preprocessed file
-        while IFS=' ' read -r ip_num cidr original_cidr; do
-            is_contained=false
-
-            # Check if this network is contained in any of the already found networks
-            for existing in "${unique_networks[@]}"; do
-                IFS=/ read -r existing_ip existing_cidr <<< "$existing"
-                if [ -z "${ip_cache[$existing_ip]}" ]; then
-                    ip_cache[$existing_ip]=$(ip_to_int "$existing_ip")
-                fi
-
-                if is_subnet_contained "$ip_num" "$cidr" "${ip_cache[$existing_ip]}" "$existing_cidr"; then
-                    is_contained=true
-                    break
-                fi
-            done
-
-            # If the network is not contained in another, add it to the list
-            if [ "$is_contained" = false ]; then
-                unique_networks+=("$original_cidr")
-            fi
-        done < "${temp_dir}"/IPs_CIDR_temp.txt
-
-        printf '%s\n' "${unique_networks[@]}" >> "${temp_dir}"/IPs.txt
-
-        rm -rf "${temp_dir}"/IPs_CIDR_temp.txt 2>/dev/null
-fi
-# End of detect and deduplicate CIDR subnets with the help of Claude 3.5 Sonnet from https://claude.ai/
-
-# First parsing to translate the hostnames to IPs
-if [[ ${num_hostnames_init} != "0" ]]; then
-        # Filtering on the hosts only
-        hostnames_tab=("$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | grep -vE '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u)")
-
-        # Conversion to IPs
-        printf '%s\n' "${hostnames_tab[@]}" | while IFS=, read -r host_to_convert; do
-                search_ip=$(dig @${dns} "${host_to_convert}" +short | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-                if [[ ${search_ip} != "" ]]; then
-                        echo "${search_ip}" "${host_to_convert}" | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' >> "${temp_dir}"/hosts_converted.txt
-                else
-                        echo -n -e "\r                                                                                                                 "
-                        echo -n -e "${red_color}\r[X] No IP found for hostname \"${host_to_convert}\".\n${end_color}"
-                fi
-        done
-fi
-
-# Second parsing to detect multiple IPs for the same hostname
-if [[ -s ${temp_dir}/hosts_converted.txt ]]; then
-        #ips_found="$(grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' "${temp_dir}"/hosts_converted.txt | sort -u | wc -l)"
-        while IFS=, read -r line; do
-                check_ips="$(echo "${line}" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | wc -l)"
-
-                # Filtering on the multiple IPs only
-                if [[ ${check_ips} -gt "1" ]]; then
-                        hostname=$(echo "${line}" | grep -oE '[^ ]+$')
-                        ips_list=$(echo "${line}" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-                        ips_tab=(${ips_list})
-                        ips_loop="$(for index in "${!ips_tab[@]}"; do echo "${ips_tab[${index}]} ${hostname}"; done)"
-
-                        echo "${ips_loop}" >> "${temp_dir}"/multiple_IPs.txt
-                elif [[ ${check_ips} -eq "1" ]]; then
-                        # Saving uniq IP
-                        echo "${line}" >> "${temp_dir}"/uniq_IPs.txt
-                fi
-        done < "${temp_dir}"/hosts_converted.txt
-
-        if [[ -s ${temp_dir}/uniq_IPs.txt ]]; then
-                cat "${temp_dir}"/uniq_IPs.txt >> "${temp_dir}"/IPs_and_hostnames.txt
-                rm -rf "${temp_dir}"/uniq_IPs.txt 2>/dev/null
-        fi
-
-        if [[ -s ${temp_dir}/multiple_IPs.txt ]]; then
-                cat "${temp_dir}"/multiple_IPs.txt >> "${temp_dir}"/IPs_and_hostnames.txt
-                rm -rf "${temp_dir}"/multiple_IPs.txt 2>/dev/null
-        fi
-
-        # Third parsing to detect duplicate IPs and keep the multiple hostnames
-
-        cat "${temp_dir}"/IPs_and_hostnames.txt | awk '/.+/ { \
-                if (!($1 in ips_list)) { \
-                value[++i] = $1 } ips_list[$1] = ips_list[$1] $2 "," } END { \
-                for (j = 1; j <= i; j++) { \
-                printf("%s %s\n%s", value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' > "${temp_dir}"/IPs_unsorted.txt
-        rm -rf "${temp_dir}"/IPs_and_hostnames.txt
-fi
-
-if [[ ! -s ${temp_dir}/IPs_unsorted.txt ]] && [[ ! -s ${temp_dir}/IPs.txt ]]; then
-        echo -n -e "${red_color}\r[X] No valid host found.\n${end_color}"
-        exit 1
-fi
-
-hosts_file_no_path="$(basename "$hosts")"
-
-if [[ -s ${temp_dir}/IPs_unsorted.txt ]] && [[ -s ${temp_dir}/IPs.txt ]]; then
-        echo -n -e "\r                                                                                             "
-        echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
-        cat "${temp_dir}"/IPs.txt >> "${temp_dir}"/IPs_unsorted.txt
-        rm -rf "${temp_dir}"/IPs.txt
-        sort -u "${temp_dir}"/IPs_unsorted.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${hosts_file_no_path}"_parsed
-        rm -rf "${temp_dir}"/IPs_unsorted.txt
-        cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
-elif [[ -s ${temp_dir}/IPs_unsorted.txt ]]; then
-        echo -n -e "\r                                                                                             "
-        echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
-        sort -u "${temp_dir}"/IPs_unsorted.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${hosts_file_no_path}"_parsed
-        rm -rf "${temp_dir}"/IPs_unsorted.txt
-        cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
-else
-        echo -n -e "\r                                                                                             "
-        echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
-        mv "${temp_dir}"/IPs.txt "${temp_dir}"/"${hosts_file_no_path}"_parsed
-        cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
-fi
-
-hosts_file="${temp_dir}/${hosts_file_no_path}_parsed"
-
-if [[ ${exclude_file} != "" ]]; then
-	# Complete path to the "hosts" file
-	exclude_file="$(readlink -f "$exclude_file")"
 	echo -n -e "\r                                                                                                                 "
-	echo -n -e "${blue_color}\r[-] Parsing the exclude file (valid IPv4 addresses ONLY)...${end_color}"
-	num_xips_init=$(grep -Ev '^[[:punct:]]|[[:punct:]]$' "${exclude_file}" | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
-	if [[ ${num_xips_init} -gt "0" ]]; then
-		xips_tab_init=("$(grep -Ev '^[[:punct:]]|[[:punct:]]$' "${exclude_file}" | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')")
-		printf '%s\n' "${xips_tab_init[@]}" | while IFS=, read -r check_ip; do
+	echo -n -e "${blue_color}\r[-] Parsing the input file (DNS lookups, duplicate IPs, multiple hostnames and valid IPs)...${end_color}"
+
+	# Saving IPs first
+	if [[ ${num_ips_init} -gt "0" ]]; then
+		ips_tab_init=("$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')")
+		printf '%s\n' "${ips_tab_init[@]}" | while IFS=, read -r check_ip; do
 			if valid_ip "${check_ip}"; then
-				echo "${check_ip}" >> "${temp_dir}"/xIPs.txt
+				echo "${check_ip}" >> "${temp_dir}"/IPs.txt
 			else
-				echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask to exclude                    \n${end_color}"
+				echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask                           \n${end_color}"
 			fi
 		done
 	fi
+
+	# Detect and deduplicate CIDR subnets with the help of Claude 3.5 Sonnet from https://claude.ai/
+	if [[ -s ${temp_dir}/IPs.txt ]] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+' "${temp_dir}"/IPs.txt; then
+		# Extract CIDR only
+		sed -n '/\//p' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
+
+		# Convert the other lines to CIDR format
+		sed -E 's|^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$|\1/32|' "${temp_dir}"/IPs.txt > "${temp_dir}"/IPs_CIDR.txt
+
+		# Remove the original file
+		rm -rf "${temp_dir}"/IPs.txt
+
+		# Function to convert an IP address to a number
+		ip_to_int() {
+		    local ip=$1
+		    local IFS='.'
+		    read -r i1 i2 i3 i4 <<< "$ip"
+		    echo $(( (i1 << 24) + (i2 << 16) + (i3 << 8) + i4 ))
+		}
+
+		# Function to calculate the network mask
+		get_mask() {
+		    local bits=$1
+		    if [ "$bits" -eq 32 ]; then
+			echo 4294967295  # 2^32 - 1
+		    else
+			echo $(( ((1 << bits) - 1) << (32 - bits) ))
+		    fi
+		}
+
+		# Function to get the network address
+		get_network_addr() {
+		    local ip=$1
+		    local mask=$2
+		    echo $(( ip & mask ))
+		}
+
+		# Function to check if one network is contained within another
+		is_subnet_contained() {
+		    local net1=$1
+		    local cidr1=$2
+		    local net2=$3
+		    local cidr2=$4
+
+		    # If the first network has a larger mask (more specific),
+		    # it could be contained in the second one
+		    if [ "$cidr1" -ge "$cidr2" ]; then
+			local mask2=$(get_mask "$cidr2")
+			# If both networks have the same network address with the largest mask,
+			# then the first one is contained in the second
+			[ $(( net1 & mask2 )) -eq $(( net2 & mask2 )) ]
+			return $?
+		    fi
+		    return 1
+		}
+
+		# Associative array to cache IP -> int conversions
+		declare -A ip_cache
+
+		# Preprocessing: convert all IP addresses to numbers and sort by CIDR
+		while IFS=/ read -r ip cidr; do
+		    if [ -z "${ip_cache[$ip]}" ]; then
+			ip_cache[$ip]=$(ip_to_int "$ip")
+		    fi
+		    echo "${ip_cache[$ip]} $cidr $ip/$cidr"
+		done < "${temp_dir}"/IPs_CIDR.txt | sort -k2 -n > "${temp_dir}"/IPs_CIDR_temp.txt
+
+		# Array to store unique networks
+		declare -a unique_networks
+
+		# Read each line from the preprocessed file
+		while IFS=' ' read -r ip_num cidr original_cidr; do
+		    is_contained=false
+
+		    # Check if this network is contained in any of the already found networks
+		    for existing in "${unique_networks[@]}"; do
+			IFS=/ read -r existing_ip existing_cidr <<< "$existing"
+			if [ -z "${ip_cache[$existing_ip]}" ]; then
+			    ip_cache[$existing_ip]=$(ip_to_int "$existing_ip")
+			fi
+
+			if is_subnet_contained "$ip_num" "$cidr" "${ip_cache[$existing_ip]}" "$existing_cidr"; then
+			    is_contained=true
+			    break
+			fi
+		    done
+
+		    # If the network is not contained in another, add it to the list
+		    if [ "$is_contained" = false ]; then
+			unique_networks+=("$original_cidr")
+		    fi
+		done < "${temp_dir}"/IPs_CIDR_temp.txt
+
+		printf '%s\n' "${unique_networks[@]}" >> "${temp_dir}"/IPs.txt
+
+		rm -rf "${temp_dir}"/IPs_CIDR_temp.txt 2>/dev/null
+	fi
+	# End of detect and deduplicate CIDR subnets with the help of Claude 3.5 Sonnet from https://claude.ai/
+
+	# First parsing to translate the hostnames to IPs
+	if [[ ${num_hostnames_init} != "0" ]]; then
+		# Filtering on the hosts only
+		hostnames_tab=("$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | grep -vE '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u)")
+
+		# Conversion to IPs
+		printf '%s\n' "${hostnames_tab[@]}" | while IFS=, read -r host_to_convert; do
+			search_ip=$(dig @${dns} "${host_to_convert}" +short | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+			if [[ ${search_ip} != "" ]]; then
+				echo "${search_ip}" "${host_to_convert}" | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' >> "${temp_dir}"/hosts_converted.txt
+			else
+				echo -n -e "\r                                                                                                                 "
+				echo -n -e "${red_color}\r[X] No IP found for hostname \"${host_to_convert}\".\n${end_color}"
+			fi
+		done
+	fi
+
+	# Second parsing to detect multiple IPs for the same hostname
+	if [[ -s ${temp_dir}/hosts_converted.txt ]]; then
+		#ips_found="$(grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' "${temp_dir}"/hosts_converted.txt | sort -u | wc -l)"
+		while IFS=, read -r line; do
+			check_ips="$(echo "${line}" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | wc -l)"
+
+			# Filtering on the multiple IPs only
+			if [[ ${check_ips} -gt "1" ]]; then
+				hostname=$(echo "${line}" | grep -oE '[^ ]+$')
+				ips_list=$(echo "${line}" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+				ips_tab=(${ips_list})
+				ips_loop="$(for index in "${!ips_tab[@]}"; do echo "${ips_tab[${index}]} ${hostname}"; done)"
+
+				echo "${ips_loop}" >> "${temp_dir}"/multiple_IPs.txt
+			elif [[ ${check_ips} -eq "1" ]]; then
+				# Saving uniq IP
+				echo "${line}" >> "${temp_dir}"/uniq_IPs.txt
+			fi
+		done < "${temp_dir}"/hosts_converted.txt
+
+		if [[ -s ${temp_dir}/uniq_IPs.txt ]]; then
+			cat "${temp_dir}"/uniq_IPs.txt >> "${temp_dir}"/IPs_and_hostnames.txt
+			rm -rf "${temp_dir}"/uniq_IPs.txt 2>/dev/null
+		fi
+
+		if [[ -s ${temp_dir}/multiple_IPs.txt ]]; then
+			cat "${temp_dir}"/multiple_IPs.txt >> "${temp_dir}"/IPs_and_hostnames.txt
+			rm -rf "${temp_dir}"/multiple_IPs.txt 2>/dev/null
+		fi
+
+		# Third parsing to detect duplicate IPs and keep the multiple hostnames
+
+		cat "${temp_dir}"/IPs_and_hostnames.txt | awk '/.+/ { \
+			if (!($1 in ips_list)) { \
+			value[++i] = $1 } ips_list[$1] = ips_list[$1] $2 "," } END { \
+			for (j = 1; j <= i; j++) { \
+			printf("%s %s\n%s", value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' > "${temp_dir}"/IPs_unsorted.txt
+		rm -rf "${temp_dir}"/IPs_and_hostnames.txt
+	fi
+
+	if [[ ! -s ${temp_dir}/IPs_unsorted.txt ]] && [[ ! -s ${temp_dir}/IPs.txt ]]; then
+		echo -n -e "${red_color}\r[X] No valid host found.\n${end_color}"
+		exit 1
+	fi
+
+	if [[ ${host_parameter} = "yes" ]]; then
+		hosts_file_no_path="${initial_hosts}"
+	else
+		hosts_file_no_path="$(basename "$hosts")"
+	fi
+
+	if [[ -s ${temp_dir}/IPs_unsorted.txt ]] && [[ -s ${temp_dir}/IPs.txt ]]; then
+		echo -n -e "\r                                                                                             "
+		echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
+		cat "${temp_dir}"/IPs.txt >> "${temp_dir}"/IPs_unsorted.txt
+		rm -rf "${temp_dir}"/IPs.txt
+		sort -u "${temp_dir}"/IPs_unsorted.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${hosts_file_no_path}"_parsed
+		rm -rf "${temp_dir}"/IPs_unsorted.txt
+		cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
+	elif [[ -s ${temp_dir}/IPs_unsorted.txt ]]; then
+		echo -n -e "\r                                                                                             "
+		echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
+		sort -u "${temp_dir}"/IPs_unsorted.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${hosts_file_no_path}"_parsed
+		rm -rf "${temp_dir}"/IPs_unsorted.txt
+		cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
+	else
+		echo -n -e "\r                                                                                             "
+		echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
+		mv "${temp_dir}"/IPs.txt "${temp_dir}"/"${hosts_file_no_path}"_parsed
+		cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
+	fi
+
+	hosts_file="${temp_dir}/${hosts_file_no_path}_parsed"
+
+	if [[ ${exclude_file} != "" ]]; then
+		# Complete path to the "hosts" file
+		exclude_file="$(readlink -f "$exclude_file")"
+		echo -n -e "\r                                                                                                                 "
+		echo -n -e "${blue_color}\r[-] Parsing the exclude file (valid IPv4 addresses ONLY)...${end_color}"
+		num_xips_init=$(grep -Ev '^[[:punct:]]|[[:punct:]]$' "${exclude_file}" | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
+		if [[ ${num_xips_init} -gt "0" ]]; then
+			xips_tab_init=("$(grep -Ev '^[[:punct:]]|[[:punct:]]$' "${exclude_file}" | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')")
+			printf '%s\n' "${xips_tab_init[@]}" | while IFS=, read -r check_ip; do
+				if valid_ip "${check_ip}"; then
+					echo "${check_ip}" >> "${temp_dir}"/xIPs.txt
+				else
+					echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask to exclude                    \n${end_color}"
+				fi
+			done
+		fi
+	fi
+
+	xhosts_file_no_path="$(basename "$exclude_file")"
+
+	if [[ -s ${temp_dir}/xIPs.txt ]]; then
+		echo -n -e "\r                                                                                            "
+		echo -n -e "${purple_color}\r[I] Valid host(s) to exclude:\n${end_color}"
+		sort -u "${temp_dir}"/xIPs.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${xhosts_file_no_path}"_parsed
+		rm -rf "${temp_dir}"/xIPs.txt
+		cat "${temp_dir}"/"${xhosts_file_no_path}"_parsed
+	fi
+
+	xhosts_file="${temp_dir}/${xhosts_file_no_path}_parsed"
 fi
-
-xhosts_file_no_path="$(basename "$exclude_file")"
-
-if [[ -s ${temp_dir}/xIPs.txt ]]; then
-        echo -n -e "\r                                                                                            "
-        echo -n -e "${purple_color}\r[I] Valid host(s) to exclude:\n${end_color}"
-        sort -u "${temp_dir}"/xIPs.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${xhosts_file_no_path}"_parsed
-        rm -rf "${temp_dir}"/xIPs.txt
-        cat "${temp_dir}"/"${xhosts_file_no_path}"_parsed
-
-fi
-
-xhosts_file="${temp_dir}/${xhosts_file_no_path}_parsed"
 
 ###################################
 # Interactive mode "on" or "off"? #
@@ -659,21 +678,34 @@ fi
 ###################################################
 
 if [[ ${check} = "on" ]]; then
-	cut -d" " -f1 "${hosts_file}" > "${temp_dir}"/ips_list.txt
-	echo -e "${blue_color}[-] Verifying how many hosts are online...please, be patient!${end_color}"	
-	nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${temp_dir}"/ips_list.txt | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > "${temp_dir}"/live_hosts.txt
+	if [[ ${file_of_hosts_to_include} = "yes" ]]; then
+		cut -d" " -f1 "${hosts_file}" > "${temp_dir}"/ips_list.txt
+		echo -e "${blue_color}[-] Verifying how many hosts are online...please, be patient!${end_color}"
+		nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${temp_dir}"/ips_list.txt | grep -B1 "Host is up" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > "${temp_dir}"/live_hosts.txt
+			if [[ $? != "0" ]]; then
+				echo -e "${error_color}[X] ERROR! Maybe there is no host detected online. The script is ended.${end_color}"
+				rm -rf "${temp_dir}"/live_hosts.txt "${temp_dir}"/"${hosts}"_parsed
+				time_elapsed			
+				exit 1
+			fi
+
+		echo -e "${green_color}[V] Pre-scanning phase is ended.${end_color}"
+		rm -rf "${temp_dir}"/ips_list.txt 2>/dev/null
+		nb_hosts_to_scan="$(grep -c . "${temp_dir}/live_hosts.txt")"
+		echo -e "${purple_color}[I] ${nb_hosts_to_scan} ip(s) to scan.${end_color}"
+	elif [[ ${host_parameter} = "yes" ]]; then
+		echo -e "${blue_color}[-] Verifying how many hosts are online...please, be patient!${end_color}"
+		nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 ${hosts} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > "${temp_dir}"/live_hosts.txt
 		if [[ $? != "0" ]]; then
 			echo -e "${error_color}[X] ERROR! Maybe there is no host detected online. The script is ended.${end_color}"
-			rm -rf "${temp_dir}"/live_hosts.txt "${temp_dir}"/"${hosts}"_parsed
 			time_elapsed			
 			exit 1
 		fi
 
-echo -e "${green_color}[V] Pre-scanning phase is ended.${end_color}"
-rm -rf "${temp_dir}"/ips_list.txt 2>/dev/null
-nb_hosts_to_scan="$(wc -l "${temp_dir}/live_hosts.txt")"
-echo -e "${purple_color}[I] ${nb_hosts_to_scan} ip(s) to scan.${end_color}"
-
+		echo -e "${green_color}[V] Pre-scanning phase is ended.${end_color}"
+		nb_hosts_to_scan="$(grep -c . "${temp_dir}/live_hosts.txt")"
+		echo -e "${purple_color}[I] ${nb_hosts_to_scan} ip(s) to scan.${end_color}"
+	fi		
 fi
 
 ########################################
@@ -681,22 +713,25 @@ fi
 ########################################
 
 if [[ -s "${temp_dir}/live_hosts.txt" ]]; then
-        hosts="${temp_dir}/live_hosts.txt"
-        else
-                cut -d" " -f1 "${hosts_file}" > "${temp_dir}"/ips_list.txt
-                hosts="${temp_dir}/ips_list.txt"
+	hosts="${temp_dir}/live_hosts.txt"
+elif [[ ${host_parameter} = "yes" ]]; then
+	echo ${hosts} > ${temp_dir}/ips_list.txt
+	hosts="${temp_dir}/ips_list.txt"
+else
+	cut -d" " -f1 "${hosts_file}" > "${temp_dir}"/ips_list.txt
+	hosts="${temp_dir}/ips_list.txt"
 fi
 
 echo -e "${blue_color}[-] Verifying Masscan parameters and running the tool...please, be patient!${end_color}"
 
 if [[ ${exclude_file} == "" ]] && [[ $(id -u) = "0" ]]; then
-	masscan --open "${ports}" --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
+	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
 elif [[ ${exclude_file} == "" ]] && [[ $(id -u) != "0" ]]; then
-	sudo masscan --open "${ports}" --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
+	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
 elif [[ ${exclude_file} != "" ]] && [[ $(id -u) = "0" ]]; then
-	masscan --open "${ports}" --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${xhosts_file}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
+	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${xhosts_file}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
 else
-	sudo masscan --open "${ports}" --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${xhosts_file}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
+	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${xhosts_file}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
 fi
 
 if [[ $? != "0" ]]; then
@@ -792,6 +827,9 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 
 	# Keep the nmap input file?
 	if [[ ${report} == "on" ]]; then
+		if [[ ${host_parameter} = "yes" ]]; then
+			hosts_file_no_path="${initial_hosts}"
+		fi
 		hosts_scanned
 		merge_ip_hostname
 		mv "${temp_dir}"/IPs_hostnames_merged.txt "${report_folder}""${hosts_file_no_path}"_open-ports_"${date}".txt
@@ -843,8 +881,6 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	# We are launching all the Nmap scanners in the same time
 	count="1"
 
-	#rm -rf ${temp_dir}/process_nmap_done.txt
-
 	while IFS=, read -r ip_to_scan; do
 		new_job "$i"
 		count="$(expr $count + 1)"
@@ -871,6 +907,11 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 		done
 	
 		vuln_hosts_format="$(awk '{print $1 "\t" $NF}' "${temp_dir}"/vulnerable_hosts.txt |  sed 's/3(NXDOMAIN)/\No reverse DNS entry found/' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 | sort -u)"
+
+		if [[ ${host_parameter} = "yes" ]]; then
+			hosts_file_no_path="${initial_hosts}"
+		fi
+
 		echo -e -n "\t----------------------------\n" > "${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt"
 		echo -e -n "Report date: $(date)\n" >> "${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt"
 		echo -e -n "Host(s) found: ${vuln_hosts_count}\n" >> "${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt"
@@ -885,6 +926,9 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	fi
 
 elif [[ ${no_nmap_scan} == "on" ]] && [[ ${report} == "on" ]]; then
+	if [[ ${host_parameter} = "yes" ]]; then
+		hosts_file_no_path="${initial_hosts}"
+	fi
 	date="$(date +%F_%H-%M-%S)"
 	echo -e "${purple_color}[I] No Nmap scan to perform.${end_color}"
 	hosts_scanned
@@ -904,6 +948,10 @@ fi
 ##########################
 # 4/4 Generating reports #
 ##########################
+
+if [[ ${host_parameter} = "yes" ]]; then
+	hosts_file_no_path="${initial_hosts}"
+fi
 
 if [[ ${no_nmap_scan} != "on" ]]; then
 	nmap_bootstrap="${dir_name}/stylesheet/nmap-bootstrap.xsl"

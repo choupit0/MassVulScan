@@ -1,4 +1,14 @@
 # Changelog
+1.9.5 (2025-03-16)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Adding a new option "-h | --hosts" to scan one or more hosts via command-line argument (without using a file)
+
+**Correction de bugs/Fixed bugs:**
+
+- Fixing a bug in the exclusion of ports to scan (option -i and --exclude-ports)
+
 1.9.4 (2024-10-24)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
