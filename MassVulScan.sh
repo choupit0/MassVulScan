@@ -157,7 +157,7 @@ usage(){
 	echo -e "${purple_color}        -x | --exclude-file${end_color} \tFile including IPv4 addresses ONLY (CIDR format) to NOT scan (one by line)"
 	echo -e "${purple_color}        -i | --interactive${end_color} \tExtra parameters: ports to scan, rate level and NSE script"
 	echo -e "${purple_color}        -a | --all-ports${end_color} \tScan all 65535 ports (TCP + UDP) at 1.5K pkts/sec with NSE vulners script"
-	echo -e "${purple_color}        -c | --check-live-hosts${end_color} \t\tPerform a pre-scanning to identify online hosts and scan only them"
+	echo -e "${purple_color}        -c | --check-live-hosts${end_color} \tPerform a pre-scanning to identify online hosts and scan only them"
 	echo -e "${purple_color}        -r | --report${end_color} \t\tFile including IPs scanned with open ports and protocols"
 	echo -e "${purple_color}        -n | --no-nmap-scan${end_color} \tUse only the script to detect the hosts with open ports (no HTML report)"
 	echo -e "${bold_color}      Information:"
