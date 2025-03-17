@@ -88,7 +88,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 sudo ./MassVulScan.sh -f targets.txt
 ```
 
-`exclude.txt` containing including IPv4 addresses (CIDR format compatible) to NOT scan.
+`exclude.txt` containing including IPv4 addresses (CIDR format compatible) to NOT scan (Ex. ISP routers, gateways, etc...).
 
 ```bash
 sudo ./MassVulScan.sh -f targets.txt -x exclude.txt
