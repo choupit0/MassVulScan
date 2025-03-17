@@ -111,7 +111,7 @@ sudo ./MassVulScan.sh -h 172.18.50,172.18.32.16
 **Full option list:**
 
 ```bash
-sudo ./MassVulScan.sh -h
+sudo ./MassVulScan.sh -H
 ```
 
 ### ⚙️ Required options
@@ -129,7 +129,7 @@ sudo ./MassVulScan.sh -h
 | `-c`   | Perform a pre-scanning to identify online hosts and scan only them                                       |
 | `-r`   | Generate a TXT file including IPs scanned with open ports and protocols                                  |
 | `-n`   | Quick mode without full Nmap scan to detect the hosts with open ports (no HTML report)                   |
-| `-h`   | Show help                                                                                                |
+| `-H`   | Show help                                                                                                |
 | `-V`   | Show MassVulScan version                                                                                 |
 
 By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 1500 by default.
