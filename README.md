@@ -97,7 +97,15 @@ sudo ./MassVulScan.sh -f targets.txt -x exclude.txt
 **Command-line argument mode:**
 
 ```bash
-sudo ./MassVulScan.sh -h 172.18.0.0/24 -r -c -a
+sudo ./MassVulScan.sh -h 172.18.0.0/24
+```
+
+```
+sudo ./MassVulScan.sh -h 172.18.0.10-172.18.0.100
+```
+
+```
+sudo ./MassVulScan.sh -h 172.18.50,172.18.32.16
 ```
 
 **Full option list:**
