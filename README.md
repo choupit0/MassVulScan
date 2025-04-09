@@ -31,7 +31,7 @@
 ### Last update
 2.0.0 (2025-04-09)
 
-**Améliorations ou changements/Implemented enhancements or changes:*
+**Améliorations ou changements/Implemented enhancements or changes:**
 
 - Significant rewrite of Bash scripts
 - Optimized installation: only installing missing packages and performs a prerequisites check only on the first run (speed gain)
