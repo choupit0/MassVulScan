@@ -14,7 +14,7 @@
 </p>
 
 ## 🌟 Overview
-**MassVulScan** is a high-performance network scanning tool for pentesters (HackTheBox / HTB compatible) and system/network administrators looking to identify open ports and potential vulnerabilities on their internal/external networks. Built on powerful tools like `masscan` and `nmap`, it combines speed and accuracy to scan large-scale networks efficiently.
+**MassVulScan** is a high-performance network scanning tool for pentesters (HackTheBox / HTB / Kali compatible) and system/network administrators looking to identify open ports and potential vulnerabilities on their internal/external networks. Built on powerful tools like `masscan` and `nmap`, it combines speed and accuracy to scan large-scale networks efficiently.
 
 ## 🎯 Features
 - **Fast Port Scanning**: Built on `masscan` for quick open-port detection.
