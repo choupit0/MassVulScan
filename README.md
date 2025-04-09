@@ -1,8 +1,7 @@
 <p align="center">
-  <img src="https://github.com/choupit0/MassVulScan/blob/master/logo.png" width="150" alt="MassVulScan logo">
+  <img src="https://github.com/choupit0/MassVulScan/blob/master/logo.png" width="200" alt="MassVulScan logo">
 </p>
 
-<h1 align="center">MassVulScan</h1>
 <p align="center">🔍 <b>A fast network scanning tool to detect open ports and security vulnerabilities</b></p>
 
 <p align="center">
@@ -69,7 +68,7 @@ If you run the second script directly, it will offer to install ALL prerequisite
 
 ### Additional parameters
 | Parameter                    | Description                                                                            |
-|------------------------------|------------------i---------------------------------------------------------------------|
+|------------------------------|----------------------------------------------------------------------------------------|
 | `--auto-installation-latest` | Install ALL prerequisites without exception and version checking, and without approval |
 
 ```bash
