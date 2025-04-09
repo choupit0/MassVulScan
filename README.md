@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/choupit0/MassVulScan/blob/master/logo.png" width="200" alt="MassVulScan logo">
+  <img src="https://github.com/choupit0/MassVulScan/blob/master/logo.png" width="300" alt="MassVulScan logo">
 </p>
 
 <p align="center">🔍 <b>A fast network scanning tool to detect open ports and security vulnerabilities</b></p>
@@ -117,7 +117,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 ./MassVulScan.sh -h 172.18.50,172.18.32.16
 ```
 
-**Interactive mode (to be combined with the `-h` and `-f` commands):
+**Interactive mode (to be combined with the `-h` and `-f` commands):**
 
 ```bash
 ./MassVulScan.sh -h 192.168.1.0/24 -i -c
