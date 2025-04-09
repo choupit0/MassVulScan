@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #    This file is part of MassVulScan.
 #
@@ -18,40 +18,181 @@
 #    along with MassVulScan.  If not, see <https://www.gnu.org/licenses/>.
 # 
 # Script Name    : MassVulScan.sh
+# Slogan         : Identify open network ports and any associated vulnerabilities
 # Description    : This script combines the high processing speed to find open ports (MassScan), the effectiveness
 #                  to identify open services versions and find potential CVE vulnerabilities (Nmap + vulners.nse script).
-#                  A beautiful report (nmap-bootstrap.xsl) is generated containing all hosts found with open ports,
+#                  A nice report (nmap-bootstrap.xsl) is generated containing all hosts found with open ports,
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20250313
-# Version        : 1.9.5
-# Usage          : ./MassVulScan.sh [[-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-h] [-V]]
-# Prerequisites  : Install MassScan (>=1.0.5), Nmap and vulners.nse (nmap script) to use this script.
+# Date           : 20250409
+# Version        : 2.0.0
+# Usage          : ./MassVulScan.sh COMMAND [ARGS] OPTION
+# Prerequisites  : Install MassScan, Nmap and vulners.nse (nmap script) to use this script.
 #                  The Xsltproc package is also necessary (for reports).
 #                  Please, read the file "requirements.txt" if you need some help.
-#                  With a popular OS from Debian OS family (e.g. Debian, Ubuntu, Linux Mint or Elementary),
-#                  the installation of these prerequisites is automatic.
+#                  Only compatible With a popular OS from Debian OS family (e.g. Debian, Ubuntu, Kali, Linux Mint or Elementary),
+#                  the installation of the prerequisites is automatic.
 #
 
-version="1.9.5"
-purple_color="\033[1;35m"
-green_color="\033[0;32m"
-red_color="\033[1;31m"
-error_color="\033[1;41m"
-blue_color="\033[0;36m"
-bold_color="\033[1m"
-end_color="\033[0m"
+version="2.0.0"
 dir_name="$(dirname -- "$( readlink -f -- "$0"; )")"
 source_installation="${dir_name}/sources/installation.sh"
 source_top_tcp="${dir_name}/sources/top-ports-tcp-1000.txt"
 source_top_udp="${dir_name}/sources/top-ports-udp-1000.txt"
 report_folder="${dir_name}/reports/"
-nmap_scripts_folder="/usr/local/share/nmap/scripts/"
+#nmap_scripts_folder="/usr/local/share/nmap/scripts/"
+blue_color="\033[0;36m"
+red_color="\033[1;31m"
+green_color="\033[0;32m"
+purple_color="\033[1;35m"
+bold_color="\033[1m"
+end_color="\033[0m"
 script_start="$SECONDS"
-# Name server used for the DNS queries/lookups
-# Change it for your private DNS server if you want scan your private LAN
+# Name server used for the DNS queries/lookups.
+# Set your internal DNS server for your internal scans with option -d | --dns [ARGS].
 dns="1.1.1.1"
+
+##########################
+# Checking prerequisites #
+##########################
+
+checking_prerequisites(){
+# Debian packages
+for package in build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum; do
+	package_status=$(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep "install ok installed")
+	if [[ ! ${package_status} ]]; then
+		missing_or_outdated_packages+=("${package}")
+	fi
+done
+
+# Masscan and Nmap packages
+for package in masscan nmap; do
+	if [[ ${package} == "masscan" ]] && [[ ! $(which masscan) ]]; then
+		missing_or_outdated_packages+=("${package}")
+	elif [[ ${package} == "nmap" ]] && [[ ! $(which nmap) ]]; then
+		missing_or_outdated_packages+=("${package}")
+	fi
+done
+
+# Compare version numbers with format for versions xxx.xxx.xxx
+# @(#) user4    Compare version numbers of form a.b.c.
+# Adapted from post # 10.
+# http://www.unix.com/unix-dummies-questions-answers/93739-comparing-version-numbers.html#post302269675
+
+pe() { for _i;do printf "%s" "$_i";done; printf "\n"; }
+pl() { pe;pe "-----" ;pe "$*"; }
+db() { ( printf " db, ";for _i;do printf "%s" "$_i";done;printf "\n" ) >&2 ; }
+db() { : ; }
+C=$HOME/bin/context && [ -f $C ] && $C
+
+version_comparison()
+{
+local a1 b1 c1 a2 b2 c2
+# echo|read succeeds in ksh, but fails in bash.
+# bash alternative is "set --"
+db "input 1 \"$1\", 2 \"$2\" "
+v1=$1
+v2=$2
+db "v1 $v1, v2 $v2"
+set -- $( echo "$v1" | sed 's/\./ /g' )
+a1=$1 b1=$2 c1=$3
+set -- $( echo "$v2" | sed 's/\./ /g' )
+a2=$1 b2=$2 c2=$3
+db "a1,b1,c1 $a1,$b1,$c1 ; a2,b2,c2 $a2,$b2,$c2"
+ret=$(( (a1-a2)*1000000+(b1-b2)*1000+c1-c2 ))
+db "ret is $ret"
+if [ $ret -lt 0 ] ; then
+        v=-1
+elif [ $ret -eq 0 ] ; then
+        v=0
+else
+        v=1
+fi
+printf "%d" $v
+return
+}
+
+installed_masscan_version="$(masscan -V | grep "Masscan version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
+installed_nmap_version="$(nmap -V | grep "Nmap version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
+min_masscan_version_required="1.3.2"
+min_nmap_version_required="7.95"
+
+# returns:
+# -1 = the current version is older than the minimum required version
+# 0 = the versions are equal
+# 1 = the version is later than the minimum required version
+
+if [[ ${installed_masscan_version} ]]; then
+	check_version=$(version_comparison ${installed_masscan_version} ${min_masscan_version_required})
+	db "version_comparison returns $check_version"
+	if [[ $check_version -lt 0 ]]; then
+		missing_or_outdated_packages+=("masscan")
+	fi
+fi
+
+if [[ ${installed_nmap_version} ]]; then
+	check_version=$(version_comparison ${installed_nmap_version} ${min_nmap_version_required})
+	db "version_comparison returns $check_version"
+	if [[ $check_version -lt 0 ]]; then
+		missing_or_outdated_packages+=("nmap")
+	elif [[ $check_version -ge 0 ]]; then
+		if [[ $(which nmap) == */local/* ]];then
+			nmap_scripts_folder="/usr/local/share/nmap/scripts/"
+		else
+			nmap_scripts_folder="/usr/share/nmap/scripts/"
+		fi
+	fi
+fi
+
+# Vulners package
+if [[ ! $(ls ${nmap_scripts_folder}vulners.nse 2>/dev/null) ]]; then
+	missing_or_outdated_packages+=("vulners")
+fi
+
+###############################################
+# Automatic installation for Debian OS family #
+###############################################
+# Verifying if installation source file exist
+source_file(){
+if [[ -z ${source_installation} || ! -s ${source_installation} ]]; then
+	echo -e "${bold_color}${red_color}The file \"${source_installation}\" is missing or is empty.${end_color}"
+	echo -e "${bold_color}${red_color}Please, Redownload the source from Github: git clone https://github.com/choupit0/MassVulScan.git${end_color}"
+	exit 1
+fi
+}
+
+missing_or_outdated_packages_loop="$(for index in "${!missing_or_outdated_packages[@]}"; do echo "${missing_or_outdated_packages[${index}]}"; done)"
+number_of_packages_to_install=${#missing_or_outdated_packages[@]}
+packages_to_install="$(printf "%s " "${missing_or_outdated_packages[@]}")"
+
+if [[ ${number_of_packages_to_install} -gt 0 ]]; then
+	echo -e "${bold_color}${red_color}Some prerequisites are required before using this script, (${number_of_packages_to_install}) missing or outdated packages(s):${end_color}"
+	echo -e "${blue_color}${missing_or_outdated_packages_loop}${end_color}"
+	source_file
+	export packages_to_install="${packages_to_install}"
+	export nmap_scripts_folder
+	source "${source_installation}"
+else
+	touch .prerequisites_already_installed
+fi
+}
+
+# We check if the prerequisites are already installed or not 
+if [[ ! -f "${dir_name}/.prerequisites_already_installed" ]];then
+	checking_prerequisites
+fi
+
+# NSE scripts directory
+if [[ $(which nmap) == */local/* ]];then
+	nmap_scripts_folder="/usr/local/share/nmap/scripts/"
+else
+	nmap_scripts_folder="/usr/share/nmap/scripts/"
+fi
+
+######################################
+# The script is now fully functional #
+######################################
 
 # Time elapsed 
 time_elapsed(){
@@ -61,114 +202,109 @@ script_duration="$((script_end-script_start))"
 printf 'Duration: %02dh:%02dm:%02ds\n' $((${script_duration}/3600)) $((${script_duration}%3600/60)) $((${script_duration}%60))
 }
 
-# Root user?
-root_user(){
-if [[ $(id -u) != "0" ]]; then
-	echo -e "${red_color}[X] You are not the root.${end_color}"
-	echo "Assuming your are in the sudoers list, please launch the script with \"sudo\"."
-	exit 1
+# Let's make our script more glamorous
+warning_message_with_border(){
+if [[ ! -z $2 ]]; then
+	gum style --background 1 --padding "1 1" --bold "$1" "$2"
+else
+	gum style --background 1 --padding "1 1" --bold "$1"
 fi
 }
 
-# Verifying if installation source file exist
-source_file(){
-if [[ -z ${source_installation} ]] || [[ ! -s ${source_installation} ]]; then
-	echo -e "${red_color}[X] Source file \"${source_installation}\" does not exist or is empty.${end_color}"
-	echo -e "${purple_color}[I] This script can install the prerequisites for you.${end_color}"
-	echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
+tip_message_with_border(){
+if [[ ! -z $2 ]]; then
+	gum style --background 4 --padding "1 1" --bold "$1" "$2"
+else
+	gum style --background 4 --padding "1 1" --bold "$1"
+fi
+}
+
+task_completion_message(){
+        gum style --foreground 10 --bold "$1"
+}
+
+blue_info_message(){
+if [[ ! -z $2 ]]; then
+	gum style --foreground 69 --bold "$1" "$2"
+else
+	gum style --foreground 69 --bold "$1"
+fi
+}
+
+yellow_info_message(){
+if [[ ! -z $2 ]]; then
+	gum style --foreground 11 --bold "$1" "$2"
+else
+	gum style --foreground 11 --bold "$1"
+fi
+}
+
+logo(){
+# Fonts to use
+fonts=("smbraille" "smblock" "pagga" "mini" "future" "emboss" "emboss2")
+random_font=${fonts[$RANDOM % ${#fonts[@]}]}
+current_lang=${LANG}
+current_lc_all=${LC_ALL}
+export PATH=$PATH:/usr/games
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+echo
+toilet -f ${random_font} "MassVulScan" | boxes -d peek -a hc -p h1 | lolcat
+gum style --foreground 5 --bold --align right --width 40 "v${version}"
+echo
+export LANG=${current_lang}
+export LC_ALL=${current_lc_all}
+}
+
+# Root user?
+root_user(){
+if [[ $(id -u) != "0" ]]; then
+	warning_message_with_border "You are not the root user." "If you have the appropriate permissions (sudoers), rerun the script with 'sudo'."
 	exit 1
 fi
 }
 
 # Verifying if top-ports source files exist
 source_file_top(){
-if [[ -z ${source_top_tcp} ]] || [[ ! -s ${source_top_tcp} ]]; then
-	echo -e "${red_color}[X] Source file \"${source_top_tcp}\" does not exist or is empty.${end_color}"
-	echo -e "${purple_color}[I] This file is a prerequisite to scan TCP top ports.${end_color}"
-	echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
+if [[ -z ${source_top_tcp} || ! -s ${source_top_tcp} ]]; then
+	warning_message_with_border "The file \"${source_top_tcp}\" is missing or is empty."
+	tip_message_with_border "Redownload the source from Github: git clone https://github.com/choupit0/MassVulScan.git"
 	exit 1
-elif [[ -z ${source_top_udp} ]] || [[ ! -s ${source_top_udp} ]]; then
-	echo -e "${red_color}[X] Source file \"${source_top_udp}\" does not exist or is empty.${end_color}"
-	echo -e "${purple_color}[I] This file is a prerequisite to scan UDP top ports.${end_color}"
-	echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
+elif [[ -z ${source_top_udp} || ! -s ${source_top_udp} ]]; then
+	warning_message_with_border "The file \"${source_top_udp}\" is missing or is empty."
+	tip_message_with_border "Redownload the source from Github: git clone https://github.com/choupit0/MassVulScan.git"
 	exit 1
 fi
 }
-
-# Checking prerequisites
-if [[ ! $(which masscan) ]] || [[ ! $(which nmap) ]] || [[ ! $(locate vulners.nse) ]] || [[ ! $(which xsltproc) ]]; then
-	echo -e "${red_color}[X] There are some prerequisites to install before to launch this script.${end_color}"
-	echo -e "${purple_color}[I] Please, read the help file \"requirements.txt\" for installation instructions (Debian/Ubuntu):${end_color}"
-	grep ^-- "${dir_name}/requirements.txt"
-	# Automatic installation for Debian OS family
-	source_file
-	source "${source_installation}"
-	else
-		masscan_version="$(masscan -V | grep "Masscan version" | cut -d" " -f3)"
-		nmap_version="$(nmap -V | grep "Nmap version" | cut -d" " -f3)"
-		if [[ ${masscan_version} < "1.0.5" ]]; then
-			echo -e "${red_color}[X] Masscan is not up to date.${end_color}"
-			echo "Please. Be sure to have the last Masscan version >= 1.0.5."
-			echo "Your current version is: ${masscan_version}"
-			# Automatic installation for Debian OS family
-			source_file
-			source "${source_installation}"
-		fi
-		if [[ ${nmap_version} < "7.60" ]]; then
-			echo -e "${red_color}[X] Nmap is not up to date.${end_color}"
-			echo "Please. Be sure to have Nmap version >= 7.60."
-			echo "Your current version is: ${nmap_version}"
-			# Automatic installation for Debian OS family
-			source_file
-			source "${source_installation}"
-		fi
-fi
 
 hosts="$1"
 exclude_file=""
 interactive="off"
 check="off"
 
-# Logo
-logo(){
-if [[ $(which figlet) ]]; then
-	my_logo="$(figlet -f mini -k MassVulScan)"
-	echo -e "${green_color}${my_logo}${end_color}"
-	echo -e "${purple_color}[Identify open network ports and any associated vulnerabilities]${end_color}"
-	echo -e "${purple_color}[I] Version ${version}"
-else
-	echo -e "${green_color}                          __"
-	echo -e "${green_color}|\/|  _.  _  _ \  /    | (_   _  _. ._"
-	echo -e "${green_color}|  | (_| _> _>  \/ |_| | __) (_ (_| | |"
-	echo -e "${end_color}"
-	echo -e "${purple_color}[Identify open network ports and any associated vulnerabilities]${end_color}"
-	echo -e "${purple_color}[I] Version ${version}"
-fi
-}
-
 # Usage of script
 usage(){
-        logo
-	echo -e "${blue_color}${bold_color}[-] Usage: Root user or sudo ./$(basename "$0") [[-h] or [-f file] + [-x file] [-i] [-a] [-c] [-r] [-n] | [-V] [-H]]${end_color}"
-	echo -e "${bold_color}    * Required parameters (one of the two):"
-	echo -e "${purple_color}        -h | --hosts${end_color} \t\tTarget host(s): IP address (CIDR format compatible)"
-	echo -e "${purple_color}        -f | --include-file${end_color} \tFile including IPv4 addresses (CIDR format) or hostnames to scan (one by line)"
-	echo -e "${bold_color}    * Optional parameters (must be used in addition of \"-f\" parameter):"
-	echo -e "${purple_color}        -x | --exclude-file${end_color} \tFile including IPv4 addresses ONLY (CIDR format) to NOT scan (one by line)"
-	echo -e "${purple_color}        -i | --interactive${end_color} \tExtra parameters: ports to scan, rate level and NSE script"
-	echo -e "${purple_color}        -a | --all-ports${end_color} \tScan all 65535 ports (TCP + UDP) at 1.5K pkts/sec with NSE vulners script"
-	echo -e "${purple_color}        -c | --check-live-hosts${end_color} Perform a pre-scanning to identify online hosts and scan only them"
-	echo -e "${purple_color}        -r | --report${end_color} \t\tFile including IPs scanned with open ports and protocols"
-	echo -e "${purple_color}        -n | --no-nmap-scan${end_color} \tUse only the script to detect the hosts with open ports (no HTML report)"
-	echo -e "${bold_color}      Information:"
-	echo -e "${purple_color}        -H | --help${end_color} \t\tThis help menu"
-	echo -e "${purple_color}        -V | --version${end_color} \t\tScript version"
+	echo -e "${bold_color}${red_color}Usage: ./$(basename "$0") COMMAND [ARGS]${end_color} OPTIONS"
+	echo -e "      ${red_color}Commands (required):${end_color}"
+	echo -e "        -h | --hosts \t\t\tTarget host(s): IP address (CIDR format compatible)"
+	echo -e "        -f | --include-file ${red_color}[ARGS]${end_color} \tFile including IPv4 addresses (CIDR format) or hostnames to scan (one by line)"
+	echo -e "      Options:"
+	echo -e "        -x | --exclude-file ${red_color}[ARGS]${end_color} \tFile including IPv4 addresses ONLY (CIDR format) to NOT scan (one by line)"
+	echo -e "        -i | --interactive \t\tExtra parameters: ports to scan, rate level and NSE script"
+	echo -e "        -a | --all-ports \t\tScan all 65535 ports (TCP + UDP) at 1.5K pkts/sec with NSE vulners script"
+	echo -e "        -c | --check-live-hosts \tPerform a pre-scanning to identify online hosts and scan only them"
+	echo -e "        -r | --report \t\t\tFile including IPs scanned with open ports and protocols"
+	echo -e "        -n | --no-nmap-scan \t\tThe script detect only the hosts with open ports (no nmap scan & HTML report)"
+	echo -e "        -d | --dns ${red_color}[ARGS]${end_color} \t\tDNS server to use (useful with the "-f" command and hostnames, current: ${dns})"
+	echo -e "      Information:"
+	echo -e "        -H | --help \t\t\tShow this help menu"
+	echo -e "        -V | --version \t\t\tScript version"
 	echo ""
 }
 
 # No paramaters
-if [[ "$1" == "" ]]; then
-	echo -e "${red_color}\n[X] Missing parameter.${end_color}"
+if [[ "$#" -eq 0 ]]; then
+	logo
 	usage
 	exit 1
 fi
@@ -207,17 +343,21 @@ while [[ "$1" != "" ]]; do
                 -n | --no-nmap-scan )
                         no_nmap_scan="on"
                         ;;
+                -d | --dns )
+			shift
+                        dns="$1"
+                        ;;
                 -H | --help )
+			echo ""
                         usage
                         exit 0
                         ;;
                 -V | --version )
-                        echo -e "${purple_color}[I] Script version for $(basename "$0"): ${bold_color}${version}${end_color}"
+			blue_info_message "MassVulScan version ${version} (https://github.com/choupit0/MassVulScan)"
                         exit 0
                         ;;
                 * )
-			echo -e "${red_color}\n[X] One parameter is missing or does not exist.${end_color}"
-                        usage
+			warning_message_with_border "One parameter is missing or does not exist."
                         exit 1
         esac
         shift
@@ -226,30 +366,37 @@ done
 root_user
 
 # Checking if process already running
-check_proc="$(pgrep -i massvulscan | wc -l)"
+check_proc="$(pgrep -i massvulscan)"
+check_proc_nb="$(pgrep -i massvulscan | wc -l)"
 
-if [[ ${check_proc} -gt "2" ]]; then
-	echo -e "${red_color}[X] A process is already running.${end_color}"
+if [[ ${check_proc_nb} -gt "2" ]]; then
+	warning_message_with_border "A process is already running: ${check_proc}"
 	exit 1
 fi
 
 # Only one required parameter at a time
 if [[ ${host_parameter} = "yes" ]] && [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes" ]]; then
-	echo -e "${red_color}Only one required parameter: -h | --hosts OR -f | --include-file${end_color}"
-	echo -e "${red_color}Also, -x | --exclude-file is incompatible with -h | --hosts${end_color}"
+	warning_message_with_border "You can only use one command at a time.: -h | --hosts [ARGS] OR -f | --include-file [ARGS]" "Additionally: -x | --exclude-file [ARGS] is incompatible with -h | --hosts"
         exit 1
-# Valid input file?
-elif [[ ${file_of_hosts_to_include} = "yes" ]] && [[ -z ${hosts} || ! -s ${hosts} ]]; then
-	echo -e "${red_color}[X] Input file \"${hosts}\" does not exist or is empty.${end_color}"
-	echo "Please, try again."
+# Valid input file or host?
+elif [[ ${file_of_hosts_to_include} = "yes" ]] && [[ -z ${hosts} ]]; then
+	warning_message_with_border "You must specify an argument: -f | --include-file [ARGS]"
+	exit 1
+elif [[ ${file_of_hosts_to_include} = "yes" ]] && [[ ! -s ${hosts} ]]; then
+	warning_message_with_border "The input file \"${hosts}\" does not exist or is empty."
+	exit 1
+elif [[ ${host_parameter} = "yes" ]] && [[ -z ${hosts} ]]; then
+	warning_message_with_border "You must specify an argument: -h | --hosts [ARGS]"
 	exit 1
 fi
 
 # Valid exclude file?
 if [[ ${file_of_hosts_to_exclude} = "yes" ]]; then
-        if [[ -z ${exclude_file} ]] || [[ ! -s ${exclude_file} ]]; then
-                echo -e "${red_color}[X] Exclude file \"${exclude_file}\" does not exist or is empty.${end_color}"
-                echo "Please, try again."
+        if [[ -z ${exclude_file} ]]; then
+		warning_message_with_border "You must specify an argument: -x | --exclude-file [ARGS]"
+                exit 1
+        elif [[ ! -s ${exclude_file} ]]; then
+		warning_message_with_border "The exclude file \"${hosts}\" does not exist or is empty."
                 exit 1
         fi
 fi
@@ -266,11 +413,6 @@ rm -rf /tmp/temp_dir-* /tmp/temp_nmap-* paused.conf 2>/dev/null
 # Folder for temporary file(s)
 temp_dir="$(mktemp -d /tmp/temp_dir-XXXXXXXX)"
 temp_nmap="$(mktemp -d /tmp/temp_nmap-XXXXXXXX)"
-
-if [[ ${hosts} == "" ]]; then
-        echo -n -e "${red_color}\r[X] You must specify a target host or a file containing the hosts as a parameter.\n${end_color}"
-        exit 1
-fi
 
 clear
 
@@ -292,6 +434,15 @@ fi
 return $stat
 }
 
+if [[ ${dns} == "1.1.1.1" ]]; then
+	yellow_info_message "Default Public DNS Server Configured: ${dns}"
+elif valid_ip "${dns}"; then
+	yellow_info_message "Your own DNS Server configuration: ${dns}"
+else
+	warning_message_with_border "\"${dns}\" is not a valid IPv4 address for a DNS server."
+	exit 1
+fi
+
 #######################################
 # Parsing the input and exclude files #
 #######################################
@@ -300,7 +451,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 	num_ips_init=$(grep '[[:alnum:].-]' "${hosts}" | grep -Ev '^[[:punct:]]|[[:punct:]]$' | sed '/[]!"#\$%&'\''()\*+,:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
 
 	echo -n -e "\r                                                                                                                 "
-	echo -n -e "${blue_color}\r[-] Parsing the input file (DNS lookups, duplicate IPs, multiple hostnames and valid IPs)...${end_color}"
+	echo -n -e "\rParsing the input file (DNS lookups, duplicate IPs, multiple hostnames and valid IPs)..."
 
 	# Saving IPs first
 	if [[ ${num_ips_init} -gt "0" ]]; then
@@ -309,7 +460,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 			if valid_ip "${check_ip}"; then
 				echo "${check_ip}" >> "${temp_dir}"/IPs.txt
 			else
-				echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask                           \n${end_color}"
+				echo -n -e "\r\"${check_ip}\" is not a valid IPv4 address and/or subnet mask                           \n"
 			fi
 		done
 	fi
@@ -424,7 +575,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 				echo "${search_ip}" "${host_to_convert}" | grep -E '([0-9]{1,3}\.){3}[0-9]{1,3}' >> "${temp_dir}"/hosts_converted.txt
 			else
 				echo -n -e "\r                                                                                                                 "
-				echo -n -e "${red_color}\r[X] No IP found for hostname \"${host_to_convert}\".\n${end_color}"
+				echo -n -e "\rNo IP found for hostname \"${host_to_convert}\".\n"
 			fi
 		done
 	fi
@@ -470,7 +621,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 	fi
 
 	if [[ ! -s ${temp_dir}/IPs_unsorted.txt ]] && [[ ! -s ${temp_dir}/IPs.txt ]]; then
-		echo -n -e "${red_color}\r[X] No valid host found.\n${end_color}"
+		warning_message_with_border "No valid host found."
 		exit 1
 	fi
 
@@ -482,7 +633,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 
 	if [[ -s ${temp_dir}/IPs_unsorted.txt ]] && [[ -s ${temp_dir}/IPs.txt ]]; then
 		echo -n -e "\r                                                                                             "
-		echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
+		echo -n -e "\rValid host(s) to scan:\n"
 		cat "${temp_dir}"/IPs.txt >> "${temp_dir}"/IPs_unsorted.txt
 		rm -rf "${temp_dir}"/IPs.txt
 		sort -u "${temp_dir}"/IPs_unsorted.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${hosts_file_no_path}"_parsed
@@ -490,13 +641,13 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 		cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
 	elif [[ -s ${temp_dir}/IPs_unsorted.txt ]]; then
 		echo -n -e "\r                                                                                             "
-		echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
+		echo -n -e "\rValid host(s) to scan:\n"
 		sort -u "${temp_dir}"/IPs_unsorted.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${hosts_file_no_path}"_parsed
 		rm -rf "${temp_dir}"/IPs_unsorted.txt
 		cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
 	else
 		echo -n -e "\r                                                                                             "
-		echo -n -e "${purple_color}\r[I] Valid host(s) to scan:\n${end_color}"
+		echo -n -e "\rValid host(s) to scan:\n"
 		mv "${temp_dir}"/IPs.txt "${temp_dir}"/"${hosts_file_no_path}"_parsed
 		cat "${temp_dir}"/"${hosts_file_no_path}"_parsed
 	fi
@@ -507,7 +658,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 		# Complete path to the "hosts" file
 		exclude_file="$(readlink -f "$exclude_file")"
 		echo -n -e "\r                                                                                                                 "
-		echo -n -e "${blue_color}\r[-] Parsing the exclude file (valid IPv4 addresses ONLY)...${end_color}"
+		echo -n -e "\rParsing the exclude file (valid IPv4 addresses ONLY)..."
 		num_xips_init=$(grep -Ev '^[[:punct:]]|[[:punct:]]$' "${exclude_file}" | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eoc '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')
 		if [[ ${num_xips_init} -gt "0" ]]; then
 			xips_tab_init=("$(grep -Ev '^[[:punct:]]|[[:punct:]]$' "${exclude_file}" | sed '/[]!"#\$%&'\''()\*+,\/:;<=>?@\[\\^_`{|}~]/d' | sort -u | grep -Eo '.*([0-9]{1,3}\.){3}[0-9]{1,3}.*')")
@@ -515,7 +666,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 				if valid_ip "${check_ip}"; then
 					echo "${check_ip}" >> "${temp_dir}"/xIPs.txt
 				else
-					echo -n -e "${red_color}\r[X] \"${check_ip}\" is not a valid IPv4 address and/or subnet mask to exclude                    \n${end_color}"
+					echo -n -e "\r\"${check_ip}\" is not a valid IPv4 address and/or subnet mask to exclude                    \n"
 				fi
 			done
 		fi
@@ -525,7 +676,7 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 
 	if [[ -s ${temp_dir}/xIPs.txt ]]; then
 		echo -n -e "\r                                                                                            "
-		echo -n -e "${purple_color}\r[I] Valid host(s) to exclude:\n${end_color}"
+		echo -n -e "\rValid host(s) to exclude:\n"
 		sort -u "${temp_dir}"/xIPs.txt | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 > "${temp_dir}"/"${xhosts_file_no_path}"_parsed
 		rm -rf "${temp_dir}"/xIPs.txt
 		cat "${temp_dir}"/"${xhosts_file_no_path}"_parsed
@@ -534,98 +685,175 @@ if [[ ${file_of_hosts_to_include} = "yes" || ${file_of_hosts_to_exclude} = "yes"
 	xhosts_file="${temp_dir}/${xhosts_file_no_path}_parsed"
 fi
 
-###################################
-# Interactive mode "on" or "off"? #
-###################################
+####################
+# Interactive mode #
+####################
 top_ports_tcp="$(grep -v ^"#" "${source_top_tcp}")"
 top_ports_udp="$(grep -v ^"#" "${source_top_udp}")"
 
 if [[ ${interactive} = "on" ]] && [[ ${all_ports} = "on" ]]; then
-        echo -e "${red_color}Sorry, but you can't chose interactive mode (-i) with all ports scanning mode (-a).${end_color}"
+        warning_message_with_border "You can't chose interactive mode (-i) with all ports scanning mode (-a)."
 	exit 1
 elif [[ ${all_ports} = "on" ]]; then
-        echo -e "${purple_color}[I] Okay, 65535 ports to be scan both on TCP and UDP.${end_color}"
+	gum style --foreground 1 --bold --border thick "All-ports scan mode"
+        blue_info_message "We will scan ALL the ports 1-65535 on TCP AND UDP protocols and use the NSE Vulners script."
 	ports="-p1-65535,U:1-65535"
 	rate="1500"
 	script="vulners"
 elif [[ ${interactive} = "on" ]]; then
-        echo -e "${purple_color}[I] We will use the input file: ${hosts_file}${end_color}"
-        # Ports to scan?
-        echo -e "${blue_color}${bold_color}Now, which TCP/UDP port(s) do you want to scan?${end_color}"
-        echo -e "${blue_color}[default: --top-ports 1000 (TCP/UDP), just typing \"Enter|Return\" key to continue]?${end_color}"
-        echo "(\"Top ports\" from list: /usr/local/share/nmap/nmap-services)"
-        echo -e "${blue_color}Usage example:${end_color}"
-        echo "  -p20-25,80                      to scan TCP ports in the range 20-25 and port 80"
-        echo "  -p20-25,80 --exclude-ports 26   same thing as before and remove a port in the range"
-        echo "  -p1-100,U:1-100                 to scan TCP and UDP range of ports"
-        echo "  -pU:1-100                       to scan only UDP range of ports"
-        echo "  -p1-65535,U:1-65535             all TCP AND UDP ports"
-        read -p "Port(s) to scan? >> " -r -t 60 ports_list
-                if [[ -z ${ports_list} ]];then
-			source_file_top
-                        ports="-p${top_ports_tcp},U:${top_ports_udp}"
-			echo -e "${purple_color}[I] Default parameter: --top-ports 1000 (TCP/UDP).${end_color}"
-                        else
-                                ports=${ports_list}
-				echo -e "${purple_color}[I] Port(s) to scan: ${ports}${end_color}"
-                fi
-        # Which rate?
-        echo -e "${blue_color}${bold_color}Which rate (pkts/sec)?${end_color}"
-        echo -e "${blue_color}[default: --max-rate 1500, just typing \"Enter|Return\" key to continue]${end_color}"
-        echo -e "${red_color}Be carreful, beyond \"10000\" it coud be dangerous for your network!!!${end_color}"
-        read -p "Rate? >> " -r -t 60 max_rate
-                if [[ -z ${max_rate} ]];then
-                        rate="1500"
-			echo -e "${purple_color}[I] Default parameter: --max-rate 1500.${end_color}"
-                        else
-                                rate=${max_rate}
-				echo -e "${purple_color}[I] Rate chosen: ${rate}${end_color}"
-                fi
+	gum style --foreground 42 --bold --border thick "Interactive Mode"
+	
+	# Default port list
+	default_ports=(
+		"Top 1000 ports (TCP/UDP)"
+		"Common ports (20-25,53,80,110,143,161,443,445,993,995,3306,8080)"
+		"All TCP and UDP ports (1-65535)"
+		"Custom ports (enter manually)")
+      
+	# Use gum choose to select ports
+	selected_option=$(printf "%s\n" "${default_ports[@]}" | gum choose --selected "All TCP and UDP ports (1-65535)" --header "Select the ports:")
 
-		# Which script?
+	case "$selected_option" in
+		"Top 1000 ports (TCP/UDP)")
+			source_file_top
+			ports="-p${top_ports_tcp},U:${top_ports_udp}"
+			blue_info_message "Selected ports: --top-ports 1000 (TCP/UDP)."
+			;;
+		"Common ports (20-25,53,80,110,143,161,443,445,993,995,3306,8080)")
+			ports="-p20-25,53,80,110,143,443,445,993,995,3306,8080,U:53,161"
+			blue_info_message "Selected ports: ${ports}"
+			;;
+		"All TCP and UDP ports (1-65535)")
+			ports="-p1-65535,U:1-65535"
+			blue_info_message "Selected ports: ${ports}"
+			;;
+		"Custom ports (enter manually)")
+			# Use gum input to enter custom ports
+			custom_ports=$(gum input --placeholder "Enter custom ports (e.g., -p20-25,80 --exclude-ports 26 or -pU:53,161 for UDP)" --timeout 120s)
+			if [[ -z ${custom_ports} ]]; then
+				echo "Error: No custom ports provided."
+				exit 1
+			else
+				ports=${custom_ports}
+				blue_info_message "Custom ports to scan: ${ports}"
+			fi
+			;;
+		*)
+			echo "Error: Invalid option selected."
+			;;
+	esac
+	
+	# Default rate options for masscan
+	default_rates=(
+		"100 packets/sec (Slow and stealthy)"
+		"1000 packets/sec (Moderate speed)"
+		"10000 packets/sec (Fast)"
+		"Custom rate (enter manually)")
+      
+	# Use gum choose to select the rate
+	selected_rate_option=$(printf "%s\n" "${default_rates[@]}" | gum choose --selected "1000 packets/sec (Moderate speed)" --header "Select the rate:")
+
+	case "$selected_rate_option" in
+		"100 packets/sec (Slow and stealthy)")
+			rate="100"
+			blue_info_message "Selected rate: ${rate}"
+			;;
+		"1000 packets/sec (Moderate speed)")
+			rate="1000"
+			blue_info_message "Selected rate: ${rate}"
+			;;
+		"10000 packets/sec (Fast)")
+			rate="10000"
+			blue_info_message "Selected rate: ${rate}"
+			;;
+		"Custom rate (enter manually)")
+			# Use gum input to enter custom rate
+			custom_rate=$(gum input --placeholder "Enter custom rate (packets/sec)" --timeout 120s)
+			if [[ -z ${custom_rate} ]]; then
+				echo "Error: No custom rate provided."
+				exit 1
+			else
+				rate=${custom_rate}
+				blue_info_message "Custom rate: ${rate}"
+			fi
+			;;
+		*)
+			echo "Error: Invalid option selected."
+			;;
+	esac
+
+	# Use gum to select the NSE script for nmap
 	
 	if [[ ${no_nmap_scan} != "on" ]]; then
 		locate_scripts="${nmap_scripts_folder}"
-		scripts_list="$(ls "${locate_scripts}"*.nse 2>/dev/null)"
+		scripts_list="$(ls "${locate_scripts}"*.nse | awk -F'/' '{print $NF}' 2>/dev/null)"
 
 		# Verifying is Nmap folder scripts is present
 		if [[ $? != "0" ]]; then
-			echo -e "${red_color}[X] The Nmap folder does not exist or is empty (e.g. /usr/local/share/nmap/scripts/*.nse).${end_color}"
-			echo -e "${purple_color}[I] This script can install the prerequisites for you: ${source_installation}${end_color}"
+			echo -e "The Nmap folder does not exist or is empty (e.g. /usr/local/share/nmap/scripts/*.nse)."
+			echo -e "This script can install the prerequisites for you: ${source_installation}"
 			echo "Please, download the source from Github and try again: git clone https://github.com/choupit0/MassVulScan.git"
 		exit 1
 		fi
-
-		scripts_tab=(${scripts_list})
-		scripts_loop="$(for index in "${!scripts_tab[@]}"; do echo "${index}) ${scripts_tab[${index}]}"; done)"
-		
-		echo -e "${blue_color}${scripts_loop}${end_color}"
-		echo -e "${blue_color}${bold_color}Which Nmap Scripting Engine (NSE) to use?${end_color}"
-		echo -e "${blue_color}[choose the corresponding number to the script name]${end_color}"
-		echo -e "${blue_color}[or type the script name and args (e.g. ${bold_color}vulners --script-args mincvss=5)]${end_color}"
-		echo -e "${blue_color}${bold_color}Or typing \"Enter|Return\" key to use the default on: vulners.nse${end_color}"
-		read -p "Script number? >> " -r -t 60 script_number
 	
-			case "${script_number}" in
-				[0-9]* )
-					script="${scripts_tab[${script_number}]}"
-					echo -e "${purple_color}[I] Script name chosen: ${script}${end_color}"
+		scripts_tab=(${scripts_list})
+		selected_script=$(printf "%s\n" "${scripts_tab[@]}" | gum filter --indicator "◉" --limit 1 --header "Select a script:" --placeholder "Search for and select the Nmap NSE script" --timeout 120s)
+
+		if [[ -n ${selected_script} ]]; then
+			script="${selected_script}"
+			blue_info_message "Selected script: ${selected_script}"
+			
+			# suggestions for --script-args
+			default_script_args=(
+			"Set a minimum CVSS score of 5 (vulners)"
+			"Set a minimum CVSS score of 7 (vulners)"
+			"Set a minimum CVSS score of 10 (vulners)"
+			"No script argument"
+			"Custom script arguments (enter manually)")
+	      
+			# Use gum choose to select the --script-args
+			selected_script_args=$(printf "%s\n" "${default_script_args[@]}" | gum choose --selected "No script argument" --header "Select the script argument:")
+
+			case "$selected_script_args" in
+				"Set a minimum CVSS score of 5 (vulners)")
+					script_args="mincvss=5"
+					blue_info_message "Selected script argument: ${script_args}"
+					script="${script} --script-args ${script_args}"
 					;;
-				'' )
-					script="vulners"
-					echo -e "${purple_color}[I] No script chosen, we will use the default one (vulners.nse).${end_color}"
+				"Set a minimum CVSS score of 7 (vulners)")
+					script_args="mincvss=7"
+					blue_info_message "Selected script argument: ${script_args}"
+					script="${script} --script-args ${script_args}"
 					;;
-				* )
-					script=${script_number}
-					echo -e "${purple_color}[I] Script name and args chosen: ${script}${end_color}"
+				"Set a minimum CVSS score of 10 (vulners)")
+					script_args="mincvss=10"
+					blue_info_message "Selected script argument: ${script_args}"
+					script="${script} --script-args ${script_args}"
+					;;
+				"No script argument")
+					script_args=""
+					blue_info_message "No script argument."
+					;;
+				"Custom script arguments (enter manually)")
+					# Use gum input to enter custom script argument
+					custom_script_args=$(gum input --placeholder "Enter custom script argument (e.g., smbusername=<username>,smbpass=<password> for the NSE 'script smb-enum-services')" --timeout 120s)
+					if [[ -z ${custom_script_args} ]]; then
+						echo "Error: No custom script argument provided."
+						exit 1
+					else
+						script_args=${custom_script_args}
+						blue_info_message "Custom script argument: ${script_args}"
+						script="${script} --script-args ${script_args}"
+					fi
+					;;
+				*)
+					echo "Error: Invalid option selected."
 					;;
 			esac
-			
-			# For bad numbers
-			if [[ -z ${script} ]]; then
-				echo -e "${red_color}[X] Please, choose the right number or the right categorie name.${end_color}"
-				exit 1
-			fi
+		else
+			echo "Error: No script selected."
+			exit 1
+		fi
 	fi
 
         else
@@ -634,12 +862,12 @@ elif [[ ${interactive} = "on" ]]; then
 			ports="-p${top_ports_tcp},U:${top_ports_udp}"
 			rate="1500"
 			script="vulners"
-			echo -e "${purple_color}[I] Default parameters: --top-ports 1000 (TCP/UDP), --max-rate 1500 and Vulners script (NSE).${end_color}"
+			blue_info_message "Default parameters: --top-ports 1000 (TCP/UDP), --max-rate 1500 and Vulners script (NSE)"
 		else
 			source_file_top
 			ports="-p${top_ports_tcp},U:${top_ports_udp}"
 			rate="1500"
-			echo -e "${purple_color}[I] Default parameters: --top-ports 1000 (TCP/UDP) and --max-rate 1500 (no Nmap Scan).${end_color}"
+			blue_info_message "Default parameters: --top-ports 1000 (TCP/UDP) and --max-rate 1500 (no Nmap Scan)"
 		fi
 fi
 
@@ -647,24 +875,34 @@ fi
 # Checking if there are more than 2 interfaces #
 ################################################
 
-interface="$(ip route | grep default | cut -d" " -f5)"
+# Get the default interface
+default_interface="$(ip route | grep default | cut -d" " -f5)"
+
+# Get the number of network interfaces
 nb_interfaces="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -co "^[[:alnum:]]*")"
 
-if [[ ${nb_interfaces} -gt "2" ]]; then
+if [[ "${nb_interfaces}" -gt "2" ]]; then
+	# List of network interfaces
 	interfaces_list="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -o "^[[:alnum:]]*")"
 	interfaces_tab=(${interfaces_list})
-	echo -e "${blue_color}${bold_color}Warning: multiple network interfaces have been detected:${end_color}"
-	interfaces_loop="$(for index in "${!interfaces_tab[@]}"; do echo "${index}) ${interfaces_tab[${index}]}"; done)"
-	echo -e "${blue_color}${interfaces_loop}${end_color}"
-	echo -e "${blue_color}${bold_color}Which one do you want to use? [choose the corresponding number to the interface name]${end_color}"
-	echo -e "${blue_color}${bold_color}Or typing \"Enter|Return\" key to use the one corresponding to the default route${end_color}"
-        read -p "Interface number? >> " -r -t 60 interface_number
-                if [[ -z ${interface_number} ]];then
-        		echo -e "${purple_color}[I] No interface chosen, we will use the one with the default route.${end_color}"
-                        else
-                                interface="${interfaces_tab[${interface_number}]}"
-                fi
-        echo -e "${purple_color}[I] Network interface chosen: ${interface}${end_color}"
+
+	# Display a warning message with gum
+	echo "Warning: multiple network interfaces have been detected:" | gum style --foreground 212
+
+	# Display the list of interfaces using gum for selection
+	selected_interface=$(printf "%s\n" "${interfaces_tab[@]}" | gum choose --limit 1 --selected ${default_interface} --header "Which one do you want to use (the default one is selected)?" --timeout 90s)
+
+	# Check if an interface was selected
+	if [[ -z "${selected_interface}" ]]; then
+		echo "No interface chosen, we will use the one with the default route." | gum style --foreground 212
+		interface="${default_interface}"
+	else
+		interface="${selected_interface}"
+	fi
+
+		echo "Network interface chosen: "${interface}"" | gum style --foreground 212
+else
+	interface="${default_interface}"
 fi
 
 ##################################################
@@ -680,31 +918,30 @@ fi
 if [[ ${check} = "on" ]]; then
 	if [[ ${file_of_hosts_to_include} = "yes" ]]; then
 		cut -d" " -f1 "${hosts_file}" > "${temp_dir}"/ips_list.txt
-		echo -e "${blue_color}[-] Verifying how many hosts are online...please, be patient!${end_color}"
-		nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${temp_dir}"/ips_list.txt | grep -B1 "Host is up" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > "${temp_dir}"/live_hosts.txt
+		gum spin --spinner dot --title.foreground 6 --title "Let's check how many hosts are online; please be patient." -- \
+			nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 -iL "${temp_dir}"/ips_list.txt | grep -B1 "Host is up" | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > "${temp_dir}"/live_hosts.txt
 			if [[ $? != "0" ]]; then
-				echo -e "${error_color}[X] ERROR! Maybe there is no host detected online. The script is ended.${end_color}"
+				warning_message_with_border "No host detected online. The script is ended."
 				rm -rf "${temp_dir}"/live_hosts.txt "${temp_dir}"/"${hosts}"_parsed
 				time_elapsed			
 				exit 1
 			fi
-
-		echo -e "${green_color}[V] Pre-scanning phase is ended.${end_color}"
+		task_completion_message "Pre-scanning phase is ended."
 		rm -rf "${temp_dir}"/ips_list.txt 2>/dev/null
 		nb_hosts_to_scan="$(grep -c . "${temp_dir}/live_hosts.txt")"
-		echo -e "${purple_color}[I] ${nb_hosts_to_scan} ip(s) to scan.${end_color}"
+		blue_info_message "${nb_hosts_to_scan} ip(s) to scan."
 	elif [[ ${host_parameter} = "yes" ]]; then
-		echo -e "${blue_color}[-] Verifying how many hosts are online...please, be patient!${end_color}"
-		nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 ${hosts} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > "${temp_dir}"/live_hosts.txt
+		gum spin --spinner dot --title.foreground 6 --title "Let's check how many hosts are online; please be patient." -- \
+			nmap -n -sP -T5 --min-parallelism 100 --max-parallelism 256 ${hosts} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" > "${temp_dir}"/live_hosts.txt
 		if [[ $? != "0" ]]; then
-			echo -e "${error_color}[X] ERROR! Maybe there is no host detected online. The script is ended.${end_color}"
+			warning_message_with_border "No host detected online. The script is ended."
 			time_elapsed			
 			exit 1
 		fi
 
-		echo -e "${green_color}[V] Pre-scanning phase is ended.${end_color}"
+		task_completion_message "Pre-scanning phase is ended."
 		nb_hosts_to_scan="$(grep -c . "${temp_dir}/live_hosts.txt")"
-		echo -e "${purple_color}[I] ${nb_hosts_to_scan} ip(s) to scan.${end_color}"
+		blue_info_message "${nb_hosts_to_scan} ip(s) to scan."
 	fi		
 fi
 
@@ -718,41 +955,38 @@ elif [[ ${host_parameter} = "yes" ]]; then
 	echo ${hosts} > ${temp_dir}/ips_list.txt
 	hosts="${temp_dir}/ips_list.txt"
 else
-	cut -d" " -f1 "${hosts_file}" > "${temp_dir}"/ips_list.txt
+	cut -d" " -f1 "${hosts_file}" > "${temp_dir}"/ips_list.txt 2>/dev/null
 	hosts="${temp_dir}/ips_list.txt"
 fi
 
-echo -e "${blue_color}[-] Verifying Masscan parameters and running the tool...please, be patient!${end_color}"
-
 if [[ ${exclude_file} == "" ]] && [[ $(id -u) = "0" ]]; then
-	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
-elif [[ ${exclude_file} == "" ]] && [[ $(id -u) != "0" ]]; then
-	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
+#	gum spin --spinner dot --title.foreground 6 --title "Let's check the number of hosts with open ports; please be patient." -- \
+		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --max-rate "${rate}" --wait 5 | tee "${temp_dir}"/masscan-output.txt
 elif [[ ${exclude_file} != "" ]] && [[ $(id -u) = "0" ]]; then
-	masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${xhosts_file}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
-else
-	sudo masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${xhosts_file}" --max-rate "${rate}" -oL "${temp_dir}"/masscan-output.txt
+#	gum spin --spinner dot --title.foreground 6 --title "Let's check the number of hosts with open ports; please be patient." -- \
+		masscan --open ${ports} --source-port 40000 -iL "${hosts}" -e "${interface}" --excludefile "${xhosts_file}" --max-rate "${rate}" --wait 5 | tee "${temp_dir}"/masscan-output.txt
 fi
 
 if [[ $? != "0" ]]; then
-	echo -e "${error_color}[X] ERROR! Thanks to verify your parameters or your input/exclude file format. The script is ended.${end_color}"
+	clear
+	warning_message_with_border "One or more parameters/arguments are incorrect."
 	rm -rf "${temp_dir}"/masscan-output.txt
 	exit 1
 fi
 
-echo -e "${green_color}[V] Masscan phase is ended.${end_color}"
+task_completion_message "Masscan phase is ended."
 
 if [[ ! -s ${temp_dir}/masscan-output.txt ]]; then
-        echo -e "${green_color}[!] No ip with open TCP/UDP ports found, so, exit! ->${end_color}"
+        warning_message_with_border "No ip with open TCP/UDP ports found, so, exit! ->"
 	rm -rf "${temp_dir}"/masscan-output.txt "${temp_dir}"/hosts_converted.txt "${temp_dir}"/ips_list.txt
 	time_elapsed
 	exit 0
 	else
-		tcp_ports="$(grep -c "^open tcp" "${temp_dir}"/masscan-output.txt)"
-		udp_ports="$(grep -c "^open udp" "${temp_dir}"/masscan-output.txt)"
-		nb_ports="$(grep -c ^open "${temp_dir}"/masscan-output.txt)"
-		nb_hosts_nmap="$(grep ^open "${temp_dir}"/masscan-output.txt | cut -d" " -f4 | sort | uniq -c | wc -l)"
-		echo -e "${purple_color}[I] ${nb_hosts_nmap} host(s) concerning ${nb_ports} open ports.${end_color}"
+		tcp_ports="$(grep -c "^Discovered open port.*tcp" "${temp_dir}"/masscan-output.txt)"
+		udp_ports="$(grep -c "^Discovered open port.*udp" "${temp_dir}"/masscan-output.txt)"
+		nb_ports="$(grep -c "^Discovered open port" "${temp_dir}"/masscan-output.txt)"
+		nb_hosts_nmap="$(grep "^Discovered open port" "${temp_dir}"/masscan-output.txt | cut -d" " -f6 | sort | uniq -c | wc -l)"
+		blue_info_message "${nb_hosts_nmap} host(s) concerning ${nb_ports} open ports."
 fi
 
 rm -rf "${temp_dir}"/ips_list.txt 2>/dev/null
@@ -780,21 +1014,29 @@ cat "${temp_dir}"/nmap-input.txt | while IFS=, read -r line; do
 done
 }
 
-# Hosts list scanned
-hosts_scanned(){
-	echo -e "${bold_color}Host(s) discovered with an open port(s):${end_color}"
-	grep ^open "${temp_dir}"/masscan-output.txt | awk '{ip[$4]++} END{for (i in ip) {print i " has " ip[i] " open port(s)"}}' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4
-}
-
 # Preparing the input file for Nmap
 nmap_file(){
 proto="$1"
 
-grep "^open ${proto}" "${temp_dir}"/masscan-output.txt | awk '/.+/ { \
-				if (!($4 in ips_list)) { \
-				value[++i] = $4 } ips_list[$4] = ips_list[$4] $3 "," } END { \
-				for (j = 1; j <= i; j++) { \
-				printf("%s:%s:%s\n%s", $2, value[j], ips_list[value[j]], (j == i) ? "" : "\n") } }' | sed '/^$/d' | sed 's/.$//' >> "${temp_dir}"/nmap-input.temp.txt
+grep "Discovered open port .*\/${proto} on" "${temp_dir}"/masscan-output.txt | awk -v proto="$proto" '
+{
+	split($0, parts, " ");
+	port = parts[4];
+	ip = parts[6];
+	sub(/\/.*$/, "", port);  # Remove "/tcp" or "/udp"
+	if (!seen[ip]) {
+		value[++i] = ip;
+		seen[ip] = 1;
+		ips_list[ip] = port;
+	} else {
+		ips_list[ip] = ips_list[ip] "," port;
+	}
+}
+END {
+	for (j = 1; j <= i; j++) {
+		printf("%s:%s:%s\n", proto, value[j], ips_list[value[j]]);
+    }
+}' >> "${temp_dir}"/nmap-input.temp.txt
 }
 
 rm -rf "${temp_dir}"/nmap-input.temp.txt
@@ -815,10 +1057,10 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 		check_vulners_api_status="$(nc -z -v -w 1 vulners.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
 
 		if [[ ${check_vulners_api_status} == "open" ]]; then
-			echo -e "${purple_color}[I] Vulners.com site is reachable on port 443.${end_color}"
+			blue_info_message "Vulners.com site is reachable on port 443."
 			else
-				echo -e "${blue_color}${bold_color}Warning: Vulners.com site is NOT reachable on port 443. Please, check your firewall rules, dns configuration and your Internet link.${end_color}"
-				echo -e "${blue_color}${bold_color}So, vulnerability check will be not possible, only opened ports will be present in the report.${end_color}"
+				warning_message_with_border "Warning: Vulners.com site is NOT reachable on port 443. Please, check your firewall rules, dns configuration and your Internet link." \
+					"So, vulnerability check will be not possible, only opened ports will be present in the report."
 		fi
 	fi
 
@@ -828,13 +1070,15 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	# Keep the nmap input file?
 	if [[ ${report} == "on" ]]; then
 		if [[ ${host_parameter} = "yes" ]]; then
-			hosts_file_no_path="${initial_hosts}"
+			sanitized_hosts_list="$(echo "${initial_hosts}" | tr '/\\:*?"<>,;' '_')"
+			merge_ip_hostname
+			mv "${temp_dir}"/IPs_hostnames_merged.txt "${report_folder}""${sanitized_hosts_list}"_open-ports_"${date}".txt
+			yellow_info_message "The report is available here: ${report_folder}${sanitized_hosts_list}_open-ports_${date}.txt"
+		else
+			merge_ip_hostname
+			mv "${temp_dir}"/IPs_hostnames_merged.txt "${report_folder}""${hosts_file_no_path}"_open-ports_"${date}".txt
+			yellow_info_message "The report is available here: ${report_folder}${hosts_file_no_path}_open-ports_${date}.txt"
 		fi
-		hosts_scanned
-		merge_ip_hostname
-		mv "${temp_dir}"/IPs_hostnames_merged.txt "${report_folder}""${hosts_file_no_path}"_open-ports_"${date}".txt
-		echo -e "${purple_color}[I] IP(s) found with open ports:${end_color}"
-		echo -e "${blue_color}-> ${report_folder}${hosts_file_no_path}_open-ports_${date}.txt${end_color}"
 	fi
 
 	# Function for parallel Nmap scans
@@ -842,7 +1086,7 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	proto="$(echo "$1" | cut -d":" -f1)"
 	ip="$(echo "$1" | cut -d":" -f2)"
 	port="$(echo "$1" | cut -d":" -f3)"
-
+	
 	if [[ $proto == "tcp" ]]; then
 		nmap --max-retries 2 --max-rtt-timeout 500ms -p"${port}" -Pn -sT -sV -n --script ${script} -oA "${temp_nmap}/${ip}"_tcp_nmap-output "${ip}" > /dev/null 2>&1
 		echo "${ip} (${proto}): Done" >> "${temp_dir}"/process_nmap_done.txt
@@ -854,19 +1098,18 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	nmap_proc_ended="$(grep "$Done" -co "${temp_dir}"/process_nmap_done.txt)"
 	pourcentage="$(awk "BEGIN {printf \"%.2f\n\", \"${nmap_proc_ended}\"/\"${nb_nmap_process}\"*100}")"
 	echo -n -e "\r                                                                                                         "
-	echo -n -e "${purple_color}${bold_color}\r[I] Scan is done for ${ip} (${proto}) -> ${nmap_proc_ended}/${nb_nmap_process} Nmap process launched...(${pourcentage}%)${end_color}"
+	echo -n -e "\rLast scan completed for: ${ip}:${port} (${proto})... ${pourcentage}%"
 
 	}
 
 	# Controlling the number of Nmap scanner to launch
 	if [[ ${nb_nmap_process} -ge "50" ]]; then
 		max_job="50"
-		echo -e "${blue_color}${bold_color}Warning: A lot of Nmap process to launch: ${nb_nmap_process}${end_color}"
-		echo -e "${blue_color}[-] So, to no disturb your system, I will only launch ${max_job} Nmap process at time.${end_color}"
+		blue_info_message "Warning: A lot of Nmap process to launch: ${nb_nmap_process}" \
+			"So, to no disturb your system, I will only launch ${max_job} Nmap process at time."
 		else
 			max_job="${nb_nmap_process}"
-        		echo -n -e "\r                                                                                             "
-			echo -e "${purple_color}${bold_color}\r[I] Launching ${nb_nmap_process} Nmap scanner(s).${end_color}"
+			blue_info_message "Launching ${nb_nmap_process} Nmap scanner(s)."
 	fi
 
 	# Queue files
@@ -875,6 +1118,7 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	while ((job_act >= ${max_job})); do
 		job_act="$(jobs | wc -l)"
 	done
+
 	parallels_scans "${ip_to_scan}" &
 	}
 
@@ -888,9 +1132,11 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 
 	wait
 
-	sleep 2 && tset
+	sleep 1 && tset > /dev/null 2>&1
 
-	echo -e "${green_color}\r[V] Nmap phase is ended.${end_color}"
+	echo -n -e "\r                                                                                                                                                               "
+	echo -n -e "\r"
+	task_completion_message "Nmap phase is ended."
 	
 	# Verifying vulnerable hosts
 	vuln_hosts_count="$(for i in "${temp_nmap}"/*.nmap; do tac "$i" | sed -n -e '/|_.*vulners.com\|VULNERABLE/,/^Nmap/p' | tac ; done | grep "Nmap" | sort -u | grep -c "Nmap")"
@@ -900,9 +1146,9 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	date="$(date +%F_%H-%M-%S)"
 
 	if [[ ${vuln_hosts_count} != "0" ]]; then
-		echo -e "${red_color}[X] ${vuln_hosts_count} vulnerable (or potentially vulnerable) host(s) found.${end_color}"
+		warning_message_with_border "${vuln_hosts_count} vulnerable (or potentially vulnerable) host(s) found."
 		echo -e -n "${vuln_hosts_ip}\n" | while IFS=, read -r line; do
-			host="$(dig -x "${line}" +short)"
+			host="$(dig @${dns} -x "${line}" +short)"
 			echo "${line}" "${host}" >> "${temp_dir}"/vulnerable_hosts.txt
 		done
 	
@@ -921,28 +1167,32 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 		echo -e -n "\n\t----------------------------\n" >> "${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt"
 		echo -e -n "${vuln_hosts}\n" >> "${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt"
 	else
-		echo -e "${blue_color}No vulnerable host found... at first sight!.${end_color}"
+		blue_info_message "No host seems to have any known vulnerabilities."
 
 	fi
 
 elif [[ ${no_nmap_scan} == "on" ]] && [[ ${report} == "on" ]]; then
-	if [[ ${host_parameter} = "yes" ]]; then
-		hosts_file_no_path="${initial_hosts}"
-	fi
 	date="$(date +%F_%H-%M-%S)"
-	echo -e "${purple_color}[I] No Nmap scan to perform.${end_color}"
-	hosts_scanned
-	merge_ip_hostname
-	echo -e "${bold_color}$(cat "${temp_dir}"/IPs_hostnames_merged.txt)${end_color}"
-	mv "${temp_dir}"/IPs_hostnames_merged.txt "${report_folder}""${hosts_file_no_path}"_open-ports_"${date}".txt
-	echo -e "${purple_color}[I] IP(s) found with open ports:${end_color}"
-	echo -e "${blue_color}-> ${report_folder}${hosts_file_no_path}_open-ports_${date}.txt${end_color}"
 
+	if [[ ${host_parameter} = "yes" ]]; then
+		sanitized_hosts_list="$(echo "${initial_hosts}" | tr '/\\:*?"<>,;' '_')"
+
+		blue_info_message "No Nmap scan to perform."
+		blue_info_message "Host(s) discovered with an open port(s):"
+		merge_ip_hostname
+		echo -e "$(cat "${temp_dir}"/IPs_hostnames_merged.txt)"
+		mv "${temp_dir}"/IPs_hostnames_merged.txt "${report_folder}""${sanitized_hosts_list}"_open-ports_"${date}".txt
+		yellow_info_message "The report is available here: ${report_folder}${sanitized_hosts_list}_open-ports_${date}.txt"
+	else
+		merge_ip_hostname
+		mv "${temp_dir}"/IPs_hostnames_merged.txt "${report_folder}""${hosts_file_no_path}"_open-ports_"${date}".txt
+		yellow_info_message "The report is available here: ${report_folder}${hosts_file_no_path}_open-ports_${date}.txt"
+	fi
 else
-	echo -e "${purple_color}[I] No Nmap scan to perform.${end_color}"
-	hosts_scanned
+	blue_info_message "No Nmap scan to perform."
+	blue_info_message "Host(s) discovered with an open port(s):"
 	merge_ip_hostname
-	echo -e "${bold_color}$(cat "${temp_dir}"/IPs_hostnames_merged.txt)${end_color}"
+	echo -e "$(cat "${temp_dir}"/IPs_hostnames_merged.txt)"
 fi
 
 ##########################
@@ -958,8 +1208,7 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	global_report="${hosts_file_no_path}_global-report_${date}.html"
 
 	if [[ -s ${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt ]]; then
-		echo -e "${purple_color}[I] All details on the vulnerabilities:"
-		echo -e "${blue_color}-> ${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt${end_color}"
+		yellow_info_message "All details on the vulnerabilities: ${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt"
 	fi
 
 	# Merging all the Nmap XML files to one big XML file
@@ -967,7 +1216,8 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	echo "<!DOCTYPE nmaprun PUBLIC \"-//IDN nmap.org//DTD Nmap XML 1.04//EN\" \"https://svn.nmap.org/nmap/docs/nmap.dtd\">" >> "${temp_dir}"/nmap-output.xml
 	echo "<?xml-stylesheet href="https://svn.nmap.org/nmap/docs/nmap.xsl\" type="text/xsl\"?>" >> "${temp_dir}"/nmap-output.xml
 	echo "<!-- nmap results file generated by MassVulScan.sh -->" >> "${temp_dir}"/nmap-output.xml
-	echo "<nmaprun args=\"nmap --max-retries 2 --max-rtt-timeout 500ms -p[port(s)] -Pn -s(T|U) -sV -n --script ${script} [ip(s)]\" scanner=\"Nmap\" start=\"\" version=\"${nmap_version}\" xmloutputversion=\"1.04\">" >> "${temp_dir}"/nmap-output.xml
+	echo "<nmaprun args=\"nmap --max-retries 2 --max-rtt-timeout 500ms -p[port(s)] -Pn -s(T|U) -sV -n --script ${script} [ip(s)]\" \
+		scanner=\"Nmap\" start=\"\" version=\"${nmap_version}\" xmloutputversion=\"1.04\">" >> "${temp_dir}"/nmap-output.xml
 	echo "<!--Generated by MassVulScan.sh--><verbose level=\"0\" /><debug level=\"0\" />" >> "${temp_dir}"/nmap-output.xml
 
 	for i in "${temp_nmap}"/*.xml; do
@@ -981,11 +1231,11 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 	xsltproc -o "${report_folder}${global_report}" "${nmap_bootstrap}" "${temp_dir}"/nmap-output.xml 2>/dev/null
 
 	# End of script
-	echo -e "${purple_color}[I] HTML report generated:"
-	echo -e "${blue_color}-> ${report_folder}${global_report}${end_color}"
-	echo -e "${green_color}[V] Report phase is ended, bye!${end_color}"
+	yellow_info_message "HTML report generated: ${report_folder}${global_report}"
+	task_completion_message "End of script execution."
 else
-	echo -e "${purple_color}[I] No HTML report generated.${end_color}"
+	blue_info_message "No HTML report generated."
+	task_completion_message "End of script execution."
 
 fi
 

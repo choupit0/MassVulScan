@@ -1,0 +1,50 @@
+# Source: https://github.com/geeksonsecurity/vuln-web-apps
+# Date: 2025-04-09
+# Name	URL	Technology	Creds (role:user:password)
+# Acunetix Acuforum	http://testasp.vulnweb.com/	IIS, ASP, Microsoft SQL Server	unknown
+#testasp.vulnweb.com
+# Acunetix Acublog	http://testaspnet.vulnweb.com/	IIS, ASP.NET, Microsoft SQL Server	unknown
+#testaspnet.vulnweb.com
+# Acunetix SecurityTweets	http://testhtml5.vulnweb.com/	nginx, Python, Flask, CouchDB	admin:admin:1234
+testhtml5.vulnweb.com
+# Acunetix Acuart	http://testphp.vulnweb.com/	Apache, PHP, MySQL	unknown
+testphp.vulnweb.com
+# Broken Crystals	https://brokencrystals.com/	Node.js	admin:admin
+#brokencrystals.com
+# bWAPP	http://bwapp.ywnxs.com/	Ubuntu, Nginx, PHP	user: bee:bug
+# bwapp.ywnxs.com
+# Cenzic crackmebank	http://crackme.cenzic.com/	CentOS, Apache, PHP	unknown
+#crackme.cenzic.com
+# Firing Range	https://public-firing-range.appspot.com/	Google App Engine	unknown
+#public-firing-range.appspot.com
+# PortSwigger Gin & Juice Shop	https://ginandjuice.shop/	AWS	unknown
+ginandjuice.shop
+# Google Gruyere	http://google-gruyere.appspot.com/start	Python, Google App Engine	unknown
+#google-gruyere.appspot.com
+# HackYourselfFirst	http://hack-yourself-first.com/	IIS, ASP.NET	unknown
+# hack-yourself-first.com
+# HP freebank	http://zero.webappsecurity.com/	Apache Tomcat	unknown
+zero.webappsecurity.com
+# IBM Altoro Mutual	http://demo.testfire.net/	IIS, ASP.NET	user:jsmith:Demo1234
+demo.testfire.net
+# IBM AltoroJ Mutual	http://www.altoromutual.com:8080/	Tomcat, Java 3.1	user:jsmith:Demo1234
+#www.altoromutual.com:8080
+# IBM Hard Altoro Mutual	http://hard.altoromutual.com/	Tomcat, Java 3.1, MegaScript	user:jsmith:Demo1234
+#hard.altoromutual.com
+# OWASP Juice Shop	https://juice-shop.herokuapp.com/	Node.js	unknown
+#juice-shop.herokuapp.com
+# OWASP NodeGoat	http://nodegoat.herokuapp.com/	Node.js	unknown
+#nodegoat.herokuapp.com
+# Rapid7 Hackazon	http://hackazon.webscantest.com/	Apache, PHP, Ajax, JSONm XML, Gwt, AMF	admin:admin:123456
+hackazon.webscantest.com
+# Rapid7 WebScanTest	http://webscantest.com/	Apache, PHP	user:testuser:testpass
+webscantest.com
+# Testsparker ASP.NET	http://aspnet.testsparker.com/	Windows, IIS, ASP.NET, Microsoft SQL Server	unknown:alan@turing.com:theturingtest
+aspnet.testsparker.com
+# Testsparker PHP	http://php.testsparker.com/	Windows, Apache, PHP, MySQL	unknown:admin:admin123456
+#php.testsparker.com
+# Testsparker SPA (Angular)	http://angular.testsparker.com/	Ubuntu, Apache, PHP, Angular 5, MySQL	unknown
+#angular.testsparker.com
+# XSS Test	https://brutelogic.com.br/knoxss.html		unknown
+# Pentest-Ground	https://pentest-ground.com
+#pentest-ground.com

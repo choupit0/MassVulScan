@@ -2,8 +2,12 @@ Debian/Ubuntu OS based installation, with root user:
 
 -- Packages installation
 
-apt update
-apt install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools locate xsltproc dnsutils netcat
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/charm.gpg
+echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+
+apt-get update
+apt-get install -y build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils toilet boxes lolcat gum netcat-traditional
 
 Verification:
 xsltproc -V
@@ -24,9 +28,9 @@ masscan -V
 -- Nmap installation
 
 cd /tmp
-wget https://nmap.org/dist/nmap-7.90.tgz
-tar -xvzf nmap-7.90.tgz
-cd nmap-7.90
+wget https://nmap.org/dist/nmap-7.95.tgz
+tar -xvzf nmap-7.95.tgz
+cd nmap-7.95
 ./configure
 make -j$(nproc)
 make install

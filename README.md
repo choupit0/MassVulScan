@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/choupit0/MassVulScan/blob/master/DALL%C2%B7E%20Logo.gif" width="150" alt="MassVulScan logo">
+  <img src="https://github.com/choupit0/MassVulScan/blob/master/logo.png" width="150" alt="MassVulScan logo">
 </p>
 
 <h1 align="center">MassVulScan</h1>
@@ -21,6 +21,8 @@
 - **Fast Port Scanning**: Built on `masscan` for quick open-port detection.
 - **Vulnerability Detection**: Uses `nmap` scripts for detailed service analysis.
 - **Optimized Scans**: Intelligent subnet filtering to avoid duplicates.
+- **Modern and Interactive**: Enhanced aesthetics and interactivity with Gum.
+- **Optimized Installation**: Only installing missing packages.
 - **Platform Compatibility**: Runs on Linux, Debian OS family only.
 - **Power of Bash**: Simplicity meets performance
 
@@ -28,21 +30,24 @@
 [Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
 
 ### Last update
-1.9.5 (2025-03-16)
+2.0.0 (2025-04-09)
 
-**Améliorations ou changements/Implemented enhancements or changes:**
-- Adding a new option "-h | --hosts" to scan one or more hosts via command-line argument (without using a file)
+**Améliorations ou changements/Implemented enhancements or changes:*
+
+- Significant rewrite of Bash scripts
+- Optimized installation: only installing missing packages and performs a prerequisites check only on the first run (speed gain)
+- Improved version comparison for certain packages
+- MassVulScan evolves: more modern, interactive, and visually appealing with Gum (interactive mode)
+- Tool updates: compatibility with the latest versions of Nmap (7.95) and Masscan (1.3.2)
+- Adding a new option "-d | --dns" to choose the (private or public) DNS server (default: 1.1.1.1)
+- Adding a new option for NSE scripts to choose --script-args (e.g., `--script-args mincvss=5` (interactive mode)
+- Some packages have been replaced to improve compatibility depending on the OS used
 
 **Correction de bugs/Fixed bugs:**
-- Fixing a bug in the exclusion of ports to scan (option -i and --exclude-ports)
+- Fixing minor bugs
 
 ## 📦 Installation
-Ensure the following prerequisites are installed:
-
-- **masscan** (version >= 1.0.5)
-- **nmap** (version >= 7.60)
-- **NSE vulners script**
-- **xsltproc package**
+Refer to the `requirements.txt` file for the exact list of necessary packages. 
 
 ```bash
 # Clone the repository
@@ -51,20 +56,25 @@ git clone https://github.com/choupit0/MassVulScan.git
 # Go to the project directory
 cd MassVulScan
 
-# Install dependencies (root or sudo)
+# Run the main script (root or sudo)
+./MassVulScan.sh
+```
+On the first launch (only), the script will check that all prerequisites are installed and at the correct version (`masscan` and `nmap`). Otherwise, it will offer to install only what is missing.
+
+```bash
+# Install ALL the dependencies (root or sudo) ~5 minutes
 ./sources/installation.sh
 ```
+If you run the second script directly, it will offer to install ALL prerequisites for you without exception and without checking whether they are already present or not.
 
 ### Additional parameters
-| Parameter                   | Description                                                                        |
-|-----------------------------|------------------------------------------------------------------------------------|
-| `--auto-installation-latest`| compilation of the latest versions of `nmap` and `masscan` -> ~5 minutes (default) |
-| `--auto-installation-apt`   | speedest but not the last versions -> ~1 minute                                    |
+| Parameter                    | Description                                                                            |
+|------------------------------|------------------i---------------------------------------------------------------------|
+| `--auto-installation-latest` | Install ALL prerequisites without exception and version checking, and without approval |
 
-**Note about APT installation**
-Warning, I detected an error with the APT version. There is a mistake of upstream. The Masscan version 1.0.5 tag points to
-a commit that still contains 1.0.4 as version. But this is the correct code for the 1.0.5 version. https://github.com/robertdavidgraham/masscan/issues/566#issuecomment-798877419
-(Thank you to https://github.com/rhertzog)
+```bash
+./sources/installation.sh --auto-installation-latest
+```
 
 ## 🛠️ How MassVulScan Works
 **MassVulScan** follows a series of streamlined steps to identify active hosts, open ports, and potential vulnerabilities across your network:
@@ -72,53 +82,62 @@ a commit that still contains 1.0.4 as version. But this is the correct code for 
 1. **Quick Host Discovery** (optional): Uses `nmap` to identify online hosts efficiently.
 2. **Rapid Port Scanning**: For each host, `masscan` performs an ultra-fast scan to detect open TCP/UDP ports.
 3. **Data Organization**: Results are sorted to compile all detected ports and protocols by host. The organized data can be saved for later analysis (optional).
-4. **Service and Vulnerability Detection**: Runs multiple parallel sessions (`nmap` + `vulners.nse`) to detect services and vulnerabilities, one session per host.
+4. **Service and Vulnerability Detection**: Runs multiple parallel sessions (`nmap` + `vulners.nse` by default) to detect services and vulnerabilities, one session per host.
 5. **Report Generation**: 
    - **HTML Report**: Contains detailed information on each host, including vulnerabilities, with a clean and accessible layout.
-   - **TXT Report**: Focuses on potentially vulnerable hosts for quick reference.
+   - **TXT Report**: Focuses on potentially vulnerable hosts for quick reference (if vulnerabilities are discovered).
 
 The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github.com/honze-net/nmap-bootstrap-xsl)) for enhanced readability and a user-friendly format.
 
-## 🚀 Usage
+## 🚀 Usage (root or sudo)
 **File-based scanning mode:**
 
 `targets.txt` containing a list of networks, IPs and/or hostnames to scan.
 
 ```bash
-sudo ./MassVulScan.sh -f targets.txt
+./MassVulScan.sh -f targets.txt
 ```
 
 `exclude.txt` containing including IPv4 addresses (CIDR format compatible) to NOT scan (Ex. ISP routers, gateways, etc...).
 
 ```bash
-sudo ./MassVulScan.sh -f targets.txt -x exclude.txt
+./MassVulScan.sh -f targets.txt -x exclude.txt
 ```
 
 **Command-line argument mode:**
 
 ```bash
-sudo ./MassVulScan.sh -h 172.18.0.0/24
+./MassVulScan.sh -h 172.18.0.0/24
 ```
 
 ```
-sudo ./MassVulScan.sh -h 172.18.0.10-172.18.0.100
+./MassVulScan.sh -h 172.18.0.10-172.18.0.100
 ```
 
 ```
-sudo ./MassVulScan.sh -h 172.18.50,172.18.32.16
+./MassVulScan.sh -h 172.18.50,172.18.32.16
 ```
+
+**Interactive mode (to be combined with the `-h` and `-f` commands):
+
+```bash
+./MassVulScan.sh -h 192.168.1.0/24 -i -c
+```
+
+## 🎬 Interactive mode demo
+![Example Interactive Demo](demo/MassVulScan_Interactive_Demo.mp4)
 
 **Full option list:**
 
 ```bash
-sudo ./MassVulScan.sh -H
+./MassVulScan.sh -H
 ```
 
-### ⚙️ Required options
-| Option | Description                                                              |
-|--------|--------------------------------------------------------------------------|
-| `-h`   | Target host(s): IP address (CIDR format compatible)                      |
-| `-f`   | File with IPs (CIDR format compatible) or hostnames to scan, one by line |
+### ⚙️ Required commands
+| Commands | Description                                                                         |
+|----------|-------------------------------------------------------------------------------------|
+| `-h`     | Target host(s), IPs compatible with CIDR format, a comma-separated list, or a range |
+| `-f`     | File with IPs and/or hostnames to scan, one by line (CIDR format compatible)        |
 
 ### ⚙️ Optional options
 | Option | Description                                                                                              |
@@ -129,6 +148,7 @@ sudo ./MassVulScan.sh -H
 | `-c`   | Perform a pre-scanning to identify online hosts and scan only them                                       |
 | `-r`   | Generate a TXT file including IPs scanned with open ports and protocols                                  |
 | `-n`   | Quick mode without full Nmap scan to detect the hosts with open ports (no HTML report)                   |
+| `-d`   | DNS server to use (useful with the -f command and hostnames, current: 1.1.1.1)                           |
 | `-H`   | Show help                                                                                                |
 | `-V`   | Show MassVulScan version                                                                                 |
 
@@ -138,29 +158,27 @@ By default the script will scan only the first 1000 TCP/UDP ports among the most
 
 The script is also compatible with Nmap's categories (https://nmap.org/book/nse-usage.html#nse-categories) to search for specific vulnerabilities (the better known as ms17-010, EternalBlue) in addition to the CVEs identified from vulners.com.
 
-## 🎬 GIF Demo
-![Example Demo](demo/MassVulScan_Demo.gif)
 ##  📸 Some screenshots
-![Example Masscan](screenshots/Masscan.PNG)
+![Example Menu](screenshots/Menu.png)
 
-![Example Nmap](screenshots/Nmap.PNG)
+![Example Vulnerable-hosts](screenshots/Ex-vulnerable-host-found.png)
 
-![Example EOF](screenshots/Full-script.PNG)
-
-![Example Vulnerable-hosts](screenshots/Ex-vulnerable-host-found.PNG)
-
-![Example HTML](screenshots/HTML.PNG)
+![Example HTML](screenshots/HTML.png)
 
 ## 🐞 Known issues
 No known issues.
 ## ✅ TODO
-Improve the pre-scanning phase to identify online hosts (fping).
+Make the script full compatible with IPv6 (work in progress).
+
+Identify why Nmap is slower when run via the script compared to directly from the CLI.
 
 Manage better multiple IP addresses on one network interface.
 
-Improve process of installation (install what is strictly necessary, comparison of versions).
+~~Improve process of installation (install what is strictly necessary, comparison of versions).~~
 
-~~Allow scanning a host without using an input file (command-line argument)~~
+~~Improve the interactive part for parameter selections.~~
+
+~~Allow scanning a host without using an input file (command-line argument).~~
 
 ~~Improve the parsing of hosts file to detect duplicate networks, Ex: 10.10.18.0/24 and 10.10.18.0/28, and avoid duplicate scan.~~
 
