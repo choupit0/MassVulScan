@@ -124,7 +124,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 ```
 
 ## 🎬 Interactive mode demo
-![Example Interactive Demo](demo/MassVulScan_Interactive_Demo.mp4)
+![Example Interactive Demo](demo/MassVulScan_Interactive_Demo.gif)
 
 **Full option list:**
 
