@@ -174,7 +174,7 @@ if [[ ${number_of_packages_to_install} -gt 0 ]]; then
 	export nmap_scripts_folder
 	source "${source_installation}"
 else
-	touch "${dir_name}/.prerequisites_already_installed"
+	touch "${dir_name}/.prerequisites_already_installed" 2>/dev/null
 fi
 }
 
