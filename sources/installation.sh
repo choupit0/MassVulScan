@@ -132,6 +132,7 @@ if [[ -z ${packages_to_install} ]] || [[ ${auto_installation_latest} == "yes" ]]
 	echo -n -e "\r                                                         "
 	echo -n -e "${blue_color}\r[-] Updating and installing the requisites packages (APT)...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
 	sudo mkdir -p /etc/apt/keyrings
+ 	apt-get install -y curl gpg &>> "${log_file}"
 	curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/charm.gpg
 	echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list > /dev/null 2>&1
 	apt-get update &>> "${log_file}"
@@ -187,6 +188,7 @@ if [[ ${packages_to_install_filtered} ]]; then
 	echo -n -e "\r                                       "
 	echo -n -e "${blue_color}\r[-] Updating your package lists...${end_color}" && echo "---- APT UPDATE ---" &> "${log_file}"
 	apt-get update &>> "${log_file}"
+ 	proc_status
 fi
 
 # We are installing the missing packages
@@ -195,6 +197,8 @@ if [[ "${packages_to_install_filtered}" =~ "gum" ]] && [[ ! "${packages_for_gum}
 	sudo mkdir -p /etc/apt/keyrings
 	curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/charm.gpg
 	echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list > /dev/null 2>&1
+ 	apt-get update &>> "${log_file}"
+  	proc_status
 	apt-get install -y ${packages_to_install_filtered} &>> "${log_file}"
 	proc_status
 elif [[ "${packages_to_install_filtered}" =~ "gum" ]] && [[ ${packages_for_gum} ]]; then	
@@ -203,6 +207,8 @@ elif [[ "${packages_to_install_filtered}" =~ "gum" ]] && [[ ${packages_for_gum} 
 	sudo mkdir -p /etc/apt/keyrings
 	curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/charm.gpg
 	echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list > /dev/null 2>&1
+  	apt-get update &>> "${log_file}"
+  	proc_status
 	apt-get install -y ${packages_to_install_filtered} &>> "${log_file}"
 	proc_status
 elif [[ "${packages_to_install_filtered}" ]]; then	
