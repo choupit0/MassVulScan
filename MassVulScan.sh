@@ -1155,7 +1155,8 @@ if [[ ${no_nmap_scan} != "on" ]]; then
 		vuln_hosts_format="$(awk '{print $1 "\t" $NF}' "${temp_dir}"/vulnerable_hosts.txt |  sed 's/3(NXDOMAIN)/\No reverse DNS entry found/' | sort -t . -n -k1,1 -k2,2 -k3,3 -k4,4 | sort -u)"
 
 		if [[ ${host_parameter} = "yes" ]]; then
-			hosts_file_no_path="${initial_hosts}"
+  			sanitized_hosts_list="$(echo "${initial_hosts}" | tr '/\\:*?"<>,;' '_')"
+     			hosts_file_no_path="${sanitized_hosts_list}"
 		fi
 
 		echo -e -n "\t----------------------------\n" > "${report_folder}${hosts_file_no_path}_vulnerable-hosts-details_${date}.txt"
@@ -1200,7 +1201,8 @@ fi
 ##########################
 
 if [[ ${host_parameter} = "yes" ]]; then
-	hosts_file_no_path="${initial_hosts}"
+	sanitized_hosts_list="$(echo "${initial_hosts}" | tr '/\\:*?"<>,;' '_')"
+ 	hosts_file_no_path="${sanitized_hosts_list}"
 fi
 
 if [[ ${no_nmap_scan} != "on" ]]; then
