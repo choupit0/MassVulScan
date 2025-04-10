@@ -330,7 +330,7 @@ if [[ ! -z ${packages_to_install} ]]; then
 	fi
         exit 0
 # Install or update all packages to their latest versions
-elif [[ $1 == "--auto-installation-latest" ]]; then
+elif [[ $1 == "-auto-installation" ]]; then
 	auto_installation_latest="yes"
         root_user
         clear
