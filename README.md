@@ -67,12 +67,12 @@ On the first launch (only), the script will check that all prerequisites are ins
 If you run the second script directly, it will offer to install ALL prerequisites for you without exception and without checking whether they are already present or not.
 
 ### Additional parameters
-| Parameter                    | Description                                                                            |
-|------------------------------|----------------------------------------------------------------------------------------|
-| `--auto-installation-latest` | Install ALL prerequisites without exception and version checking, and without approval |
+| Parameter            | Description                                                                            |
+|----------------------|----------------------------------------------------------------------------------------|
+| `-auto-installation` | Install ALL prerequisites without exception and version checking, and without approval |
 
 ```bash
-./sources/installation.sh --auto-installation-latest
+./sources/installation.sh -auto-installation
 ```
 
 ## 🛠️ How MassVulScan Works
