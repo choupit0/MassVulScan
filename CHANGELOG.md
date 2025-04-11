@@ -1,4 +1,13 @@
 # Changelog
+2.0.1 (2025-04-11)
+
+**Correction de bugs/Fixed bugs:**
+
+- Nmap 7.95 compilation issue resolved (e.g., Debian 12, Issue #4)
+- Code review and cleanup
+- Path issue resolved for certain generated reports (-h command with a host containing special characters)
+- Missing packages and revision of their installation order
+
 2.0.0 (2025-04-09)
 
 **Améliorations ou changements/Implemented enhancements or changes:**

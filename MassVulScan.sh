@@ -25,8 +25,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20250409
-# Version        : 2.0.0
+# Date           : 20250411
+# Version        : 2.0.1
 # Usage          : ./MassVulScan.sh COMMAND [ARGS] OPTION
 # Prerequisites  : Install MassScan, Nmap and vulners.nse (nmap script) to use this script.
 #                  The Xsltproc package is also necessary (for reports).
@@ -35,7 +35,7 @@
 #                  the installation of the prerequisites is automatic.
 #
 
-version="2.0.0"
+version="2.0.1"
 dir_name="$(dirname -- "$( readlink -f -- "$0"; )")"
 source_installation="${dir_name}/sources/installation.sh"
 source_top_tcp="${dir_name}/sources/top-ports-tcp-1000.txt"
@@ -58,7 +58,7 @@ dns="1.1.1.1"
 
 checking_prerequisites(){
 # Debian packages
-for package in build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum; do
+for package in build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum automake; do
 	package_status=$(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep "install ok installed")
 	if [[ ! ${package_status} ]]; then
 		missing_or_outdated_packages+=("${package}")
@@ -112,10 +112,10 @@ printf "%d" $v
 return
 }
 
-installed_masscan_version="$(masscan -V | grep "Masscan version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
-installed_nmap_version="$(nmap -V | grep "Nmap version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
+installed_masscan_version="$(masscan -V 2>/dev/null | grep "Masscan version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
+installed_nmap_version="$(nmap -V 2>/dev/null | grep "Nmap version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
 min_masscan_version_required="1.3.2"
-min_nmap_version_required="7.95"
+min_nmap_version_required="7.92"
 
 # returns:
 # -1 = the current version is older than the minimum required version
@@ -240,19 +240,27 @@ fi
 
 logo(){
 # Fonts to use
-fonts=("smbraille" "smblock" "pagga" "mini" "future" "emboss" "emboss2")
+fonts=("smbraille" "smblock" "pagga" "future" "emboss" "emboss2")
 random_font=${fonts[$RANDOM % ${#fonts[@]}]}
 current_lang=${LANG}
 current_lc_all=${LC_ALL}
-export PATH=$PATH:/usr/games
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-echo
-toilet -f ${random_font} "MassVulScan" | boxes -d peek -a hc -p h1 | lolcat
-gum style --foreground 5 --bold --align right --width 40 "v${version}"
-echo
-export LANG=${current_lang}
-export LC_ALL=${current_lc_all}
+
+# Find the first available locale containing "utf8"
+utf8_locale=$(locale -a | grep 'utf8' | head -n 1)
+if [ -n "$utf8_locale" ]; then
+        export PATH=$PATH:/usr/games
+        export LANG=$utf8_locale
+        export LC_ALL=$utf8_locale
+        echo
+        toilet -f ${random_font} "MassVulScan" | boxes -d peek -a hc -p h1 | lolcat
+        gum style --foreground 5 --bold --align right --width 40 "v${version}"
+        export LANG=${current_lang}
+        export LC_ALL=${current_lc_all}
+        echo
+else
+        gum style --foreground 42 --bold --border thick "M a s s V u l S c a n"
+        gum style --foreground 5 --bold --align right --width 25 "v${version}"
+fi
 }
 
 # Root user?

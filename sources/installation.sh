@@ -23,8 +23,8 @@
 #                  It's only available for Debian OS family.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20250409
-# Version        : 1.2
+# Date           : 20250411
+# Version        : 1.3
 # Usage          : ./installation.sh
 # Prerequisites  : N/A
 #
@@ -78,14 +78,33 @@ echo -n -e "${blue_color}\r[-] Checking your Internet connexion...${end_color}"
 sleep 1
 
 # Checking the Internet connection
-check_github_status="$(nc -z -v -w 1 github.com 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
-check_nmap_status="$(nc -z -v -w 1 nmap.org 443 2>&1 | grep -oE '(succeeded!$|open$)' | sed 's/^succeeded!/open/')"
+check_port_open() {
+local host=$1
+local port=$2
+local timeout=5
 
-if [[ ! ${check_github_status} == "open" ]] && [[ ! ${check_nmap_status} == "open" ]]; then
-	echo -e "${red_color}\nI can't reach Internet sites (\"github.com\" and \"nmap.org\") for downloading the packages...${end_color}"
-	echo -e "${blue_color}${bold_color}Please, check your firewall rules, dns configuration and your Internet link.${end_color}"
-	exit 1
+# Use /dev/tcp to check the port
+timeout $timeout bash -c "exec 3<>/dev/tcp/$host/$port"
+#exec 3<>/dev/tcp/$host/$port
+local status=$?
+
+if [ ! $status -eq 0 ]; then
+        echo -e "${red_color}\n\"${host}\" is not reachable to download the packages...${end_color}"
+        echo -e "${blue_color}${bold_color}Please, check your firewall policies, dns configuration or your Internet link.${end_color}"
+        exit 1
 fi
+
+# Close the connection
+exec 3<&-
+exec 3>&-
+}
+
+echo -n -e "\r                                                "
+echo -n -e "${blue_color}\r[-] Checking your Internet connexion...${end_color}"
+sleep 1
+for website in github.com nmap.org; do
+        check_port_open ${website} 443
+done
 }
 
 ##########################################################
@@ -131,12 +150,13 @@ fi
 if [[ -z ${packages_to_install} ]] || [[ ${auto_installation_latest} == "yes" ]]; then
 	echo -n -e "\r                                                         "
 	echo -n -e "${blue_color}\r[-] Updating and installing the requisites packages (APT)...${end_color}" && echo "---- APT INSTALL ---" &>> "${log_file}"
+	apt-get update &>> "${log_file}"
 	sudo mkdir -p /etc/apt/keyrings
  	apt-get install -y curl gpg &>> "${log_file}"
 	curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/charm.gpg
 	echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list > /dev/null 2>&1
 	apt-get update &>> "${log_file}"
-	apt-get install -y build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum &>> "${log_file}"
+	apt-get install -y build-essential git wget tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum automake &>> "${log_file}"
 	proc_status
 	temp_dir_install="$(mktemp -d /tmp/temp_dir_install_all-XXXXXXXX)"
 	echo -n -e "${blue_color}\r[-] Getting the source packages \"Masscan\"...${end_color}" && echo "---- DOWNLOAD MASSCAN SOURCES ---" &>> "${log_file}"
@@ -155,7 +175,7 @@ if [[ -z ${packages_to_install} ]] || [[ ${auto_installation_latest} == "yes" ]]
 	tar -xzf nmap-7.95.tgz &>> "${log_file}"
 	cd "nmap-7.95"
 	echo -n -e "${blue_color}\r[-] Resolving dependencies for \"Nmap\"...${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> "${log_file}"
-	./configure &>> "${log_file}"
+	./configure --without-zenmap --without-nping --without-ndiff --without-ncat &>> "${log_file}"
 	echo -n -e "${blue_color}\r[-] Compiling \"Nmap\" (this may take time)...${end_color}" && echo "---- COMPILING NMAP ---" &>> "${log_file}"
 	make -j"$(nproc)" &>> "${log_file}"
 	echo -n -e "\r                                                         "
@@ -208,7 +228,6 @@ elif [[ "${packages_to_install_filtered}" =~ "gum" ]] && [[ ${packages_for_gum} 
 	curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/charm.gpg
 	echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list > /dev/null 2>&1
   	apt-get update &>> "${log_file}"
-  	proc_status
 	apt-get install -y ${packages_to_install_filtered} &>> "${log_file}"
 	proc_status
 elif [[ "${packages_to_install_filtered}" ]]; then	
@@ -247,7 +266,7 @@ if [[ " ${packages_to_install} " =~ " nmap " ]]; then
 	tar -xzf nmap-7.95.tgz &>> "${log_file}"
 	cd "nmap-7.95"
 	echo -n -e "${blue_color}\r[-] Resolving dependencies for \"Nmap\"...${end_color}" && echo "---- DEPENDENCIES FOR NMAP ---" &>> "${log_file}"
-	./configure &>> "${log_file}"
+	./configure --without-zenmap --without-nping --without-ndiff --without-ncat &>> "${log_file}"
 	echo -n -e "${blue_color}\r[-] Compiling \"Nmap\" (this may take time)...${end_color}" && echo "---- COMPILING NMAP ---" &>> "${log_file}"
 	make -j"$(nproc)" &>> "${log_file}"
 	echo -n -e "\r                                                         "
@@ -281,10 +300,10 @@ if [[ " ${packages_to_install} " =~ " vulners " ]]; then
 	proc_status
 fi
 
+installation_status="OK"
 echo -n -e "\r                                           "
 echo -n -e "${green_color}\r[V] Installation finished.\n${end_color}"
 echo -e "${yellow_color}${bold_color}You can now rerun the script and see the available options. Happy scanning!\n${end_color}"
-installation_status="OK"
 time_elapsed
 }
 
@@ -294,7 +313,7 @@ if [[ $(command -v apt-get) ]]; then
 	echo -e "${yellow_color}${bold_color}Warning: Running this script directly will install or update ALL packages to their latest versions.${end_color}"
 	echo -e "${yellow_color}${bold_color}Run the main script \"MassVulScan.sh\" to identify only the packages that need to be installed or updated.${end_color}"
 	echo -e "${blue_color}${bold_color}All packages listed below will be installed or updated (approximately 5 minutes). Do you agree?${end_color}"
-	echo -e "${blue_color}\t--> From apt: build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum ${end_color}"
+	echo -e "${blue_color}\t--> From apt: build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum automake${end_color}"
 	echo -e "${blue_color}\t--> From git: masscan (+ compilation) and NSE script vulners.nse${end_color}"
 	echo -e "${blue_color}\t--> From source: nmap (+ compilation)${end_color}"
 	echo -e "${yellow_color}${bold_color}Just typing \"Enter|Return\" key to exit or write \"YES\" to continue${end_color}"
@@ -320,8 +339,6 @@ fi
 # Install or update only the necessary packages
 if [[ ! -z ${packages_to_install} ]]; then
         root_user
-        clear
-	echo -e "Some packages are missing or need an update: ${blue_color}${packages_to_install}${end_color}"
 	echo -e "${yellow_color}${bold_color}Just typing \"Enter|Return\" key to exit or write \"YES\" to continue${end_color}"
 	read -p "Would you like me to install them for you?? >> " -r -t 60 auto_install_answer
 	if [[ -z ${auto_install_answer} ]] || [[ ${auto_install_answer} != "YES" ]];then
