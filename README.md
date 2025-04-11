@@ -85,20 +85,22 @@ If you run the second script directly, it will offer to install ALL prerequisite
 ```
 
 ## 🛠️ How MassVulScan Works
-**MassVulScan** follows a series of streamlined steps to identify active hosts, open ports, and potential vulnerabilities across your network:
 
-1. **Quick Host Discovery** (optional): Uses `nmap` to identify online hosts efficiently.
-2. **Rapid Port Scanning**: For each host, `masscan` performs an ultra-fast scan to detect open TCP/UDP ports.
-3. **Data Organization**: Results are sorted to compile all detected ports and protocols by host. The organized data can be saved for later analysis (optional).
-4. **Service and Vulnerability Detection**: Runs multiple parallel sessions (`nmap` + `vulners.nse` by default) to detect services and vulnerabilities, one session per host.
-5. **Report Generation**: 
-   - **HTML Report**: Contains detailed information on each host, including vulnerabilities, with a clean and accessible layout.
-   - **TXT Report**: Focuses on potentially vulnerable hosts for quick reference (if vulnerabilities are discovered).
+**MassVulScan** follows a streamlined process to identify active hosts, open ports, and potential vulnerabilities across your network:
+
+| **Step** | **Description**                                                                                                                                                            |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **1**    | **Quick Host Discovery**: Uses `nmap` to efficiently identify online hosts.                                                                                                |
+| **2**    | **Rapid Port Scanning**: Performs an ultra-fast scan with `masscan` to detect open TCP/UDP ports per host.                                                                 |
+| **3**    | **Data Organization**: Compiles and sorts detected ports and protocols by host. Data can be saved for later analysis.                                                      |
+| **4**    | **Service and Vulnerability Detection**: Runs multiple parallel sessions (`nmap` + `vulners.nse` by default) to detect services and vulnerabilities, one session per host. |
+| **5.1**  | **HTML Report**: Contains detailed information on each host, including vulnerabilities, with a clean and accessible layout.                                                |
+| **5.2**  | **TXT Report**: Focuses on potentially vulnerable hosts for quick reference (if vulnerabilities are discovered).                                                           |
 
 The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github.com/honze-net/nmap-bootstrap-xsl)) for enhanced readability and a user-friendly format.
 
 ## 🚀 Usage (root or sudo)
-**File-based scanning mode:**
+### File-based scanning mode:
 
 `targets.txt` containing a list of networks, IPs and/or hostnames to scan.
 
@@ -112,7 +114,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 ./MassVulScan.sh -f targets.txt -x exclude.txt
 ```
 
-**Command-line argument mode:**
+### Command-line argument mode:
 
 ```bash
 ./MassVulScan.sh -h 172.18.0.0/24
@@ -126,7 +128,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 ./MassVulScan.sh -h 172.18.50,172.18.32.16
 ```
 
-**Interactive mode (to be combined with the `-h` and `-f` commands):**
+### Interactive mode (to be combined with the `-h` and `-f` commands):
 
 ```bash
 ./MassVulScan.sh -h 192.168.1.0/24 -i -c
@@ -147,7 +149,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 | `-h`     | Target host(s), IPs compatible with CIDR format, a comma-separated list, or a range |
 | `-f`     | File with IPs and/or hostnames to scan, one by line (CIDR format compatible)        |
 
-### ⚙️ Optional options
+### ⚙️ Additional options
 | Option | Description                                                                                              |
 |--------|----------------------------------------------------------------------------------------------------------|
 | `-x`   | Exclude these IPs (CIDR format compatible), one by line (e.g. gateways from your providers)              |
