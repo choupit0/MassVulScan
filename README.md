@@ -63,22 +63,23 @@ git clone https://github.com/choupit0/MassVulScan.git
 
 # Go to the project directory
 cd MassVulScan
+```
+On first launch of `MassVulScan.sh`, **the script can automatically install only the missing prerequisites**. It will list any missing or outdated packages (such as `masscan` and `nmap`) and offer to install them for you. Once installed, **this check won’t be repeated, saving time and improving efficiency**:
 
+```
 # Run the main script (root or sudo)
 ./MassVulScan.sh
 ```
-On the first launch (only), the script will check that all prerequisites are installed and at the correct version (`masscan` and `nmap`). Otherwise, it will offer to install only what is missing.
+You also have the option to run the installation script directly `installation.sh` without going through the main script. It will offer to **install ALL prerequisites for you without exception and without checking whether they are already present or not**:
 
 ```bash
 # Install ALL the dependencies (root or sudo) ~5 minutes
 ./sources/installation.sh
 ```
-If you run the second script directly, it will offer to install ALL prerequisites for you without exception and without checking whether they are already present or not.
-
 ### Additional parameters
-| Parameter            | Description                                                                            |
-|----------------------|----------------------------------------------------------------------------------------|
-| `-auto-installation` | Install ALL prerequisites without exception and version checking, and without approval |
+| Parameter            | Description                                                   |
+|----------------------|---------------------------------------------------------------|
+| `-auto-installation` | Install ALL prerequisites **without asking for confirmation** |
 
 ```bash
 ./sources/installation.sh -auto-installation
