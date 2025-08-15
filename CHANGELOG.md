@@ -1,4 +1,10 @@
 # Changelog
+2.1.0 (2025-08-15)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Adding a new option "-I | --interface" to choose the network interface to use for scanning (e.g. eth0, wlan0)
+
 2.0.1 (2025-04-11)
 
 **Correction de bugs/Fixed bugs:**

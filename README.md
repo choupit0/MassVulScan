@@ -29,6 +29,12 @@
 [Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
 
 ### Last update
+2.1.0 (2025-08-15)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Adding a new option "-I | --interface" to choose the network interface to use for scanning (e.g. eth0, wlan0)
+
 2.0.1 (2025-04-11)
 
 **Correction de bugs/Fixed bugs:**
@@ -37,22 +43,6 @@
 - Code review and cleanup
 - Path issue resolved for certain generated reports (-h command with a host containing special characters)
 - Missing packages and revision of their installation order
-
-2.0.0 (2025-04-09)
-
-**Améliorations ou changements/Implemented enhancements or changes:**
-
-- Significant rewrite of Bash scripts
-- Optimized installation: only installing missing packages and performs a prerequisites check only on the first run (speed gain)
-- Improved version comparison for certain packages
-- MassVulScan evolves: more modern, interactive, and visually appealing with Gum (interactive mode)
-- Tool updates: compatibility with the latest versions of Nmap (7.95) and Masscan (1.3.2)
-- Adding a new option "-d | --dns" to choose the (private or public) DNS server (default: 1.1.1.1)
-- Adding a new option for NSE scripts to choose --script-args (e.g., `--script-args mincvss=5` (interactive mode)
-- Some packages have been replaced to improve compatibility depending on the OS used
-
-**Correction de bugs/Fixed bugs:**
-- Fixing minor bugs
 
 ## 📦 Installation
 Refer to the `requirements.txt` file for the exact list of necessary packages. 
@@ -118,7 +108,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 ### Command-line argument mode:
 
 ```bash
-./MassVulScan.sh -h 172.18.0.0/24
+./MassVulScan.sh -h 172.18.0.0/24 -I eth1
 ```
 
 ```
@@ -160,12 +150,13 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 | `-r`   | Generate a TXT file including IPs scanned with open ports and protocols                                  |
 | `-n`   | Quick mode without full Nmap scan to detect the hosts with open ports (no HTML report)                   |
 | `-d`   | DNS server to use (useful with the -f command and hostnames, current: 1.1.1.1)                           |
+| `-I`   | Network interface to use for scanning (e.g. eth0, wlan0), or the one with the default route is used"     |
 | `-H`   | Show help                                                                                                |
 | `-V`   | Show MassVulScan version                                                                                 |
 
 By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 1500 by default.
 
-**Note that the script will detect if you have multiple network interfaces. This is important for Masscan, which will always used the interface that has the default route. You will be asked to choose one (no problem with Nmap).**
+**Note that the script will detect if you have multiple network interfaces. This is important for Masscan, which will always used the interface that has the default route. You will be asked to choose one (no problem with Nmap) if no interface is chosen (-I).**
 
 The script is also compatible with Nmap's categories (https://nmap.org/book/nse-usage.html#nse-categories) to search for specific vulnerabilities (the better known as ms17-010, EternalBlue) in addition to the CVEs identified from vulners.com.
 
@@ -184,6 +175,8 @@ Make the script full compatible with IPv6 (work in progress).
 Identify why Nmap is slower when run via the script compared to directly from the CLI.
 
 Manage better multiple IP addresses on one network interface.
+
+~~#5 Interface via the command~~ Option added in version 2.1.0
 
 ~~Improve process of installation (install what is strictly necessary, comparison of versions).~~
 

@@ -25,8 +25,8 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20250411
-# Version        : 2.0.1
+# Date           : 20250815
+# Version        : 2.1.0
 # Usage          : ./MassVulScan.sh COMMAND [ARGS] OPTION
 # Prerequisites  : Install MassScan, Nmap and vulners.nse (nmap script) to use this script.
 #                  The Xsltproc package is also necessary (for reports).
@@ -35,7 +35,7 @@
 #                  the installation of the prerequisites is automatic.
 #
 
-version="2.0.1"
+version="2.1.0"
 dir_name="$(dirname -- "$( readlink -f -- "$0"; )")"
 source_installation="${dir_name}/sources/installation.sh"
 source_top_tcp="${dir_name}/sources/top-ports-tcp-1000.txt"
@@ -51,6 +51,7 @@ script_start="$SECONDS"
 # Name server used for the DNS queries/lookups.
 # Set your internal DNS server for your internal scans with option -d | --dns [ARGS].
 dns="1.1.1.1"
+network_interface=""
 
 ##########################
 # Checking prerequisites #
@@ -293,16 +294,17 @@ check="off"
 usage(){
 	echo -e "${bold_color}${red_color}Usage: ./$(basename "$0") COMMAND [ARGS]${end_color} OPTIONS"
 	echo -e "      ${red_color}Commands (required):${end_color}"
-	echo -e "        -h | --hosts \t\t\tTarget host(s): IP address (CIDR format compatible)"
+	echo -e "        -h | --hosts ${red_color}[ARGS]${end_color}  \t\tTarget host(s): IP address (CIDR format compatible)"
 	echo -e "        -f | --include-file ${red_color}[ARGS]${end_color} \tFile including IPv4 addresses (CIDR format) or hostnames to scan (one by line)"
 	echo -e "      Options:"
 	echo -e "        -x | --exclude-file ${red_color}[ARGS]${end_color} \tFile including IPv4 addresses ONLY (CIDR format) to NOT scan (one by line)"
-	echo -e "        -i | --interactive \t\tExtra parameters: ports to scan, rate level and NSE script"
+	echo -e "        -i | --interactive-mode \tExtra parameters: ports to scan, rate level and NSE script"
 	echo -e "        -a | --all-ports \t\tScan all 65535 ports (TCP + UDP) at 1.5K pkts/sec with NSE vulners script"
 	echo -e "        -c | --check-live-hosts \tPerform a pre-scanning to identify online hosts and scan only them"
 	echo -e "        -r | --report \t\t\tFile including IPs scanned with open ports and protocols"
 	echo -e "        -n | --no-nmap-scan \t\tThe script detect only the hosts with open ports (no nmap scan & HTML report)"
 	echo -e "        -d | --dns ${red_color}[ARGS]${end_color} \t\tDNS server to use (useful with the "-f" command and hostnames, current: ${dns})"
+	echo -e "        -I | --interface ${red_color}[ARGS]${end_color} \tNetwork interface to use for scanning (e.g. eth0, wlan0), or the one with the default route is used"
 	echo -e "      Information:"
 	echo -e "        -H | --help \t\t\tShow this help menu"
 	echo -e "        -V | --version \t\t\tScript version"
@@ -335,7 +337,7 @@ while [[ "$1" != "" ]]; do
                         shift
                         exclude_file="$1"
                         ;;
-                -i | --interactive )
+                -i | --interactive-mode )
                         interactive="on"
                        ;;
                 -a | --all-ports )
@@ -354,7 +356,11 @@ while [[ "$1" != "" ]]; do
 			shift
                         dns="$1"
                         ;;
-                -H | --help )
+                -I | --interface )
+			shift
+                        network_interface="$1"
+                        ;;
+		-H | --help )
 			echo ""
                         usage
                         exit 0
@@ -441,6 +447,7 @@ fi
 return $stat
 }
 
+# DNS Server selection
 if [[ ${dns} == "1.1.1.1" ]]; then
 	yellow_info_message "Default Public DNS Server Configured: ${dns}"
 elif valid_ip "${dns}"; then
@@ -878,38 +885,59 @@ elif [[ ${interactive} = "on" ]]; then
 		fi
 fi
 
-################################################
-# Checking if there are more than 2 interfaces #
-################################################
+# Network interface selection
+if [[ ${network_interface} == "" ]]; then
 
-# Get the default interface
-default_interface="$(ip route | grep default | cut -d" " -f5)"
+	# Get the default interface
+	default_interface="$(ip route | grep default | cut -d" " -f5)"
 
-# Get the number of network interfaces
-nb_interfaces="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -co "^[[:alnum:]]*")"
+	# Get the number of network interfaces
+	nb_interfaces="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -co "^[[:alnum:]]*")"
 
-if [[ "${nb_interfaces}" -gt "2" ]]; then
-	# List of network interfaces
-	interfaces_list="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -o "^[[:alnum:]]*")"
-	interfaces_tab=(${interfaces_list})
+	################################################
+	# Checking if there are more than 2 interfaces #
+	################################################
 
-	# Display a warning message with gum
-	echo "Warning: multiple network interfaces have been detected:" | gum style --foreground 212
+	if [[ "${nb_interfaces}" -gt "2" ]]; then
+		# List of network interfaces
+		interfaces_list="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -o "^[[:alnum:]]*")"
+		interfaces_tab=(${interfaces_list})
 
-	# Display the list of interfaces using gum for selection
-	selected_interface=$(printf "%s\n" "${interfaces_tab[@]}" | gum choose --limit 1 --selected ${default_interface} --header "Which one do you want to use (the default one is selected)?" --timeout 90s)
+		# Display a warning message with gum
+		echo "Warning: multiple network interfaces have been detected:" | gum style --foreground 212
 
-	# Check if an interface was selected
-	if [[ -z "${selected_interface}" ]]; then
-		echo "No interface chosen, we will use the one with the default route." | gum style --foreground 212
-		interface="${default_interface}"
+		# Display the list of interfaces using gum for selection
+		selected_interface=$(printf "%s\n" "${interfaces_tab[@]}" | gum choose --limit 1 --selected ${default_interface} --header "Which one do you want to use (the default one is selected)?" --timeout 90s)
+
+		# Check if an interface was selected
+		if [[ -z "${selected_interface}" ]]; then
+			echo "No interface chosen, we will use the one with the default route." | gum style --foreground 212
+			interface="${default_interface}"
+		else
+			interface="${selected_interface}"
+		fi
+
+			echo "Network interface chosen: "${interface}"" | gum style --foreground 212
 	else
-		interface="${selected_interface}"
+		interface="${default_interface}"
+		echo "Default network interface chosen: "${interface}"" | gum style --foreground 212
+	fi
+else
+	# Check if the provided interface exists on the system
+	
+	# Get the list of network interfaces available on the system and only UP
+	available_interfaces=$(ip -o link show up | awk -F': ' '{print $2}')
+
+	if ! echo "$available_interfaces" | grep -qw "$network_interface"; then
+		warning_message_with_border "\"${network_interface}\" does not exist on this system or the network interface is down."
+		yellow_info_message "Available and UP interfaces are:"
+		echo "$available_interfaces" | tr ' ' '\n'
+	exit 1
+
 	fi
 
-		echo "Network interface chosen: "${interface}"" | gum style --foreground 212
-else
-	interface="${default_interface}"
+	interface="${network_interface}"
+	echo "Network interface chosen: "${interface}"" | gum style --foreground 212
 fi
 
 ##################################################
