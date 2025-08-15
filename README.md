@@ -150,7 +150,7 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 | `-r`   | Generate a TXT file including IPs scanned with open ports and protocols                                  |
 | `-n`   | Quick mode without full Nmap scan to detect the hosts with open ports (no HTML report)                   |
 | `-d`   | DNS server to use (useful with the -f command and hostnames, current: 1.1.1.1)                           |
-| `-I`   | Network interface to use for scanning (e.g. eth0, wlan0), or the one with the default route is used"     |
+| `-I`   | Network interface to use for scanning (e.g. eth0, wlan0), or the one with the default route is used      |
 | `-H`   | Show help                                                                                                |
 | `-V`   | Show MassVulScan version                                                                                 |
 
