@@ -172,6 +172,8 @@ No known issues.
 ## ✅ TODO
 Make the script full compatible with IPv6 (work in progress).
 
+Make the script full compatible with RedHat OS based (eg. Rocky).
+
 Identify why Nmap is slower when run via the script compared to directly from the CLI.
 
 Manage better multiple IP addresses on one network interface.
