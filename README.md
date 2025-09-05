@@ -22,13 +22,19 @@
 - **Optimized Scans**: Intelligent subnet filtering to avoid duplicates.
 - **Modern and Interactive**: Enhanced aesthetics and interactivity with Gum.
 - **Optimized Installation**: Only installing missing packages.
-- **Platform Compatibility**: Runs on Linux, Debian OS family only.
+- **Platform Compatibility**: Cross-distro version (Debian & RedHat based).
 - **Power of Bash**: Simplicity meets performance
 
 ## 📋 Changelog
 [Changelog](https://github.com/choupit0/MassVulScan/blob/master/CHANGELOG.md)
 
 ### Last update
+3.0.0 (2025-09-05)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Cross-distro version (Debian & RedHat based)
+
 2.1.0 (2025-08-15)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
@@ -64,16 +70,12 @@ You also have the option to run the installation script directly `installation.s
 
 ```bash
 # Install ALL the dependencies (root or sudo) ~5 minutes
-./sources/installation.sh
+./sources/installation.sh -auto-installation
 ```
-### Additional parameters
+### Parameters
 | Parameter            | Description                                                   |
 |----------------------|---------------------------------------------------------------|
 | `-auto-installation` | Install ALL prerequisites **without asking for confirmation** |
-
-```bash
-./sources/installation.sh -auto-installation
-```
 
 ## 🛠️ How MassVulScan Works
 
@@ -172,7 +174,7 @@ No known issues.
 ## ✅ TODO
 Make the script full compatible with IPv6 (work in progress).
 
-Make the script full compatible with RedHat OS based (eg. Rocky).
+~~Make the script full compatible with RedHat OS based (eg. Rocky).~~
 
 Identify why Nmap is slower when run via the script compared to directly from the CLI.
 

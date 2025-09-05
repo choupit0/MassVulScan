@@ -1,4 +1,10 @@
 # Changelog
+3.0.0 (2025-09-05)
+
+**Améliorations ou changements/Implemented enhancements or changes:**
+
+- Cross-distro version (Debian & RedHat based)
+
 2.1.0 (2025-08-15)
 
 **Améliorations ou changements/Implemented enhancements or changes:**
