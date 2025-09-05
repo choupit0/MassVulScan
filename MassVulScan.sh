@@ -2,7 +2,7 @@
 
 #    This file is part of MassVulScan.
 #
-#    Copyright (C) 2021 choupit0
+#    Copyright (C) 2017 choupit0
 #
 #    MassVulScan is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with MassVulScan.  If not, see <https://www.gnu.org/licenses/>.
-# 
+#
+#    MassVulScan - cross-distro version (Debian & RedHat based)
+#
 # Script Name    : MassVulScan.sh
 # Slogan         : Identify open network ports and any associated vulnerabilities
 # Description    : This script combines the high processing speed to find open ports (MassScan), the effectiveness
@@ -25,17 +27,13 @@
 #                  and finally a text file including specifically the potential vulnerables hosts is created.
 # Author         : https://github.com/choupit0
 # Site           : https://hack2know.how/
-# Date           : 20250815
-# Version        : 2.1.0
+# Updated        : 2025-09-05
+# License        : GPLv3
+# Version        : 3.0.0
 # Usage          : ./MassVulScan.sh COMMAND [ARGS] OPTION
-# Prerequisites  : Install MassScan, Nmap and vulners.nse (nmap script) to use this script.
-#                  The Xsltproc package is also necessary (for reports).
-#                  Please, read the file "requirements.txt" if you need some help.
-#                  Only compatible With a popular OS from Debian OS family (e.g. Debian, Ubuntu, Kali, Linux Mint or Elementary),
-#                  the installation of the prerequisites is automatic.
 #
 
-version="2.1.0"
+version="3.0.0"
 dir_name="$(dirname -- "$( readlink -f -- "$0"; )")"
 source_installation="${dir_name}/sources/installation.sh"
 source_top_tcp="${dir_name}/sources/top-ports-tcp-1000.txt"
@@ -48,146 +46,136 @@ purple_color="\033[1;35m"
 bold_color="\033[1m"
 end_color="\033[0m"
 script_start="$SECONDS"
-# Name server used for the DNS queries/lookups.
-# Set your internal DNS server for your internal scans with option -d | --dns [ARGS].
 dns="1.1.1.1"
 network_interface=""
 
 ##########################
-# Checking prerequisites #
+# OS Detection Function  #
 ##########################
-
-checking_prerequisites(){
-# Debian packages
-for package in build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum automake; do
-	package_status=$(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep "install ok installed")
-	if [[ ! ${package_status} ]]; then
-		missing_or_outdated_packages+=("${package}")
-	fi
-done
-
-# Masscan and Nmap packages
-for package in masscan nmap; do
-	if [[ ${package} == "masscan" ]] && [[ ! $(which masscan) ]]; then
-		missing_or_outdated_packages+=("${package}")
-	elif [[ ${package} == "nmap" ]] && [[ ! $(which nmap) ]]; then
-		missing_or_outdated_packages+=("${package}")
-	fi
-done
-
-# Compare version numbers with format for versions xxx.xxx.xxx
-# @(#) user4    Compare version numbers of form a.b.c.
-# Adapted from post # 10.
-# http://www.unix.com/unix-dummies-questions-answers/93739-comparing-version-numbers.html#post302269675
-
-pe() { for _i;do printf "%s" "$_i";done; printf "\n"; }
-pl() { pe;pe "-----" ;pe "$*"; }
-db() { ( printf " db, ";for _i;do printf "%s" "$_i";done;printf "\n" ) >&2 ; }
-db() { : ; }
-C=$HOME/bin/context && [ -f $C ] && $C
-
-version_comparison()
-{
-local a1 b1 c1 a2 b2 c2
-# echo|read succeeds in ksh, but fails in bash.
-# bash alternative is "set --"
-db "input 1 \"$1\", 2 \"$2\" "
-v1=$1
-v2=$2
-db "v1 $v1, v2 $v2"
-set -- $( echo "$v1" | sed 's/\./ /g' )
-a1=$1 b1=$2 c1=$3
-set -- $( echo "$v2" | sed 's/\./ /g' )
-a2=$1 b2=$2 c2=$3
-db "a1,b1,c1 $a1,$b1,$c1 ; a2,b2,c2 $a2,$b2,$c2"
-ret=$(( (a1-a2)*1000000+(b1-b2)*1000+c1-c2 ))
-db "ret is $ret"
-if [ $ret -lt 0 ] ; then
-        v=-1
-elif [ $ret -eq 0 ] ; then
-        v=0
-else
-        v=1
-fi
-printf "%d" $v
-return
+detect_os(){
+    if [ -f /etc/debian_version ]; then
+        os_family="debian"
+    elif [ -f /etc/redhat-release ]; then
+        os_family="redhat"
+    else
+        os_family="unknown"
+    fi
+    echo "$os_family"
 }
 
+##########################
+# Checking prerequisites #
+##########################
+checking_prerequisites(){
+os_family=$(detect_os)
+missing_or_outdated_packages=()
+
+if [[ "${os_family}" == "debian" ]]; then
+    # Debian/Ubuntu packages
+    for package in iproute2 build-essential git curl wget gpg tar libpcre3-dev libssl-dev libpcap-dev net-tools xsltproc bind9-dnsutils netcat-traditional toilet boxes lolcat gum automake; do
+        package_status=$(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep "install ok installed")
+        if [[ ! ${package_status} ]]; then
+            missing_or_outdated_packages+=("${package}")
+        fi
+    done
+elif [[ "${os_family}" == "redhat" ]]; then
+    # RedHat/Rocky packages (equivalents adapted)
+    for package in iproute gcc gcc-c++ make git curl wget tar pcre-devel openssl-devel libpcap-devel net-tools bind-utils nmap-ncat toilet boxes gum automake bzip2; do
+        if ! rpm -q "${package}" &>/dev/null; then
+            missing_or_outdated_packages+=("${package}")
+        fi
+    done
+    for package in gpg xsltproc lolcat; do
+	if ! command -v "${package}" >/dev/null 2>&1; then
+            missing_or_outdated_packages+=("${package}")
+        fi
+    done
+else
+    echo -e "${red_color}Unsupported OS. Only Debian or RedHat families are supported.${end_color}"
+    exit 1
+fi
+
+# Masscan & Nmap check
+for package in masscan nmap; do
+    if [[ ${package} == "masscan" ]] && [[ ! $(which masscan 2>/dev/null) ]]; then
+        missing_or_outdated_packages+=("${package}")
+    elif [[ ${package} == "nmap" ]] && [[ ! $(which nmap 2>/dev/null) ]]; then
+        missing_or_outdated_packages+=("${package}")
+    fi
+done
+
+# Version checks (same as original)
 installed_masscan_version="$(masscan -V 2>/dev/null | grep "Masscan version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
 installed_nmap_version="$(nmap -V 2>/dev/null | grep "Nmap version" | grep -Eo '([0-9]+\.[0-9]+(\.[0-9]+)?)')"
 min_masscan_version_required="1.3.2"
 min_nmap_version_required="7.92"
 
-# returns:
-# -1 = the current version is older than the minimum required version
-# 0 = the versions are equal
-# 1 = the version is later than the minimum required version
+version_comparison(){
+    local v1=$1 v2=$2
+    IFS=. read -r a1 b1 c1 <<< "$v1"
+    IFS=. read -r a2 b2 c2 <<< "$v2"
+    [[ -z $c1 ]] && c1=0
+    [[ -z $c2 ]] && c2=0
+    if (( a1 < a2 || (a1 == a2 && b1 < b2) || (a1 == a2 && b1 == b2 && c1 < c2) )); then
+        echo -1
+    elif (( a1 == a2 && b1 == b2 && c1 == c2 )); then
+        echo 0
+    else
+        echo 1
+    fi
+}
 
 if [[ ${installed_masscan_version} ]]; then
-	check_version=$(version_comparison ${installed_masscan_version} ${min_masscan_version_required})
-	db "version_comparison returns $check_version"
-	if [[ $check_version -lt 0 ]]; then
-		missing_or_outdated_packages+=("masscan")
-	fi
+    check_version=$(version_comparison ${installed_masscan_version} ${min_masscan_version_required})
+    if [[ $check_version -lt 0 ]]; then
+        missing_or_outdated_packages+=("masscan")
+    fi
 fi
 
 if [[ ${installed_nmap_version} ]]; then
-	check_version=$(version_comparison ${installed_nmap_version} ${min_nmap_version_required})
-	db "version_comparison returns $check_version"
-	if [[ $check_version -lt 0 ]]; then
-		missing_or_outdated_packages+=("nmap")
-	elif [[ $check_version -ge 0 ]]; then
-		if [[ $(which nmap) == */local/* ]];then
-			nmap_scripts_folder="/usr/local/share/nmap/scripts/"
-		else
-			nmap_scripts_folder="/usr/share/nmap/scripts/"
-		fi
-	fi
+    check_version=$(version_comparison ${installed_nmap_version} ${min_nmap_version_required})
+    if [[ $check_version -lt 0 ]]; then
+        missing_or_outdated_packages+=("nmap")
+    else
+        if [[ $(which nmap) == */local/* ]];then
+            nmap_scripts_folder="/usr/local/share/nmap/scripts/"
+        else
+            nmap_scripts_folder="/usr/share/nmap/scripts/"
+        fi
+    fi
 fi
 
-# Vulners package
+# Vulners
 if [[ ! $(ls ${nmap_scripts_folder}vulners.nse 2>/dev/null) ]]; then
-	missing_or_outdated_packages+=("vulners")
+    missing_or_outdated_packages+=("vulners")
 fi
 
-###############################################
-# Automatic installation for Debian OS family #
-###############################################
-# Verifying if installation source file exist
-source_file(){
-if [[ -z ${source_installation} || ! -s ${source_installation} ]]; then
-	echo -e "${bold_color}${red_color}The file \"${source_installation}\" is missing or is empty.${end_color}"
-	echo -e "${bold_color}${red_color}Please, Redownload the source from Github: git clone https://github.com/choupit0/MassVulScan.git${end_color}"
-	exit 1
-fi
-}
-
-missing_or_outdated_packages_loop="$(for index in "${!missing_or_outdated_packages[@]}"; do echo "${missing_or_outdated_packages[${index}]}"; done)"
-number_of_packages_to_install=${#missing_or_outdated_packages[@]}
-packages_to_install="$(printf "%s " "${missing_or_outdated_packages[@]}")"
-
-if [[ ${number_of_packages_to_install} -gt 0 ]]; then
-	echo -e "${bold_color}${red_color}Some prerequisites are required before using this script, (${number_of_packages_to_install}) missing or outdated packages(s):${end_color}"
-	echo -e "${blue_color}${missing_or_outdated_packages_loop}${end_color}"
-	source_file
-	export packages_to_install="${packages_to_install}"
+# Installation if missing
+if [[ ${#missing_or_outdated_packages[@]} -gt 0 ]]; then
+    echo -e "${bold_color}${red_color}Some prerequisites are missing or outdated (${#missing_or_outdated_packages[@]}):${end_color}"
+    echo -e "${blue_color}${missing_or_outdated_packages[*]}${end_color}"
+    export packages_to_install="${missing_or_outdated_packages[*]}"
 	export nmap_scripts_folder
-	source "${source_installation}"
+	export os_family
+	if [[ ! -s ${source_installation} ]]; then
+		echo -e "${red_color}Missing installation source file: ${source_installation}. Please re-clone repository.${end_color}"
+		exit 1
+	fi
+	source ${source_installation}
 else
-	touch "${dir_name}/.prerequisites_already_installed" 2>/dev/null
+    touch "${dir_name}/.prerequisites_already_installed" 2>/dev/null
 fi
 }
 
-# We check if the prerequisites are already installed or not 
 if [[ ! -f "${dir_name}/.prerequisites_already_installed" ]];then
-	checking_prerequisites
+    checking_prerequisites
 fi
 
-# NSE scripts directory
+# NSE folder
 if [[ $(which nmap) == */local/* ]];then
-	nmap_scripts_folder="/usr/local/share/nmap/scripts/"
+    nmap_scripts_folder="/usr/local/share/nmap/scripts/"
 else
-	nmap_scripts_folder="/usr/share/nmap/scripts/"
+    nmap_scripts_folder="/usr/share/nmap/scripts/"
 fi
 
 ######################################
@@ -322,13 +310,13 @@ fi
 while [[ "$1" != "" ]]; do
         case "$1" in
                 -h | --hosts )
-			host_parameter="yes"
-			shift
+			            host_parameter="yes"
+			            shift
                         initial_hosts="$1"
                         hosts="$1"
                         ;;
                 -f | --include-file )
-			file_of_hosts_to_include="yes"
+			            file_of_hosts_to_include="yes"
                         shift
                         hosts="$1"
                         ;;
@@ -353,24 +341,25 @@ while [[ "$1" != "" ]]; do
                         no_nmap_scan="on"
                         ;;
                 -d | --dns )
-			shift
+			            shift
                         dns="$1"
                         ;;
                 -I | --interface )
-			shift
+			            shift
                         network_interface="$1"
                         ;;
-		-H | --help )
-			echo ""
+		        -H | --help )
+			            echo ""
                         usage
                         exit 0
                         ;;
                 -V | --version )
-			blue_info_message "MassVulScan version ${version} (https://github.com/choupit0/MassVulScan)"
+			            blue_info_message "MassVulScan version ${version} (https://github.com/choupit0/MassVulScan)"
+						blue_info_message "Now compatible with RedHat and Debian OS since version 3.0.0."
                         exit 0
                         ;;
                 * )
-			warning_message_with_border "One parameter is missing or does not exist."
+			            warning_message_with_border "One parameter is missing or does not exist."
                         exit 1
         esac
         shift
@@ -889,7 +878,7 @@ fi
 if [[ ${network_interface} == "" ]]; then
 
 	# Get the default interface
-	default_interface="$(ip route | grep default | cut -d" " -f5)"
+	default_interface="$(ip route show default | awk '/default/ {print $5; exit}')"
 
 	# Get the number of network interfaces
 	nb_interfaces="$(ifconfig | grep -E "[[:space:]](Link|flags)" | grep -co "^[[:alnum:]]*")"
