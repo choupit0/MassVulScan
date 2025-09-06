@@ -139,22 +139,22 @@ The HTML report uses a Bootstrap stylesheet ([nmap-bootstrap-xsl](https://github
 ### ⚙️ Required commands
 | Commands | Description                                                                         |
 |----------|-------------------------------------------------------------------------------------|
-| `-h`     | Target host(s), IPs compatible with CIDR format, a comma-separated list, or a range |
-| `-f`     | File with IPs and/or hostnames to scan, one by line (CIDR format compatible)        |
+| `-h`     | **Target host(s)**, IPs compatible with CIDR format, a comma-separated list, or a range |
+| `-f`     | **File with IPs and/or hostnames** to scan, one by line (CIDR format compatible)        |
 
 ### ⚙️ Additional options
 | Option | Description                                                                                              |
 |--------|----------------------------------------------------------------------------------------------------------|
-| `-x`   | Exclude these IPs (CIDR format compatible), one by line (e.g. gateways from your providers)              |
-| `-i`   | Interactive mode: ports to scan, rate level and NSE script to use (e.g. vulners --script-args mincvss=5) |
-| `-a`   | Scan all ports (TCP + UDP) at 1.5K pkts/sec with NSE vulners script                                      |
-| `-c`   | Perform a pre-scanning to identify online hosts and scan only them                                       |
-| `-r`   | Generate a TXT file including IPs scanned with open ports and protocols                                  |
-| `-n`   | Quick mode without full Nmap scan to detect the hosts with open ports (no HTML report)                   |
-| `-d`   | DNS server to use (useful with the -f command and hostnames, current: 1.1.1.1)                           |
-| `-I`   | Network interface to use for scanning (e.g. eth0, wlan0), or the one with the default route is used      |
-| `-H`   | Show help                                                                                                |
-| `-V`   | Show MassVulScan version                                                                                 |
+| `-x`   | **Exclude these IPs** (CIDR format compatible), one by line (e.g. gateways from your providers)              |
+| `-i`   | **Interactive mode**: ports to scan, rate level and NSE script to use (e.g. vulners --script-args mincvss=5) |
+| `-a`   | **Scan all ports** (TCP + UDP) at 1.5K pkts/sec with NSE vulners script                                      |
+| `-c`   | Perform a pre-scanning **to identify online hosts** and scan only them                                       |
+| `-r`   | Generate a **TXT file including IPs scanned with open ports and protocols**                                  |
+| `-n`   | **Quick mode** without full Nmap scan to detect the hosts with open ports (no HTML report)                   |
+| `-d`   | **DNS server to use** (useful with the -f command and hostnames, current: 1.1.1.1)                           |
+| `-I`   | **Network interface to use** for scanning (e.g. eth0, wlan0), or the one with the default route is used      |
+| `-H`   | Show **help**                                                                                                |
+| `-V`   | Show **MassVulScan version**                                                                                 |
 
 By default the script will scan only the first 1000 TCP/UDP ports among the most common ports. You can find the list here: /usr/local/share/nmap/nmap-services. Similarly, the rate or number of packets per second is set to 1500 by default.
 
