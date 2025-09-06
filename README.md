@@ -22,7 +22,7 @@
 - **Optimized Scans**: Intelligent subnet filtering to avoid duplicates.
 - **Modern and Interactive**: Enhanced aesthetics and interactivity with Gum.
 - **Optimized Installation**: Only installing missing packages.
-- **Platform Compatibility**: Cross-distro version (Debian & RedHat based).
+- **Platform Compatibility**: Compatible with Debian & Red Hat OS.
 - **Power of Bash**: Simplicity meets performance
 
 ## 📋 Changelog
